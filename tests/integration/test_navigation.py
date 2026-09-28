@@ -216,3 +216,23 @@ async def test_no_page_loads_a_third_party_script(
         page = await client.get(path)
         external = re.findall(r'<script[^>]+src="(https?://[^"]+)"', page.text)
         assert not external, f"{path} loads third-party scripts: {external}"
+
+
+async def test_the_skip_link_reaches_the_top_of_the_viewport_when_scrolled(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """It is `position: fixed`, so a scrolled page does not put it out of reach.
+
+    It was `absolute`, which anchored it to the document: with the page scrolled
+    to 351px, focusing it put it at -343px from the top of the viewport. The
+    only person who ever sees this link is someone tabbing through a page long
+    enough to want skipping, which is exactly when it was missing.
+    """
+    await _sign_in(client, session)
+    css = await client.get("/static/css/custom.css")
+
+    block = re.search(r"(?m)^\.skip-link\s*\{(.*?)^\}", css.text, re.S)
+    assert block, "no .skip-link rule"
+    assert "position: fixed" in block.group(1), (
+        "an absolutely positioned skip link is unreachable on a scrolled page"
+    )

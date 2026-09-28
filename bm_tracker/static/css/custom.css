@@ -897,12 +897,21 @@ input[type="date"]::-webkit-inner-spin-button {
   background-color: var(--bs-secondary-bg);
 }
 
+/*
+ * `fixed`, not `absolute`. The skip link is off the top of the *document*
+ * until it is focused, and a document-relative `top: 0.5rem` on a page that is
+ * already scrolled put it at -343px from the top of the viewport — invisible to
+ * the one person it exists for, who tabs first precisely because the page is
+ * long enough to be worth skipping.
+ */
 .skip-link {
   background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
   left: 0.5rem;
   padding: 0.5rem 0.75rem;
-  position: absolute;
-  top: -3rem;
+  position: fixed;
+  top: -4rem;
   transition: top 0.15s;
   z-index: 1060;
 }
@@ -1606,4 +1615,40 @@ input[type="date"]::-webkit-inner-spin-button {
 
 .entries-bar__year .form-select {
   width: auto;
+}
+
+/* --- focus --------------------------------------------------------------- */
+
+/*
+ * One focus ring for the whole app, in the app's own accent colour.
+ *
+ * Without this every control fell back to the user agent's default: a 1px
+ * auto outline in near-black. That is invisible against the dark theme, it
+ * disagrees with the cards' own focus treatment, and it is the single thing a
+ * keyboard user is looking for.
+ *
+ * `:focus-visible` rather than `:focus` so a mouse click does not leave a ring
+ * behind, but a Tab does. The two-px outline with an offset clears the 44px
+ * touch targets rather than sitting inside them.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* The pick cards draw their own selected state, so the ring is drawn inside
+ * the card rather than around it, or the two outlines read as a mistake. */
+.pick__input:focus-visible + .pick__card {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* Bootstrap sets its own focus ring on form controls, which is fine, but it
+ * overrides ours when both match; this restores the accent. */
+.form-control:focus-visible,
+.form-select:focus-visible {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  outline: none;
 }
