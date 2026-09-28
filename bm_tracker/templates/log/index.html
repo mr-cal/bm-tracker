@@ -28,12 +28,18 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
     <div class="log-form__when">
+      {#
+        Both fields get the same drawn button. The date always had one; the time
+        kept the user agent's own clock indicator, so the two icons looked
+        identical in purpose and behaved nothing alike. `showPicker()` opens the
+        real thing on both — on a phone that is the OS calendar and the OS clock.
+      #}
       <div>
         <label class="form-label" for="date">Date</label>
         <div class="date-field">
           <input class="form-control" type="date" id="date" name="date" required
                  value="{{ today.isoformat() }}" />
-          <button type="button" class="date-field__button" data-date-picker-toggle
+          <button type="button" class="date-field__button" data-picker-toggle
                   aria-label="Open the calendar" aria-controls="date" title="Open the calendar">
             {{ icon_svg("calendar", "date-field__icon") }}
           </button>
@@ -41,8 +47,14 @@
       </div>
       <div>
         <label class="form-label" for="time">Time</label>
-        <input class="form-control" type="time" id="time" name="time" required
-               value="{{ now.strftime('%H:%M') }}" />
+        <div class="date-field">
+          <input class="form-control" type="time" id="time" name="time" required
+                 value="{{ now.strftime('%H:%M') }}" />
+          <button type="button" class="date-field__button" data-picker-toggle
+                  aria-label="Open the clock" aria-controls="time" title="Open the clock">
+            {{ icon_svg("clock", "date-field__icon") }}
+          </button>
+        </div>
       </div>
     </div>
 

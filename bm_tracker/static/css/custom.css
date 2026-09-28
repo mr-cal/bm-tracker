@@ -740,14 +740,17 @@ body {
  * font that is not always installed, which is how this field came to show an
  * empty box. `-webkit-appearance: none` on the input is what actually removes
  * it in Chromium; hiding the pseudo-element alone does not. */
-input[type="date"] {
+input[type="date"],
+input[type="time"] {
   -webkit-appearance: none;
   appearance: none;
   padding-right: 2.5rem;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="date"]::-webkit-inner-spin-button {
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   appearance: none;
   display: none;
@@ -964,10 +967,10 @@ input[type="date"]::-webkit-inner-spin-button {
   background-color: var(--bm-accent-soft);
 }
 
-.feed__card--mine.feed__card--note,
-.feed__card--mine.feed__card--achievement {
-  background-color: transparent;
-}
+/* Everything you did gets the same tint. Notes and achievements were reset to
+ * transparent on the grounds that they were "other people's" cards too — which
+ * is true, and also why a reader could not tell their own day from somebody
+ * else's at a glance. The name says who; the tint says it is yours. */
 
 .feed__bm {
   align-items: center;
@@ -1918,4 +1921,11 @@ input[type="date"]::-webkit-inner-spin-button {
   justify-content: center;
   line-height: 1;
   width: 2.6rem;
+}
+
+.reward__unlocked-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 0.45rem;
+  text-align: left;
 }

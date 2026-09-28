@@ -15,8 +15,10 @@
   </p>
 
   <div class="feed">
+    {% set ns = namespace(seen_own=false) %}
     {% for item in items %}
     {% set mine = item.user.id == user.id %}
+    {%- set first_own_name = not ns.seen_own %}{% if mine %}{% set ns.seen_own = true %}{% endif %}
     <article class="card feed__card feed__card--{{ item.kind }}{{ ' feed__card--mine' if mine }}">
       <div class="card-body">
         <header class="feed__head">
@@ -26,13 +28,11 @@
             times before the reader reached anything else — the same sentence,
             over and over, to a screen reader and to a keyboard.
           #}
-          {% if mine %}
-          <span class="feed__who feed__who--plain">{{ item.display_name }} (you)</span>
-          {% else %}
-          <a class="feed__who" href="/people/{{ item.user.username }}">
-            {{ item.display_name }}
+          <a class="feed__who{% if not mine %} feed__who--plain{% endif %}"
+             href="/people/{{ item.user.username }}"
+             {%- if mine and not first_own_name %} tabindex="-1"{% endif %}>
+            {{ item.display_name }}{{ ' (you)' if mine }}
           </a>
-          {% endif %}
           {% if item.user.is_admin %}<span class="badge text-bg-secondary">admin</span>{% endif %}
           <time class="feed__when" datetime="{{ item.at.isoformat() }}">
             {# The year, always. The feed is one timeline across years, so

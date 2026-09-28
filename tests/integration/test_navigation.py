@@ -143,38 +143,32 @@ def test_an_icon_class_cannot_smuggle_markup() -> None:
         icon("menu", 'x" onload="alert(1)')
 
 
-async def test_the_date_field_has_a_working_calendar_button(
+async def test_the_date_and_time_fields_both_have_a_picker_button(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    """The calendar is a button we draw that opens the platform's picker.
+    """Both fields get the same drawn button, and both open a real picker.
 
-    The native picker is kept — on a phone it is the OS calendar — but the
-    indicator is not, because the user agent draws it with a font that is not
-    always installed. These three things have to hold together: our button, a
-    real `input[type=date]` for the form, and a script wired to the button.
+    The date had one and the time kept the user agent's own clock indicator, so
+    two icons sat side by side looking identical in purpose and behaving
+    nothing alike: one opened a calendar and the other looked like it should
+    and did not. `showPicker()` opens the platform's own picker on both, so on a
+    phone that is still the OS calendar and the OS clock.
     """
     await _sign_in(client, session)
 
     page = await client.get("/log")
 
-    assert 'type="date"' in page.text, "the native date input is gone"
-    assert "data-date-picker-toggle" in page.text, "nothing opens the calendar"
-    assert 'aria-controls="date"' in page.text, "the button is not tied to the field"
-    assert 'class="ico date-field__icon"' in page.text, "the button has no icon"
+    for field in ("date", "time"):
+        assert f'aria-controls="{field}"' in page.text, f"no button for {field}"
+        assert "data-picker-toggle" in page.text
+    assert 'class="ico date-field__icon"' in page.text
+    assert "/static/js/picker.js" in page.text
 
-
-async def test_the_date_script_is_loaded(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    """Without the script the button is decoration."""
-    await _sign_in(client, session)
-
-    page = await client.get("/log")
-
-    assert "/static/js/datepicker.js" in page.text
-    script = await client.get("/static/js/datepicker.js")
+    script = await client.get("/static/js/picker.js")
     assert script.status_code == 200
     assert "showPicker" in script.text
+    # One rule, not a list of fields, so a third one needs no change here.
+    assert "[data-picker-toggle]" in script.text
 
 
 async def test_log_is_not_in_the_top_bar(

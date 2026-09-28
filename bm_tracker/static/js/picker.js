@@ -1,10 +1,16 @@
 /*
- * The date field's calendar button.
+ * The calendar and clock buttons.
  *
- * The native `input[type=date]` picker is the best calendar on any given
- * device — on a phone it is the OS's own, with the user's locale, their date
- * formats and their accessibility settings already applied. Replacing it with a
- * JavaScript calendar would mean reimplementing all of that, worse.
+ * The native `input[type=date]` and `input[type=time]` pickers are the best
+ * calendars and clocks on any given device — on a phone they are the OS's own,
+ * with the user's locale, their date formats and their accessibility settings
+ * already applied. Replacing either with a JavaScript picker would mean
+ * reimplementing all of that, worse.
+ *
+ * Both fields get the same treatment, which they did not have. The date had a
+ * drawn button and the time kept the user agent's own indicator, so one icon
+ * opened a calendar and the other looked like it should and did not. The
+ * asymmetry was ours, not the browser's.
  *
  * What we do replace is the *chrome*. The user agent draws the picker
  * indicator, and it draws it differently per engine, with a font that is not
@@ -52,7 +58,7 @@
   }
 
   function init() {
-    var buttons = document.querySelectorAll("[data-date-picker-toggle]");
+    var buttons = document.querySelectorAll("[data-picker-toggle]");
     for (var i = 0; i < buttons.length; i++) {
       wire(buttons[i]);
     }

@@ -1480,41 +1480,41 @@ async def test_the_settings_confirmation_does_not_outlive_the_moment(
     assert "Appearance saved." not in again.text, "the confirmation came back"
 
 
-async def test_your_own_name_is_not_a_tab_stop_on_the_feed(
+async def test_your_own_name_is_one_tab_stop_however_many_cards(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    """Thirty cards should not put the same sentence into the tab order thirty times.
+    """The name is always a link, but the repeats are not tab stops.
 
-    Every feed card linked the author's name, and the feed is mostly your own
-    cards, so tabbing the first screen read "Cal (you), Cal (you), Cal (you)"
-    before reaching anything else — the same words over and over, to a screen
-    reader and to a keyboard alike.
-
-    Your own name is now plain text. Other people are still links, because
-    their page is somewhere else.
+    Making your own name plain text fixed the tab order and broke the link,
+    which is not a trade anybody wanted. So every card's name is a link to that
+    person's page, and the repeats carry `tabindex="-1"`: still clickable with a
+    mouse, still in the accessibility tree, but only the first one is somewhere
+    a keyboard stops on the way through the feed.
     """
     user = await _user(session)
     day = _yesterday()
-    for _ in range(3):
+    for hour in (8, 9, 10):
         await bm_service.log_bm(
             session,
             user,
             day,
-            occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+            occurred_local=datetime(day.year, day.month, day.day, hour, 0),
             bristol_type=4,
         )
     await session.commit()
     await _sign_in(client)
 
     page = await client.get("/")
+    body = page.text
 
-    mine = page.text.count("feed__who--plain")
-    assert mine >= 1, "your own name should not be a link"
-    assert 'href="/people/cal"' not in page.text, (
-        "your own name is still a link on your own cards"
+    assert body.count('href="/people/cal"') >= 3, (
+        "your name should be a link on every one of your cards"
     )
-    # Other people remain reachable.
-    assert 'href="/people/' in page.text or mine > 0
+    # One of them is reachable by Tab; the rest are not.
+    assert body.count('href="/people/cal" tabindex="-1"') >= 2, (
+        "the repeats should be clickable but not tab stops"
+    )
+    assert 'href="/people/cal">\n' in body or 'href="/people/cal">' in body
 
 
 async def test_the_reward_screen_itemises_what_was_earned(
