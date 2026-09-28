@@ -13,11 +13,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 
 from bm_tracker import scoring
+from bm_tracker.achievements import rules
 from bm_tracker.achievements.rules import Facts
 from bm_tracker.models import DailyLog, User, UserFact
 
@@ -26,24 +27,36 @@ if TYPE_CHECKING:
 
 #: Facts every evaluation reads. A missing one is zero, not an error, so a new
 #: achievement can use a fact before any user has earned it.
-FACT_KEYS = (
-    "bm_count_total",
-    "bm_count_day",
-    "max_bms_in_day",
-    "days_logged_total",
-    "note_count",
-    "spicy_count",
-    "noted_entry_count",
-    "bristol_type",
-    "bristol_types_seen",
-    "streak_current",
-    "streak_longest",
-    "time_of_day",
-    "fastest_entry_delay",
-    "logged_same_day",
-    "gap_since_previous_days",
-    "max_spicy_consecutive_days",
-)
+#: Saturday. `date.weekday()` is Monday-0, so the weekend is the last two.
+FIRST_WEEKEND_DAY = 5
+#: Friday, and the thirteenth.
+THIRTEENTH = 13
+FRIDAY = 4
+
+#: Dates worth an achievement, as a fact name to the month and day it needs.
+#: The names are the rule's vocabulary, so adding one here and one fact in
+#: FACT_KEYS is the whole cost of a new occasion.
+OCCASIONS: Final[dict[str, tuple[int, int]]] = {
+    "jan_1": (1, 1),
+    "feb_2": (2, 2),
+    "feb_14": (2, 14),
+    "feb_29": (2, 29),
+    "mar_15": (3, 15),
+    "apr_1": (4, 1),
+    "may_1": (5, 1),
+    "jun_21": (6, 21),
+    "oct_31": (10, 31),
+    "nov_5": (11, 5),
+    "dec_21": (12, 21),
+    "dec_24": (12, 24),
+    "dec_25": (12, 25),
+    "dec_26": (12, 26),
+    "dec_31": (12, 31),
+}
+
+#: The facts every evaluation reads, and the ones a rule may name. One list, in
+#: `rules`, because two lists that must agree is how they drift — and they had.
+FACT_KEYS: Final[tuple[str, ...]] = tuple(sorted(rules.KNOWN_FACTS))
 
 
 @dataclass
@@ -147,7 +160,53 @@ async def build(
     first_day = days[0].day if days else None
     last_day = days[-1].day if days else None
 
+    # Calendar and self-denial facts, all derived in this one pass so the
+    # builder stays a single scan of the year.
+    entry_days = [e.occurred_local.date() for e in entries]
+    weekdays = {d.weekday() for d in entry_days}
+    months = {d.month for d in entry_days}
+    weekend_count = float(
+        sum(1 for d in entry_days if d.weekday() >= FIRST_WEEKEND_DAY)
+    )
+    notes_per_day = {
+        day.day: sum(
+            1 for e in entries if e.occurred_local.date() == day.day and e.has_note
+        )
+        for day in days
+    }
+
+    run_without_note = 0
+    best_run_without_note = 0
+    for day in days:
+        if day.n_bms == 0 or day.notes and day.notes.strip():
+            run_without_note = 0
+            continue
+        if notes_per_day.get(day.day):
+            run_without_note = 0
+            continue
+        run_without_note += 1
+        best_run_without_note = max(best_run_without_note, run_without_note)
+
+    backfilled_days = float(
+        sum(
+            1
+            for day in days
+            if not scoring.qualifies(day.day, day.logged_at, user.timezone)
+        )
+    )
+    deleted_entries = float(await _deleted_count(session, user.id, year))
+
+    entry_dates = set(entry_days)
+    occasions: dict[str, float] = {
+        f"logged_{name}": float(1 if (month, day) in entry_dates else 0)
+        for name, (month, day) in OCCASIONS.items()
+    }
+    occasions["logged_friday_13"] = float(
+        sum(1 for d in entry_dates if d.day == THIRTEENTH and d.weekday() == FRIDAY)
+    )
+
     values: dict[str, float] = {
+        **occasions,
         "bm_count_total": float(len(entries)),
         "bm_count_day": float(max((d.n_bms for d in days), default=0)),
         "max_bms_in_day": float(max((d.n_bms for d in days), default=0)),
@@ -167,6 +226,17 @@ async def build(
         "logged_same_day": 1.0 if (last_day and _is_today(last_day, user)) else 0.0,
         "gap_since_previous_days": float(max(gaps, default=0)),
         "max_spicy_consecutive_days": float(best_spicy_run),
+        "distinct_weekdays_logged": float(len(weekdays)),
+        "distinct_months_logged": float(len(months)),
+        "weekend_entry_count": weekend_count,
+        "longest_run_without_note": float(best_run_without_note),
+        "all_entries_noted": float(
+            bool(entries)
+            and len(notes_per_day and {e.id for e in entries if e.has_note})
+            == len(entries)
+        ),
+        "backfilled_days": backfilled_days,
+        "deleted_entries": deleted_entries,
     }
     if first_day is not None:
         values["logged_same_day"] = (
@@ -174,6 +244,38 @@ async def build(
         )
 
     return FactSet(values=values)
+
+
+async def _deleted_count(session: AsyncSession, user_id: int, year: int) -> int:
+    """Return how many entries this person deleted in the year.
+
+    Read from the audit log rather than counted from the data, because a deleted
+    row is by definition not there any more — the only surviving trace of it is
+    the record that it was removed.
+
+    Args:
+        session: The session to read through.
+        user_id: Whose deletions to count.
+        year: The calendar year.
+
+    Returns:
+        How many entries were deleted.
+
+    """
+    from bm_tracker.models import AuditLog  # noqa: PLC0415
+
+    return int(
+        await session.scalar(
+            select(func.count())
+            .select_from(AuditLog)
+            .where(
+                AuditLog.user_id == user_id,
+                AuditLog.action == "entry.delete",
+                func.strftime("%Y", AuditLog.at) == str(year),
+            )
+        )
+        or 0
+    )
 
 
 def _is_today(day: date, user: User) -> bool:

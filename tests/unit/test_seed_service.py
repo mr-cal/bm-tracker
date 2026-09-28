@@ -289,13 +289,15 @@ async def test_seeding_never_writes_a_row_in_the_future(
         if row.logged_at
         > moment.astimezone(ZoneInfo(zones[row.user_id])).replace(tzinfo=None)
     ]
-    future_unlocks = (
-        await session.scalars(
-            select(AchievementUnlock).where(
-                AchievementUnlock.unlocked_at > moment.replace(tzinfo=None)
-            )
-        )
-    ).all()
+    # Compared in the owner's own frame, like the days above it. `unlocked_at`
+    # is naive local time, so eight in the evening in Honolulu is six the next
+    # morning in UTC — which is correct, and not something to assert against.
+    future_unlocks = [
+        row
+        for row in await session.scalars(select(AchievementUnlock))
+        if row.unlocked_at
+        > moment.astimezone(ZoneInfo(zones[row.user_id])).replace(tzinfo=None)
+    ]
 
     assert not future_bms, f"{len(future_bms)} BMs are dated in the future"
     assert not future_days, f"{len(future_days)} days are dated in the future"

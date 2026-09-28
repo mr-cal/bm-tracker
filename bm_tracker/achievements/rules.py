@@ -56,6 +56,38 @@ KNOWN_FACTS: Final[frozenset[str]] = frozenset(
         "fastest_entry_delay",
         "logged_same_day",
         "gap_since_previous_days",
+        "noted_entry_count",
+        "max_spicy_consecutive_days",
+        # Calendar. One fact per occasion rather than a month/day pair, so a rule
+        # reads "logged on the Ides of March" instead of two comparisons that
+        # only hold while they are being evaluated — and so a history that
+        # already contains the date can still earn it.
+        "logged_jan_1",
+        "logged_feb_2",
+        "logged_feb_14",
+        "logged_feb_29",
+        "logged_mar_15",
+        "logged_apr_1",
+        "logged_may_1",
+        "logged_jun_21",
+        "logged_oct_31",
+        "logged_nov_5",
+        "logged_dec_21",
+        "logged_dec_24",
+        "logged_dec_25",
+        "logged_dec_26",
+        "logged_dec_31",
+        "logged_friday_13",
+        "distinct_weekdays_logged",
+        "distinct_months_logged",
+        "weekend_entry_count",
+        # Self-denial. The anti-achievements, which is where the app is funniest:
+        # a note you did not write, a day filled in after the fact, an entry that
+        # did not survive.
+        "longest_run_without_note",
+        "all_entries_noted",
+        "backfilled_days",
+        "deleted_entries",
     }
 )
 

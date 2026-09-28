@@ -377,14 +377,16 @@ async def _backdate_unlocks(
         if not rows:
             continue
 
+        # The day's own `logged_at`, not its date at 20:00: that timestamp is
+        # already clamped to the present, so reusing it cannot put an unlock in
+        # the future. Recomputing 20:00 here did exactly that for today, and
+        # only started doing it often once there were enough unlocks to land on
+        # the last day.
         days = list(
             (
-                await session.scalars(
-                    select(DailyLog.day)
-                    .where(
-                        DailyLog.user_id == user.id,
-                        DailyLog.day <= today,
-                    )
+                await session.execute(
+                    select(DailyLog.day, DailyLog.logged_at)
+                    .where(DailyLog.user_id == user.id, DailyLog.day <= today)
                     .order_by(DailyLog.day)
                 )
             ).all()
@@ -394,8 +396,8 @@ async def _backdate_unlocks(
 
         for index, row in enumerate(rows):
             position = int((index + 0.5) * len(days) / len(rows))
-            day = days[min(position, len(days) - 1)]
-            row.unlocked_at = datetime(day.year, day.month, day.day, 20, 0)
+            _, logged_at = days[min(position, len(days) - 1)]
+            row.unlocked_at = logged_at
 
 
 def _resolved_path(database_url: str) -> Path | None:

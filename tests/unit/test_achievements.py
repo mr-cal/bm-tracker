@@ -446,3 +446,77 @@ def test_the_tier_values_bound_the_whole_catalogue() -> None:
     a_perfect_year = 365 * 15
 
     assert worst_case < a_perfect_year
+
+
+def test_every_known_fact_is_actually_produced() -> None:
+    """A fact in the vocabulary that nothing computes is a silent hole.
+
+    `KNOWN_FACTS` and the builder's list used to be two separate declarations
+    that had already drifted, which is how a rule can name something that
+    always reads as zero. One list now, and this asserts the builder fills it.
+    """
+    import asyncio  # noqa: PLC0415
+
+    from bm_tracker import auth  # noqa: PLC0415
+    from bm_tracker.achievements import facts  # noqa: PLC0415
+    from bm_tracker.database import get_engine, get_session_factory  # noqa: PLC0415
+    from bm_tracker.models import Base, User  # noqa: PLC0415
+
+    async def run() -> None:
+        engine = get_engine("sqlite+aiosqlite:///:memory:")
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+        factory = get_session_factory(engine)
+        async with factory() as session:
+            person = User(
+                username="cal",
+                display_name="Cal",
+                password_hash=auth.hash_password("x" * 16),
+                timezone="UTC",
+            )
+            session.add(person)
+            await session.commit()
+            built = await facts.build(session, person, 2026)
+            produced = set(built.values)
+            assert set(facts.FACT_KEYS) == produced, (
+                f"declared but never produced: "
+                f"{sorted(set(facts.FACT_KEYS) - produced)}"
+            )
+
+    asyncio.run(run())
+
+
+def test_the_catalogue_is_the_size_we_intend() -> None:
+    """One hundred and twenty, by agreement, and not three hundred by inertia.
+
+    Variety by volume is the opposite of variety by idea: the first twenty-one
+    were twenty-one ways of saying "your number is at least N", and the answer
+    was a bigger vocabulary and a smaller catalogue, not a bigger catalogue.
+    """
+    loaded = registry.load()
+    assert len(loaded) == 120, f"the catalogue is {len(loaded)}, not 120"
+
+
+def test_the_catalogue_covers_more_than_one_shape() -> None:
+    """Most definitions should need two things to be true at once.
+
+    Twenty of the original twenty-one used a single condition, which is why the
+    collection read as one idea repeated. This is the regression guard: a
+    plurality of definitions must be composed.
+    """
+    loaded = registry.load()
+
+    def conditions(spec: dict) -> int:
+        if "all" in spec:
+            return len(spec["all"])
+        if "any" in spec:
+            return len(spec["any"])
+        return 1
+
+    counts = [
+        conditions(a.rule.spec) for a in loaded.achievements if a.rule is not None
+    ]
+    composed = sum(1 for n in counts if n > 1)
+    assert composed / len(counts) > 0.4, (
+        f"only {composed} of {len(counts)} definitions use more than one condition"
+    )
