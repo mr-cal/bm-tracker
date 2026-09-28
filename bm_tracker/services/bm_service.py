@@ -142,8 +142,12 @@ async def log_nothing_today(
     local_today, _ = now_in(user.timezone)
     check_not_future(day, today=local_today)
     row = await _get_or_create_day(session, user, day, logged_at=logged_at)
-    if notes is not None:
-        row.notes = _clip_note(notes)
+    # The note is overwritten, including with None, because logging a day is
+    # stating what that day is now. It used to be left alone when the caller
+    # passed nothing, which was for a seeder that had no note to give; the only
+    # caller that can change a day has a note field on its form, and an empty
+    # textarea there means "no note", not "leave it as it was".
+    row.notes = _clip_note(notes)
     return row
 
 
@@ -217,36 +221,6 @@ async def log_bm(
     row.n_bms += 1
     await session.flush()
     return entry
-
-
-async def set_day_note(
-    session: AsyncSession,
-    user: User,
-    day: date,
-    notes: str | None,
-) -> DailyLog:
-    """Create or replace the note written against a day.
-
-    A day holds at most one day-note; a second save overwrites rather than
-    appending. A note on a day that has BMs is retained but *superseded* — see
-    `DailyLog.is_note_live` — which is derived from `n_bms` and costs nothing to
-    maintain.
-
-    Args:
-        session: The session to write through.
-        user: The owner.
-        day: The occurrence date.
-        notes: The new note, or `None` to clear it.
-
-    Returns:
-        The `DailyLog` for that day.
-
-    """
-    local_today, _ = now_in(user.timezone)
-    check_not_future(day, today=local_today)
-    row = await _get_or_create_day(session, user, day)
-    row.notes = _clip_note(notes)
-    return row
 
 
 async def delete_entry(

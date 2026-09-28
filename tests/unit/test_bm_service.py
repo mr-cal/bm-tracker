@@ -308,15 +308,20 @@ async def test_whitespace_is_not_a_note(session: AsyncSession) -> None:
     assert not row.is_note_live
 
 
-async def test_setting_a_note_twice_replaces_rather_than_appends(
+async def test_logging_an_empty_day_twice_replaces_the_note(
     session: AsyncSession,
 ) -> None:
-    """A day holds exactly one day-note."""
+    """A day holds exactly one day-note, and re-logging replaces it.
+
+    The day-note used to have its own endpoint and its own form. It is now
+    written by logging the day as empty, which is the only thing that produces
+    one, so this is the whole of that behaviour.
+    """
     user = await _user(session)
     day = _yesterday()
 
-    await bm_service.set_day_note(session, user, day, "first thought")
-    await bm_service.set_day_note(session, user, day, "second thought")
+    await bm_service.log_nothing_today(session, user, day, notes="first thought")
+    await bm_service.log_nothing_today(session, user, day, notes="second thought")
     await session.commit()
 
     row = await bm_service.get_day(session, user, day)
@@ -329,8 +334,8 @@ async def test_clearing_a_note(session: AsyncSession) -> None:
     user = await _user(session)
     day = _yesterday()
 
-    await bm_service.set_day_note(session, user, day, "something")
-    await bm_service.set_day_note(session, user, day, None)
+    await bm_service.log_nothing_today(session, user, day, notes="something")
+    await bm_service.log_nothing_today(session, user, day, notes=None)
     await session.commit()
 
     row = await bm_service.get_day(session, user, day)

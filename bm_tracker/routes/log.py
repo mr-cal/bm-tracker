@@ -204,6 +204,25 @@ def _event_flags(entry: BmEntry, day: DailyLog) -> dict[str, bool]:
     }
 
 
+def _bristol_from(choice: str) -> str:
+    """Return the Bristol type encoded in a `bm:<type>` choice.
+
+    Args:
+        choice: The submitted choice, "nothing" or "bm:<type>".
+
+    Returns:
+        The raw type as it appears in the form value.
+
+    Raises:
+        ValueError: If the choice is not a BM, so `parse_type` can report it.
+
+    """
+    if not choice.startswith(CHOICE_BM_PREFIX):
+        msg = "Pick a Bristol type, or choose Nothing today."
+        raise ValueError(msg)
+    return choice[len(CHOICE_BM_PREFIX) :]
+
+
 async def _celebrate_after(
     session: DbSession,
     user: AuthenticatedUser,
@@ -276,146 +295,89 @@ def _requested_day(request: Request, user: AuthenticatedUser) -> date:
     return requested if requested is not None else local_today
 
 
-@router.post("/log/bm", response_class=HTMLResponse, response_model=None)
-async def submit_bm(
+CHOICE_NOTHING = "nothing"
+CHOICE_BM_PREFIX = "bm:"
+
+
+@router.post("/log", response_class=HTMLResponse, response_model=None)
+async def submit_log(
     request: Request,
     session: DbSession,
     user: AuthenticatedUser,
 ) -> HTMLResponse | RedirectResponse:
-    """Record one bowel movement."""
-    form = await request.form()
-    forms.guard_csrf(request, form)
-    day = parse_date(forms.guard_field(form, "day"))
-    if day is None:
-        return RedirectResponse("/log", status_code=303)
-    user_id = user.id  # captured before a rollback can expire the instance
+    """Record what happened on a day: a BM, or nothing at all.
 
-    try:
-        entry = await bm_service.log_bm(
-            session,
-            user,
-            day,
-            occurred_local=bm_service.form_datetime(
-                day, forms.guard_field(form, "time")
-            ),
-            bristol_type=bristol.parse_type(forms.guard_field(form, "bristol_type")),
-            spicy=forms.form_flag(form, "spicy"),
-            urgent=forms.form_flag(form, "urgent"),
-            strain=strain.parse_strain(forms.form_text(form, "strain")),
-            notes=forms.form_text(form, "notes"),
-        )
-        # `log_bm` has just created the day, so this read always succeeds; it
-        # is here for the note state the celebration needs.
-        row = await bm_service.get_day(session, user, day)
-        assert row is not None  # noqa: S101 - guaranteed by the call above
-        await audit_service.record(
-            session,
-            action="entry.create",
-            user_id=user.id,
-            entity_type="bm_entry",
-            entity_id=str(entry.id),
-            detail={"day": day.isoformat(), "bristol_type": entry.bristol_type},
-        )
-        celebration = await _celebrate_after(
-            session, user, "log_any", extra=_event_flags(entry, row)
-        )
-        await session.commit()
-    except (ValueError, bm_service.DayInFutureError) as exc:
-        await session.rollback()
-        return await _render_log(
-            request,
-            session,
-            await _reload(session, user_id),
-            day,
-            error=str(exc),
-            status_code=400,
-        )
+    One endpoint for both, because the form offers both as cards in the same
+    grid and a form that posts somewhere different depending on which card you
+    tapped needs JavaScript to get right. Here the server decides, and the
+    decision is one comparison.
 
-    return _back_to_log(request, day, celebration)
-
-
-@router.post("/log/nothing", response_class=HTMLResponse, response_model=None)
-async def submit_nothing(
-    request: Request,
-    session: DbSession,
-    user: AuthenticatedUser,
-) -> HTMLResponse | RedirectResponse:
-    """Record a day on which there was nothing to report.
-
-    This is a scored, streak-extending outcome, not an empty state.
+    The per-BM fields are ignored outright when the day is logged as empty. The
+    interface greys them out, but that is a convenience: a request that carries
+    `spicy=on` alongside `choice=nothing` is not going to be allowed to record a
+    spicy bowel movement on a day with no bowel movements in it.
     """
     form = await request.form()
     forms.guard_csrf(request, form)
     day = parse_date(forms.guard_field(form, "day"))
     if day is None:
         return RedirectResponse("/log", status_code=303)
-    user_id = user.id
+    user_id = user.id  # captured before a rollback can expire the instance
+    notes = forms.form_text(form, "notes")
 
+    # `choice` is the single source of truth for what happened: either "nothing"
+    # or "bm:<type>". A separate `bristol_type` field would be a second thing to
+    # disagree with it.
+    choice = forms.guard_field(form, "choice")
     try:
-        await bm_service.log_nothing_today(
-            session, user, day, notes=forms.form_text(form, "notes")
-        )
-        await audit_service.record(
-            session,
-            action="day.log",
-            user_id=user.id,
-            entity_type="daily_log",
-            entity_id=day.isoformat(),
-            detail={"day": day.isoformat(), "n_bms": 0},
-        )
-        row = await bm_service.get_day(session, user, day)
-        celebration = await _celebrate_after(
-            session,
-            user,
-            "log_none",
-            extra={"note_added": bool(row and row.is_note_live)},
-        )
+        if choice == CHOICE_NOTHING:
+            await bm_service.log_nothing_today(session, user, day, notes=notes)
+            await audit_service.record(
+                session,
+                action="day.log",
+                user_id=user.id,
+                entity_type="daily_log",
+                entity_id=day.isoformat(),
+                detail={"day": day.isoformat(), "n_bms": 0},
+            )
+            row = await bm_service.get_day(session, user, day)
+            celebration = await _celebrate_after(
+                session,
+                user,
+                "log_none",
+                extra={"note_added": bool(row and row.is_note_live)},
+            )
+        else:
+            entry = await bm_service.log_bm(
+                session,
+                user,
+                day,
+                occurred_local=bm_service.form_datetime(
+                    day, forms.guard_field(form, "time")
+                ),
+                bristol_type=bristol.parse_type(_bristol_from(choice)),
+                spicy=forms.form_flag(form, "spicy"),
+                urgent=forms.form_flag(form, "urgent"),
+                strain=strain.parse_strain(forms.form_text(form, "strain")),
+                notes=notes,
+            )
+            # `log_bm` has just created the day, so this read always succeeds;
+            # it is here for the note state the celebration needs.
+            row = await bm_service.get_day(session, user, day)
+            assert row is not None  # noqa: S101 - guaranteed by the call above
+            await audit_service.record(
+                session,
+                action="entry.create",
+                user_id=user.id,
+                entity_type="bm_entry",
+                entity_id=str(entry.id),
+                detail={"day": day.isoformat(), "bristol_type": entry.bristol_type},
+            )
+            celebration = await _celebrate_after(
+                session, user, "log_any", extra=_event_flags(entry, row)
+            )
         await session.commit()
-    except bm_service.DayInFutureError as exc:
-        await session.rollback()
-        return await _render_log(
-            request,
-            session,
-            await _reload(session, user_id),
-            day,
-            error=str(exc),
-            status_code=400,
-        )
-
-    return _back_to_log(request, day, celebration)
-
-
-@router.post("/log/note", response_class=HTMLResponse, response_model=None)
-async def submit_note(
-    request: Request,
-    session: DbSession,
-    user: AuthenticatedUser,
-) -> HTMLResponse | RedirectResponse:
-    """Create or replace the note written against a day."""
-    form = await request.form()
-    forms.guard_csrf(request, form)
-    day = parse_date(forms.guard_field(form, "day"))
-    if day is None:
-        return RedirectResponse("/log", status_code=303)
-    user_id = user.id
-
-    try:
-        row = await bm_service.set_day_note(
-            session, user, day, forms.form_text(form, "notes")
-        )
-        await audit_service.record(
-            session,
-            action="day.update",
-            user_id=user.id,
-            entity_type="daily_log",
-            entity_id=str(row.id),
-            detail={"day": day.isoformat(), "n_bms": row.n_bms},
-        )
-        # No message: editing a note is not a log. The engine still runs, since
-        # a note can be what unlocks something.
-        celebration = await _celebrate_after(session, user, "note_added", extra={})
-        await session.commit()
-    except bm_service.DayInFutureError as exc:
+    except (ValueError, bm_service.DayInFutureError) as exc:
         await session.rollback()
         return await _render_log(
             request,

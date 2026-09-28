@@ -127,14 +127,22 @@ async def test_log_page_defaults_to_today(
 async def test_log_page_shows_the_bristol_scale(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    """All seven types are offered, as radio buttons in a fieldset."""
+    """All seven types are offered as cards, and so is "Nothing today".
+
+    "Nothing today" used to be a collapsed section of its own with its own
+    form. It is the same kind of answer to the same question and it is scored
+    the same way, so it belongs in the same grid — otherwise it is the option
+    people forget.
+    """
     await _user(session)
     await _sign_in(client)
 
     page = await client.get("/log")
 
     for value in range(1, 8):
-        assert f'value="{value}"' in page.text
+        assert f'value="bm:{value}"' in page.text
+    assert 'value="nothing"' in page.text
+    assert "Nothing today" in page.text
     assert "Type 4" in page.text or "type 4" in page.text.lower()
 
 
@@ -149,12 +157,12 @@ async def test_submitting_a_bm_creates_the_day(
     page = await client.get(f"/log?date={day.isoformat()}")
     token = csrf_of(page.text)
     response = await client.post(
-        "/log/bm",
+        "/log",
         data={
+            "choice": "bm:4",
             CSRF_FIELD_NAME: token,
             "day": day.isoformat(),
             "time": "07:30",
-            "bristol_type": "4",
             "notes": "first of the day",
         },
         headers={CSRF_HEADER_NAME: token},
@@ -181,8 +189,13 @@ async def test_submitting_nothing_today_creates_an_empty_day(
     page = await client.get(f"/log?date={day.isoformat()}")
     token = csrf_of(page.text)
     response = await client.post(
-        "/log/nothing",
-        data={CSRF_FIELD_NAME: token, "day": day.isoformat(), "notes": "all quiet"},
+        "/log",
+        data={
+            "choice": "nothing",
+            CSRF_FIELD_NAME: token,
+            "day": day.isoformat(),
+            "notes": "all quiet",
+        },
         headers={CSRF_HEADER_NAME: token},
     )
     assert response.status_code == 303
@@ -204,12 +217,12 @@ async def test_a_bad_bristol_type_re_renders_the_form(
     page = await client.get(f"/log?date={day.isoformat()}")
     token = csrf_of(page.text)
     response = await client.post(
-        "/log/bm",
+        "/log",
         data={
+            "choice": "bm:9",
             CSRF_FIELD_NAME: token,
             "day": day.isoformat(),
             "time": "07:30",
-            "bristol_type": "9",
         },
         headers={CSRF_HEADER_NAME: token},
     )
@@ -230,8 +243,8 @@ async def test_a_future_day_is_refused(
     page = await client.get("/log")
     token = csrf_of(page.text)
     response = await client.post(
-        "/log/nothing",
-        data={CSRF_FIELD_NAME: token, "day": tomorrow.isoformat()},
+        "/log",
+        data={"choice": "nothing", CSRF_FIELD_NAME: token, "day": tomorrow.isoformat()},
         headers={CSRF_HEADER_NAME: token},
     )
 
@@ -248,8 +261,8 @@ async def test_logging_without_a_csrf_token_is_refused(
     day = _yesterday()
 
     response = await client.post(
-        "/log/nothing",
-        data={"day": day.isoformat()},
+        "/log",
+        data={"choice": "nothing", "day": day.isoformat()},
     )
 
     assert response.status_code == 403
@@ -267,17 +280,22 @@ async def test_the_note_is_shown_as_superseded_after_a_bm(
     page = await client.get(f"/log?date={day.isoformat()}")
     token = csrf_of(page.text)
     await client.post(
-        "/log/nothing",
-        data={CSRF_FIELD_NAME: token, "day": day.isoformat(), "notes": "empty day"},
+        "/log",
+        data={
+            "choice": "nothing",
+            CSRF_FIELD_NAME: token,
+            "day": day.isoformat(),
+            "notes": "empty day",
+        },
         headers={CSRF_HEADER_NAME: token},
     )
     await client.post(
-        "/log/bm",
+        "/log",
         data={
+            "choice": "bm:4",
             CSRF_FIELD_NAME: token,
             "day": day.isoformat(),
             "time": "08:00",
-            "bristol_type": "6",
         },
         headers={CSRF_HEADER_NAME: token},
     )
@@ -358,12 +376,12 @@ async def test_logging_a_bm_records_strain_or_leaves_it_blank(
 
     for index, strain_value in enumerate(("3", ""), start=1):
         response = await client.post(
-            "/log/bm",
+            "/log",
             data={
+                "choice": "bm:4",
                 CSRF_FIELD_NAME: token,
                 "day": day.isoformat(),
                 "time": f"0{7 + index}:30",
-                "bristol_type": "4",
                 "strain": strain_value,
             },
             follow_redirects=False,
@@ -394,12 +412,12 @@ async def test_urgent_is_stored_as_a_flag_not_derived_from_the_delay(
 
     for hour, ticked in (("07", True), ("21", False)):
         response = await client.post(
-            "/log/bm",
+            "/log",
             data={
+                "choice": "bm:4",
                 CSRF_FIELD_NAME: token,
                 "day": day.isoformat(),
                 "time": f"{hour}:00",
-                "bristol_type": "4",
                 "urgent": "on" if ticked else "",
             },
             follow_redirects=False,
@@ -421,12 +439,12 @@ async def test_a_nonsense_strain_is_rejected(
     token = csrf_of((await client.get("/log")).text)
 
     response = await client.post(
-        "/log/bm",
+        "/log",
         data={
+            "choice": "bm:4",
             CSRF_FIELD_NAME: token,
             "day": _yesterday().isoformat(),
             "time": "09:00",
-            "bristol_type": "4",
             "strain": "9",
         },
         follow_redirects=False,
@@ -876,3 +894,75 @@ async def test_the_homepage_pages_thirty_at_a_time(
     past = await client.get("/?page=99")
     assert past.status_code == 200
     assert "Nothing further back" in past.text
+
+
+async def test_nothing_today_ignores_the_per_bm_fields(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A day logged as empty cannot also be spicy and urgent.
+
+    The interface greys those fields out, but that is a convenience. A request
+    that carries them anyway — a stale tab, a script that did not run, a
+    hand-rolled client — must still record an empty day, because there is no
+    such thing as a spicy bowel movement on a day with no bowel movements.
+    """
+    user = await _user(session)
+    await _sign_in(client)
+    day = _yesterday()
+    token = csrf_of((await client.get("/log")).text)
+
+    response = await client.post(
+        "/log",
+        data={
+            CSRF_FIELD_NAME: token,
+            "day": day.isoformat(),
+            "choice": "nothing",
+            "spicy": "on",
+            "urgent": "on",
+            "strain": "3",
+            "time": "07:30",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303, response.text
+    row = await bm_service.get_day(session, user, day)
+    assert row is not None
+    assert row.n_bms == 0
+    assert (await session.scalars(select(BmEntry))).all() == []
+
+
+async def test_the_log_form_offers_one_grid_for_both_answers(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """One form, one grid, one submit — not two forms in collapsed sections."""
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/log")
+
+    assert page.text.count('action="/log"') == 2, (
+        "expected one GET form and one POST form"
+    )
+    assert 'method="post" action="/log"' in page.text
+    # The old shapes are gone.
+    assert "Log an empty day</button>" not in page.text
+    assert "Save note" not in page.text, "the day-note section should be gone"
+    assert "/log/nothing" not in page.text
+    assert "/log/note" not in page.text
+    assert "data-log-form" in page.text
+
+
+async def test_the_form_script_is_loaded(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Without the script the cards still work; it only does the greying."""
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/log")
+
+    assert "/static/js/logform.js" in page.text
+    script = await client.get("/static/js/logform.js")
+    assert script.status_code == 200
+    assert "data-bm-only" in script.text

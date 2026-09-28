@@ -956,3 +956,266 @@ input[type="date"]::-webkit-inner-spin-button {
   font-style: italic;
   margin: 0;
 }
+
+/* --- the log form, as cards ---------------------------------------------- */
+
+/*
+ * Every input here is a real input inside a label. The card is the styling of
+ * the control rather than a div pretending to be one, which is what keeps the
+ * whole thing keyboard-operable, arrow-key navigable, and announced correctly.
+ * The input is transparent rather than `display: none`, because a hidden input
+ * cannot take focus.
+ */
+.picks {
+  border: 0;
+  margin: 0 0 1.1rem;
+  padding: 0;
+}
+
+.picks__legend {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+  padding: 0;
+}
+
+.picks__optional {
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.picks__grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+}
+
+.pick {
+  display: block;
+  margin: 0;
+  position: relative;
+}
+
+.pick__input {
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.pick__card {
+  align-items: center;
+  background-color: var(--bs-body-bg);
+  border: 1.5px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  height: 100%;
+  justify-content: center;
+  padding: 0.55rem 0.5rem;
+  text-align: center;
+  transition: border-color 0.12s, background-color 0.12s, transform 0.12s;
+}
+
+.pick:hover .pick__card {
+  border-color: var(--bs-secondary);
+}
+
+.pick__title {
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.pick__hint {
+  color: var(--bs-secondary-color);
+  font-size: 0.7rem;
+  line-height: 1.2;
+}
+
+.pick__icon {
+  height: 1.35rem;
+  margin-bottom: 0.1rem;
+  width: 1.35rem;
+}
+
+.pick__input:checked + .pick__card {
+  background-color: rgba(13, 110, 253, 0.09);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 1px var(--bs-primary) inset;
+}
+
+.pick__input:checked + .pick__card .pick__title {
+  color: var(--bs-primary);
+}
+
+.pick__input:focus-visible + .pick__card {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* The Bristol cards carry their own band colour when chosen, so the scale is
+ * readable at a glance without reading the number. */
+.pick__card--hard.pick__input:checked + .pick__card,
+.pick__input:checked + .pick__card--hard {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-color: var(--bm-hard);
+  box-shadow: 0 0 0 1px var(--bm-hard) inset;
+}
+
+.pick__input:checked + .pick__card--normal {
+  background-color: rgba(25, 135, 84, 0.1);
+  border-color: var(--bm-normal);
+  box-shadow: 0 0 0 1px var(--bm-normal) inset;
+}
+
+.pick__input:checked + .pick__card--loose {
+  background-color: rgba(13, 110, 253, 0.1);
+  border-color: var(--bm-loose);
+  box-shadow: 0 0 0 1px var(--bm-loose) inset;
+}
+
+.pick__input:checked + .pick__card--nothing {
+  background-color: var(--bs-secondary-bg);
+  border-color: var(--bs-secondary);
+  box-shadow: 0 0 0 1px var(--bs-secondary) inset;
+}
+
+.pick__card--nothing .pick__icon {
+  color: var(--bs-secondary-color);
+}
+
+.pick__card--spicy {
+  border-color: rgba(255, 193, 7, 0.55);
+  color: #b8860b;
+}
+
+.pick__card--urgent {
+  border-color: rgba(220, 53, 69, 0.5);
+  color: var(--bs-danger);
+}
+
+.pick__card--strain-1 { border-color: rgba(25, 135, 84, 0.4); }
+.pick__card--strain-2 { border-color: rgba(255, 193, 7, 0.5); }
+.pick__card--strain-3 { border-color: rgba(220, 53, 69, 0.4); }
+
+.pick__input:checked + .pick__card--spicy {
+  background-color: rgba(255, 193, 7, 0.16);
+  border-color: #ffc107;
+  box-shadow: 0 0 0 1px #ffc107 inset;
+}
+
+.pick__input:checked + .pick__card--urgent {
+  background-color: rgba(220, 53, 69, 0.14);
+  border-color: var(--bs-danger);
+  box-shadow: 0 0 0 1px var(--bs-danger) inset;
+}
+
+/*
+ * "Nothing today" greys the per-BM fields out. `disabled` on the fieldset does
+ * two things at once: the controls stop being submitted, and they stop being
+ * focusable, so a keyboard user is not walked into a control that will be
+ * thrown away.
+ */
+.picks:disabled {
+  opacity: 0.4;
+}
+
+.picks:disabled .pick__input {
+  cursor: not-allowed;
+}
+
+.log-form__time .form-control {
+  max-width: 9rem;
+}
+
+.log-form__submit {
+  min-height: 44px;
+  padding: 0.5rem 1.5rem;
+}
+
+/* --- a logged BM, as a card ---------------------------------------------- */
+
+.bm-cards {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  list-style: none;
+  margin: 0 0 1.2rem;
+  padding: 0;
+}
+
+.bm-card {
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-left: 3px solid var(--bm-normal);
+  border-radius: var(--bs-border-radius);
+  padding: 0.55rem 0.7rem;
+}
+
+.bm-card__head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.bm-card__type {
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+}
+
+.bm-card__note {
+  font-size: 0.9rem;
+  margin: 0.35rem 0 0.5rem;
+}
+
+.bm-card .tag {
+  margin-right: 0.25rem;
+}
+
+.tag {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.05rem 0.5rem;
+  white-space: nowrap;
+}
+
+.tag--spicy {
+  background-color: rgba(255, 193, 7, 0.18);
+  border-color: rgba(255, 193, 7, 0.5);
+  color: #997404;
+}
+
+.tag--urgent {
+  background-color: rgba(220, 53, 69, 0.12);
+  border-color: rgba(220, 53, 69, 0.45);
+  color: var(--bs-danger);
+}
+
+.tag--effort {
+  background-color: var(--bs-secondary-bg);
+}
+
+.tag--strain-1 { border-color: rgba(25, 135, 84, 0.45); }
+.tag--strain-2 { border-color: rgba(255, 193, 7, 0.5); }
+.tag--strain-3 { border-color: rgba(220, 53, 69, 0.45); }
+
+@media (prefers-color-scheme: dark) {
+  .pick__card--spicy { color: #e0b100; }
+  .tag--spicy { color: #e0b100; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pick__card {
+    transition: none;
+  }
+}

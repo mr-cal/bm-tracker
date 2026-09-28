@@ -29,6 +29,7 @@ _EXTRA_CLASSES = frozenset(
         "app-tab__glyph",
         "date-field__icon",
         "input-icon",
+        "pick__icon",
         "tile__glyph",
     }
 )

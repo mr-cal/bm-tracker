@@ -37,134 +37,136 @@
 
   {% if is_future %}
   <div class="alert alert-warning">You cannot log a day that has not happened yet.</div>
-  {% endif %}
-
-  {% if is_today and now %}
-  <p class="text-body-secondary">It is {{ now.strftime("%H:%M") }} for you.</p>
-  {% endif %}
-
-  <h2>What happened?</h2>
-
-  {% if log and log.n_bms > 0 %}
-  <h3>{{ log.n_bms }} logged{% if log.n_bms == 1 %} BM{% else %} BMs{% endif %}</h3>
-  <ul class="bm-entries">
+  {% elif log and log.n_bms > 0 %}
+  <h2>{{ log.n_bms }} logged{% if log.n_bms == 1 %} BM{% else %} BMs{% endif %}</h2>
+  <ul class="bm-cards">
     {% for entry in entries %}
-    <li>
-      <strong>{{ entry.occurred_local.strftime("%H:%M") }}</strong>
-      — {{ entry.bristol.label }}: {{ entry.bristol.plain }}
-      {% if entry.spicy %}<span class="badge text-bg-warning">spicy</span>{% endif %}
-      {% if entry.urgent %}<span class="badge text-bg-danger">urgent</span>{% endif %}
-      {% if entry.strain %}<span class="strain-pill strain-{{ entry.strain }}">{{ entry.strain_level.label }}</span>{% endif %}
+    <li class="bm-card">
+      <div class="bm-card__head">
+        <span class="bristol-dot bristol-{{ entry.bristol.band }}">{{ entry.bristol_type }}</span>
+        <strong>{{ entry.occurred_local.strftime("%H:%M") }}</strong>
+        <span class="bm-card__type">{{ entry.bristol.plain }}</span>
+      </div>
+      {% if entry.spicy %}<span class="tag tag--spicy">Spicy</span>{% endif %}
+      {% if entry.urgent %}<span class="tag tag--urgent">Urgent</span>{% endif %}
+      {% if entry.strain %}<span class="tag tag--effort tag--strain-{{ entry.strain }}">{{ entry.strain_level.label }}</span>{% endif %}
       {% if entry.has_note %}
-      <p class="bm-note">“{{ entry.notes }}”</p>
+      <p class="bm-card__note">“{{ entry.notes }}”</p>
       {% endif %}
       <form method="post" action="/log/entry/{{ entry.id }}/delete">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
       </form>
     </li>
     {% endfor %}
   </ul>
-  {% else %}
-  <p class="text-body-secondary">Nothing logged for this day yet.</p>
   {% endif %}
 
   {% if not is_future %}
-  <details {% if log %}open{% endif %}>
-    <summary>Log a BM</summary>
-    <form method="post" action="/log/bm" >
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-      <input type="hidden" name="day" value="{{ day.isoformat() }}" />
+  {#
+    One form, one submit, one endpoint. "Nothing today" is a card beside the
+    seven Bristol types rather than a second form in a collapsed section: it is
+    the same kind of answer to the same question, it is scored the same way, and
+    making it a different shape is what made it easy to forget.
 
-      <div class="mb-3">
-        <label for="time">Time</label>
+    Every input is a real input inside a label, so the cards are keyboard-
+    operable and announced properly; the card is the styling of the control, not
+    a div pretending to be one.
+  #}
+  <form method="post" action="/log" class="log-form" data-log-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+    <input type="hidden" name="day" value="{{ day.isoformat() }}" />
+
+    <fieldset class="picks">
+      <legend class="picks__legend">What happened?</legend>
+      <div class="picks__grid">
+        {% for type in bristol_scale %}
+        <label class="pick">
+          <input class="pick__input" type="radio" name="choice" value="bm:{{ type.value }}"
+                 data-choice="bm" {% if loop.first %}required{% endif %} />
+          <span class="pick__card pick__card--{{ type.band }}">
+            <span class="bristol-dot bristol-{{ type.band }}">{{ type.value }}</span>
+            <span class="pick__title">{{ type.label }}</span>
+            <span class="pick__hint">{{ type.plain }}</span>
+          </span>
+        </label>
+        {% endfor %}
+        <label class="pick">
+          <input class="pick__input" type="radio" name="choice" value="nothing"
+                 data-choice="nothing" required />
+          <span class="pick__card pick__card--nothing">
+            {{ icon_svg("minus", "pick__icon") }}
+            <span class="pick__title">Nothing today</span>
+            <span class="pick__hint">You still turned up and said so.</span>
+          </span>
+        </label>
+      </div>
+    </fieldset>
+
+    {#
+      These are disabled when "Nothing today" is chosen, so they are not
+      submitted at all. The server ignores them regardless, so the form is
+      correct with the script blocked.
+    #}
+    <fieldset class="picks" data-bm-only>
+      <legend class="picks__legend">Anything worth noting? <span class="picks__optional">(optional)</span></legend>
+      <div class="picks__grid picks__grid--flags">
+        <label class="pick">
+          <input class="pick__input" type="checkbox" name="spicy" />
+          <span class="pick__card pick__card--flag pick__card--spicy">
+            {{ icon_svg("spicy", "pick__icon") }}
+            <span class="pick__title">Spicy</span>
+          </span>
+        </label>
+        <label class="pick">
+          <input class="pick__input" type="checkbox" name="urgent" />
+          <span class="pick__card pick__card--flag pick__card--urgent">
+            {{ icon_svg("bolt", "pick__icon") }}
+            <span class="pick__title">Urgent</span>
+          </span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="picks" data-bm-only>
+      <legend class="picks__legend">How hard was it to pass? <span class="picks__optional">(optional)</span></legend>
+      <div class="picks__grid picks__grid--effort">
+        {% for level in strain_scale %}
+        <label class="pick">
+          <input class="pick__input" type="radio" name="strain" value="{{ level.value }}" />
+          <span class="pick__card pick__card--flag pick__card--strain-{{ level.value }}">
+            <span class="pick__title">{{ level.label }}</span>
+            <span class="pick__hint">{{ level.plain }}</span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset class="log-form__detail" data-bm-only>
+      <legend class="picks__legend">When?</legend>
+      <div class="log-form__time">
+        <label class="visually-hidden" for="time">Time</label>
         <input class="form-control" type="time" id="time" name="time" required
                value="{% if now and is_today %}{{ now.strftime('%H:%M') }}{% endif %}" />
       </div>
+    </fieldset>
 
-      <fieldset class="mb-3">
-        <legend>Bristol type</legend>
-        {% for type in bristol_scale %}
-        <label class="bristol-option form-check">
-          <input class="form-check-input" type="radio" name="bristol_type" value="{{ type.value }}"
-                 {% if loop.first %}required{% endif %} />
-          <span class="bristol-dot bristol-{{ type.band }}">{{ type.value }}</span>
-          <span><strong>{{ type.label }}</strong> — {{ type.plain }}</span>
-        </label>
-        {% endfor %}
-      </fieldset>
+    <div class="mb-3">
+      <label for="notes">Note <span class="picks__optional">(optional)</span></label>
+      <textarea class="form-control" id="notes" name="notes" rows="2"
+                placeholder="Anything worth remembering"></textarea>
+    </div>
 
-      {#
-        The two booleans sit together in one row. They are the same kind of
-        answer — a yes/no about this BM — so asking for them in the same glance
-        costs one tap rather than two.
-      #}
-      <fieldset class="mb-3 bm-flags">
-        <legend class="visually-hidden">Flags</legend>
-        <label class="bm-flag">
-          <input class="form-check-input" type="checkbox" name="spicy" id="spicy" />
-          <span class="form-check-label">Spicy food</span>
-        </label>
-        <label class="bm-flag">
-          <input class="form-check-input" type="checkbox" name="urgent" id="urgent" />
-          <span class="form-check-label">Urgent</span>
-        </label>
-      </fieldset>
-
-      {#
-        Strain is last and optional, which is the compromise §2.2 argued for
-        when it dropped the field outright. It sits after notes because it is
-        the input a person is most likely to skip, and putting it last means
-        skipping costs nothing: submit is right there.
-      #}
-      <fieldset class="mb-3 strain-field">
-        <legend>
-          How hard was it to pass?
-          <span class="text-body-secondary fw-normal">(optional)</span>
-        </legend>
-        <div class="strain-options">
-          {% for level in strain_scale %}
-          <label class="form-check strain-option">
-            <input class="form-check-input" type="radio" name="strain" value="{{ level.value }}" />
-            <span class="form-check-label">{{ level.label }}</span>
-          </label>
-          {% endfor %}
-        </div>
-      </fieldset>
-
-      <div class="mb-3">
-        <label for="notes">Note</label>
-        <textarea class="form-control" id="notes" name="notes" rows="2"
-                  placeholder="Anything worth remembering"></textarea>
-      </div>
-
-      <button type="submit" class="btn btn-primary">Log it</button>
-    </form>
-  </details>
-
-  <details>
-    <summary>Nothing today</summary>
-    <p class="text-body-secondary">
-      No BM happened. That is a real answer and it keeps your streak — you
-      still turned up and said so.
-    </p>
-    <form method="post" action="/log/nothing" >
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-      <input type="hidden" name="day" value="{{ day.isoformat() }}" />
-      <div class="mb-3">
-        <label for="nothing-notes">Note (optional)</label>
-        <textarea class="form-control" id="nothing-notes" name="notes" rows="2"
-                  placeholder="Long flight, nothing happened"></textarea>
-      </div>
-      <button type="submit" class="btn btn-outline-secondary">Log an empty day</button>
-    </form>
-  </details>
+    <button type="submit" class="btn btn-primary log-form__submit">Log it</button>
+  </form>
   {% endif %}
 
-  <h2>Note on this day</h2>
-  {% if log and log.is_note_live %}
+  {% if log %}
+  <h2 class="mt-4">The day</h2>
+  {% if log.is_note_live %}
   <p>{{ log.notes }}</p>
-  {% elif log and log.is_superseded %}
+  {% elif log.is_superseded %}
   <p class="bm-note bm-note--superseded">
     “{{ log.notes }}”
     <span class="badge text-bg-info">superseded — you logged a BM that day</span>
@@ -173,23 +175,10 @@
   <p class="text-body-secondary">No note for this day.</p>
   {% endif %}
 
-  {% if not is_future %}
-  <form method="post" action="/log/note" >
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-    <input type="hidden" name="day" value="{{ day.isoformat() }}" />
-    <div class="mb-3">
-      <label for="day-note">{% if log and log.notes %}Replace the note{% else %}Add a note{% endif %}</label>
-      <textarea class="form-control" id="day-note" name="notes" rows="2">{% if log and log.notes %}{{ log.notes }}{% endif %}</textarea>
-    </div>
-    <button type="submit" class="btn btn-outline-secondary">Save note</button>
-  </form>
-  {% endif %}
-
-  {% if log %}
   <form method="post" action="/log/day/{{ log.id }}/delete"
         onsubmit="return confirm('Delete {{ day.isoformat() }} and everything on it?')">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-    <button type="submit" class="btn btn-danger btn-sm">Delete this day</button>
+    <button type="submit" class="btn btn-outline-danger btn-sm">Delete this day</button>
   </form>
   {% endif %}
 </main>
