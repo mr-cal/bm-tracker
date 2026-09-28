@@ -19,6 +19,7 @@ from bm_tracker import bristol
 from bm_tracker import strain as strain_lib
 from bm_tracker.models import BmEntry, DailyLog, User
 from bm_tracker.models.base import utcnow
+from bm_tracker.models.user import MAX_DISPLAY_NAME_LENGTH
 from bm_tracker.timezones import now_in
 
 if TYPE_CHECKING:
@@ -362,3 +363,35 @@ def entry_payload(entry: BmEntry) -> dict[str, Any]:
         "notes": entry.notes,
         "has_note": entry.has_note,
     }
+
+
+async def set_display_name(session: AsyncSession, user: User, display_name: str) -> str:
+    """Record a new display name for somebody.
+
+    Stripped, because a name is a thing a person types and a trailing space is
+    a typing accident rather than a choice. Falling back to the username rather
+    than raising, because a person who clears the field has said "I do not want
+    a display name" and an empty name is worse than the one they already have.
+
+    Args:
+        session: The session to write through.
+        user: Whose name to change.
+        display_name: What they typed.
+
+    Returns:
+        The name that was stored.
+
+    Raises:
+        ValueError: If the name is longer than the column allows, which a
+            database would otherwise reject with a bare IntegrityError.
+
+    """
+    cleaned = " ".join(display_name.split())
+    if not cleaned:
+        cleaned = user.username
+    if len(cleaned) > MAX_DISPLAY_NAME_LENGTH:
+        msg = f"A name cannot be longer than {MAX_DISPLAY_NAME_LENGTH} characters."
+        raise ValueError(msg)
+    user.display_name = cleaned
+    await session.flush()
+    return cleaned

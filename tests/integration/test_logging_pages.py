@@ -1201,3 +1201,90 @@ async def test_the_theme_is_applied_before_the_stylesheet(
     css_at = page.text.index("custom.css")
     assert script_at < css_at, "the theme script runs after the stylesheet"
     assert "prefers-color-scheme" in page.text
+
+
+async def test_the_name_can_be_edited_on_the_settings_page(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The name is editable, and the field is prefilled with the current one."""
+    user = await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/settings")
+
+    assert 'action="/settings/name"' in page.text
+    assert f'value="{user.display_name}"' in page.text
+
+    token = csrf_of(page.text)
+    response = await client.post(
+        "/settings/name",
+        data={CSRF_FIELD_NAME: token, "display_name": "  Cal   the   Surgeon  "},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303, response.text
+    await session.refresh(user)
+    # Whitespace collapsed: a name is what a person types, and a stray double
+    # space is a typing accident rather than a choice.
+    assert user.display_name == "Cal the Surgeon"
+
+
+async def test_clearing_the_name_falls_back_to_the_sign_in_name(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """An empty field is a decision, not an error: go back to the username."""
+    user = await _user(session)
+    await _sign_in(client)
+    token = csrf_of((await client.get("/settings")).text)
+
+    response = await client.post(
+        "/settings/name",
+        data={CSRF_FIELD_NAME: token, "display_name": "   "},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    await session.refresh(user)
+    assert user.display_name == user.username
+
+
+async def test_a_name_that_is_too_long_is_refused(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The column is 60 characters, so the form says so before the database does."""
+    user = await _user(session)
+    await _sign_in(client)
+    token = csrf_of((await client.get("/settings")).text)
+
+    response = await client.post(
+        "/settings/name",
+        data={CSRF_FIELD_NAME: token, "display_name": "x" * 61},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 400
+    await session.refresh(user)
+    assert user.display_name == "Cal", "a rejected name must not be stored"
+
+
+async def test_the_settings_sections_are_divided(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Each section is separated by a rule, not by whitespace alone.
+
+    The divider was written as `.settings-section:first-of-type`, which matches
+    the first element of each *type*: the `<form>` and the first `<section>`
+    alike, so the line above "Your details" silently disappeared.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/settings")
+
+    # Exactly the section containers, not the __title and __submit inside them.
+    assert len(re.findall(r'class="settings-section(?: |")', page.text)) == 3
+    # One of them opts out of the top border; the other two keep it.
+    assert page.text.count("settings-section--first") == 1
+    assert (
+        ".settings-section--first" in (await client.get("/static/css/custom.css")).text
+    )

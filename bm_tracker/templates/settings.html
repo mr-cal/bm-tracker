@@ -9,7 +9,11 @@
   <div class="alert alert-success" role="status">Saved.</div>
   {% endif %}
 
-  <form method="post" action="/settings/theme" class="settings-section">
+  {% if error %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/settings/theme" class="settings-section settings-section--first">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
     <h2 class="settings-section__title">Appearance</h2>
@@ -41,8 +45,21 @@
 
   <section class="settings-section">
     <h2 class="settings-section__title">Your details</h2>
+
+    <form method="post" action="/settings/name" class="settings-name">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+      <div class="settings-name__field">
+        <label class="form-label" for="display_name">Name</label>
+        <input class="form-control" type="text" id="display_name" name="display_name"
+               value="{{ user.display_name }}" maxlength="60" required />
+        <p class="form-text">
+          What everyone else sees. Leave it blank to go back to your sign-in name.
+        </p>
+      </div>
+      <button type="submit" class="btn btn-primary settings-section__submit">Save name</button>
+    </form>
+
     <dl class="settings-list">
-      <div><dt>Name</dt><dd>{{ user.display_name }}</dd></div>
       <div><dt>Sign-in name</dt><dd>{{ user.username }}</dd></div>
       <div><dt>Timezone</dt><dd>{{ user.timezone }}</dd></div>
     </dl>

@@ -12,6 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from bm_tracker import forms, theme
 from bm_tracker.dependencies import AuthenticatedUser, DbSession, csrf_token
+from bm_tracker.services import audit_service, bm_service
 
 router = APIRouter(tags=["home"])
 
@@ -82,6 +83,29 @@ async def settings_page(request: Request, user: AuthenticatedUser) -> HTMLRespon
         The rendered page.
 
     """
+    return await _settings_page(request, user)
+
+
+async def _settings_page(
+    request: Request,
+    user: AuthenticatedUser,
+    *,
+    error: str | None = None,
+    status_code: int = 200,
+) -> HTMLResponse:
+    """Render the settings page.
+
+    Args:
+        request: The incoming request.
+        user: The signed-in user.
+        error: An error message, if any.
+        status_code: The status to return, so a rejected change is a 400 rather
+            than a 200 that looks like it worked.
+
+    Returns:
+        The rendered page.
+
+    """
     return _templates(request).TemplateResponse(
         request,
         "settings.html",
@@ -90,9 +114,42 @@ async def settings_page(request: Request, user: AuthenticatedUser) -> HTMLRespon
             "nav": "",
             "csrf_token": csrf_token(request),
             "theme_options": theme.THEME_OPTIONS,
-            "saved": request.query_params.get("saved") == "theme",
+            "saved": request.query_params.get("saved"),
+            "error": error,
         },
+        status_code=status_code,
     )
+
+
+@router.post("/settings/name", response_class=HTMLResponse, response_model=None)
+async def save_display_name(
+    request: Request,
+    session: DbSession,
+    user: AuthenticatedUser,
+) -> HTMLResponse | RedirectResponse:
+    """Change the name other people see this person by.
+
+    The sign-in name is not changeable here: it is the address the account is
+    reached at, and changing it would break the links other people have saved.
+    """
+    form = await request.form()
+    forms.guard_csrf(request, form)
+    typed = forms.form_text(form, "display_name") or ""
+    try:
+        stored = await bm_service.set_display_name(session, user, typed)
+    except ValueError as exc:
+        return await _settings_page(request, user, error=str(exc), status_code=400)
+
+    await audit_service.record(
+        session,
+        action="user.update",
+        user_id=user.id,
+        entity_type="user",
+        entity_id=str(user.id),
+        detail={"field": "display_name"},
+    )
+    await session.commit()
+    return RedirectResponse(f"/settings?saved={stored[:24]}", status_code=303)
 
 
 @router.post("/settings/theme", response_class=HTMLResponse, response_model=None)
