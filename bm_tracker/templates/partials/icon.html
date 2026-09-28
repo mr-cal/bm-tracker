@@ -1,0 +1,11 @@
+{#
+  Inline SVG, so an icon inherits `currentColor` and an active tab can be a
+  different colour from an inactive one. A macro rather than an include
+  because Jinja's `include` takes no arguments.
+
+  Usage:  {% from "partials/icon.html" import icon_svg %}
+          {{ icon_svg("menu", "app-drawer-toggle__glyph") }}
+#}
+{% macro icon_svg(name, extra_class="") -%}
+{{- icon(name, extra_class) -}}
+{%- endmacro %}

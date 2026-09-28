@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Settings — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>Settings</h1>
+  <p>Timezone: <strong>{{ user.timezone }}</strong></p>
+  <p class="text-body-secondary">Editing these lands in Phase 5.</p>
+  <form method="post" action="/logout">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+    <button type="submit" class="btn btn-outline-secondary">Sign out</button>
+  </form>
+</main>
+{% endblock %}

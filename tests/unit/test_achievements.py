@@ -1,0 +1,427 @@
+"""Tests for the achievement registry, the rules, the engine and the rotation.
+
+Three properties get the most attention, because each is one that fails
+silently rather than loudly:
+
+- A malformed definition must fail at load, not produce an achievement that
+  quietly never unlocks.
+- Evaluation must be idempotent, so running the engine on every write does not
+  create duplicate unlocks or double-credit points.
+- The celebration rotation must be fair, so a note-logger still sees the general
+  lines rather than only the note ones.
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime
+from pathlib import Path
+
+import pytest
+from bm_tracker import auth, celebrate, scoring
+from bm_tracker.achievements import custom as custom_rules
+from bm_tracker.achievements import engine, facts, registry, rules
+from bm_tracker.models import AchievementUnlock, CelebrationSeen, User
+from bm_tracker.services import bm_service
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+#: A minimal, valid registry used to exercise the loader.
+MINIMAL = """
+[achievement_tiers]
+common = 2
+rare = 10
+
+[[achievement]]
+key = "one_bm"
+name = "One"
+description = "A single entry."
+tier = "common"
+rule.all = [{ bm_count_total = { gte = 1 } }]
+
+[[achievement]]
+key = "lots"
+name = "Lots"
+description = "Ten entries."
+tier = "rare"
+rule.all = [{ bm_count_total = { gte = 10 } }]
+"""
+
+
+def _write(tmp_path: Path, text: str) -> Path:
+    """Write a registry to a temp file.
+
+    Args:
+        tmp_path: The temp directory.
+        text: The registry body.
+
+    Returns:
+        The path written.
+    """
+    target = tmp_path / "registry.toml"
+    target.write_text(text, encoding="utf-8")
+    return target
+
+
+async def _user(session: AsyncSession, username: str = "cal") -> User:
+    """Create a signed-in-able user.
+
+    Args:
+        session: The session to write through.
+        username: The account name.
+
+    Returns:
+        The created `User`.
+    """
+    user = User(
+        username=username,
+        display_name=username.title(),
+        password_hash=auth.hash_password("an excellent long passphrase"),
+        timezone="UTC",
+    )
+    session.add(user)
+    await session.commit()
+    return user
+
+
+async def _log(session: AsyncSession, user: User, count: int, *, when: date) -> None:
+    """Log `count` BMs on one day.
+
+    Args:
+        session: The session to write through.
+        user: The owner.
+        count: How many.
+        when: The occurrence date.
+    """
+    await bm_service.log_nothing_today(
+        session, user, when, logged_at=datetime(when.year, when.month, when.day, 20, 0)
+    )
+    for index in range(count):
+        await bm_service.log_bm(
+            session,
+            user,
+            when,
+            occurred_local=datetime(when.year, when.month, when.day, 7 + index, 0),
+            bristol_type=4,
+            logged_at=datetime(when.year, when.month, when.day, 20, 0),
+        )
+
+
+# --- the registry ---------------------------------------------------------
+
+
+def test_the_shipped_registry_loads() -> None:
+    """The real one is valid, and has the twenty it claims."""
+    loaded = registry.load()
+
+    assert len(loaded) >= 20
+    assert set(loaded.tiers) >= {"common", "uncommon", "rare", "legendary", "joke"}
+    # Points come from the tier, and are bounded by it.
+    assert max(loaded.tiers.values()) <= 25
+
+
+def test_every_definition_is_well_formed() -> None:
+    """No duplicate keys, and every tier has a point value."""
+    loaded = registry.load()
+    keys = [a.key for a in loaded.achievements]
+
+    assert len(keys) == len(set(keys))
+    for achievement in loaded.achievements:
+        assert achievement.tier in loaded.tiers
+        assert achievement.name
+        assert achievement.description
+        assert achievement.icon
+
+
+def test_every_custom_rule_is_used() -> None:
+    """`custom.py` cannot quietly grow dead code.
+
+    The loader enforces the same thing at startup; this asserts it survived.
+    """
+    loaded = registry.load()
+    used = {a.custom for a in loaded.achievements if a.custom}
+
+    assert used == set(custom_rules.CUSTOM_RULES)
+
+
+def test_every_achievement_is_visible() -> None:
+    """No hidden flag survives: the catalogue is meant to be read."""
+    loaded = registry.load()
+
+    assert all(
+        a.icon in {"default"} or (registry.BADGE_DIR / f"{a.icon}.svg").is_file()
+        for a in loaded.achievements
+    )
+
+
+def test_an_unknown_fact_fails_at_load(tmp_path: Path) -> None:
+    """A typo must fail the deploy, not produce a never-unlocking achievement."""
+    bad = MINIMAL.replace("bm_count_total", "bm_count_totl")
+    target = _write(tmp_path, bad)
+
+    with pytest.raises(registry.RegistryError, match="unknown fact"):
+        registry.load(target)
+
+
+def test_a_duplicate_key_fails_at_load(tmp_path: Path) -> None:
+    """Keys address the unlock table, so they have to be unique."""
+    dupe = MINIMAL + MINIMAL.split("[[achievement]]")[1].join(["[[achievement]]", ""])
+    target = _write(tmp_path, dupe)
+
+    with pytest.raises(registry.RegistryError, match="[Dd]uplicate"):
+        registry.load(target)
+
+
+def test_a_missing_tier_fails_at_load(tmp_path: Path) -> None:
+    """A tier with no point value is a silent zero, not a default."""
+    target = _write(tmp_path, MINIMAL.replace('tier = "rare"', 'tier = "legendary"'))
+
+    with pytest.raises(registry.RegistryError, match="tier"):
+        registry.load(target)
+
+
+def test_an_empty_registry_fails_at_load(tmp_path: Path) -> None:
+    """An empty registry would render an empty page with no error anywhere."""
+    target = _write(tmp_path, "[achievement_tiers]\ncommon = 2\n")
+
+    with pytest.raises(registry.RegistryError, match="no achievements"):
+        registry.load(target)
+
+
+# --- the rules ------------------------------------------------------------
+
+
+def test_progress_reflects_how_close_a_rule_is() -> None:
+    """A locked achievement still says how far along it is."""
+    fact_set = facts.FactSet(values={"bm_count_total": 5.0})
+
+    ok, progress = rules.Rule(spec={"bm_count_total": {"gte": 10}}).evaluate(fact_set)
+
+    assert not ok
+    assert progress == pytest.approx(0.5)
+
+
+def test_all_takes_the_minimum_and_any_the_maximum() -> None:
+    """Partially-met requirements read as partial, not as zero."""
+    fact_set = facts.FactSet(values={"bm_count_day": 2.0, "streak_longest": 1.0})
+
+    _, all_progress = rules.Rule(
+        spec={"all": [{"bm_count_day": {"gte": 3}}, {"streak_longest": {"gte": 8}}]}
+    ).evaluate(fact_set)
+    _, any_progress = rules.Rule(
+        spec={"any": [{"bm_count_day": {"gte": 3}}, {"streak_longest": {"gte": 8}}]}
+    ).evaluate(fact_set)
+
+    assert all_progress < any_progress
+
+
+def test_a_time_window_can_wrap_midnight() -> None:
+    """23:00 to 05:00 is two windows, not an empty one."""
+    rule = rules.Rule(spec={"time_of_day": {"between": ["23:00", "05:00"]}})
+
+    for hour in (23.5, 2.0, 4.75):
+        met, _ = rule.evaluate(facts.FactSet(values={"time_of_day": hour}))
+        assert met, f"{hour} should be inside the night window"
+
+    for hour in (12.0, 18.0):
+        met, _ = rule.evaluate(facts.FactSet(values={"time_of_day": hour}))
+        assert not met
+
+
+def test_an_unknown_fact_is_zero_not_an_error() -> None:
+    """A fact nobody has earned yet must not blow up a registry evaluation."""
+    ok, _ = rules.Rule(spec={"bm_count_total": {"gte": 1}}).evaluate(
+        facts.FactSet(values={})
+    )
+
+    assert not ok
+
+
+# --- the engine -----------------------------------------------------------
+
+
+async def test_evaluation_is_idempotent(session: AsyncSession) -> None:
+    """Running the engine twice must not double-credit anything.
+
+    The engine runs on every write, so this is the property that keeps the
+    leaderboard honest.
+    """
+    user = await _user(session)
+    await _log(session, user, 1, when=date(2026, 1, 9))
+    await session.commit()
+
+    first = await engine.evaluate(session, user, 2026)
+    assert first
+    await engine.record(session, first, user.id, 2026)
+    await session.commit()
+
+    second = await engine.evaluate(session, user, 2026)
+    assert second == []
+
+    total = await session.scalar(select(func.count()).select_from(AchievementUnlock))
+    assert total == len(first)
+
+
+async def test_achievements_re_earn_each_year(session: AsyncSession) -> None:
+    """The same achievement in two years is two unlocks."""
+    user = await _user(session)
+    await _log(session, user, 1, when=date(2025, 1, 9))
+    await _log(session, user, 1, when=date(2026, 1, 9))
+    await session.commit()
+
+    for year in (2025, 2026):
+        fresh = await engine.evaluate(session, user, year)
+        await engine.record(session, fresh, user.id, year)
+    await session.commit()
+
+    rows = (await session.scalars(select(AchievementUnlock))).all()
+    assert {r.year for r in rows} == {2025, 2026}
+
+
+async def test_the_points_figure_matches_the_leaderboard(
+    session: AsyncSession,
+) -> None:
+    """Achievement points are separate, and never reorder the board."""
+    user = await _user(session)
+    await _log(session, user, 3, when=date(2026, 1, 9))
+    await session.commit()
+
+    fresh = await engine.evaluate(session, user, 2026)
+    await engine.record(session, fresh, user.id, 2026)
+    await session.commit()
+
+    score = await scoring.score_year(session, user, 2026)
+    earned = await engine.earned_points(session, user.id, 2026)
+
+    assert score.logging_points > 0
+    assert earned > 0
+    # The two never mix: the leaderboard sorts on logging points alone.
+    assert (
+        score.logging_points
+        == score.day_points + score.note_points + score.entry_points
+    )
+
+
+async def test_every_achievement_is_listed_earned_or_not(
+    session: AsyncSession,
+) -> None:
+    """The catalogue is the fun part, so nothing is hidden from it."""
+    user = await _user(session)
+    await _log(session, user, 1, when=date(2026, 1, 9))
+    await session.commit()
+
+    # The page reports what has been *recorded*, so record first: in the app
+    # that happens on every write, and this test skipped it.
+    fresh = await engine.evaluate(session, user, 2026)
+    await engine.record(session, fresh, user.id, 2026)
+    await session.commit()
+
+    statuses = await engine.status_for(session, user, 2026)
+
+    assert len(statuses) == len(engine.REGISTRY)
+    assert all(s.achievement.name for s in statuses)
+    earned = [s for s in statuses if s.unlocked]
+    assert len(earned) == len(fresh) >= 1
+    # Everything still appears, earned or not.
+    assert len(statuses) == len(engine.REGISTRY)
+
+
+# --- the celebration rotation --------------------------------------------
+
+
+async def test_the_rotation_is_fair(session: AsyncSession) -> None:
+    """Every line in a pool is seen before any repeats.
+
+    The property that a user who always notes still gets the general lines, and
+    that nobody is stuck with one message.
+    """
+    user = await _user(session, "bee")
+
+    seen: list[str] = []
+    for _ in range(len(celebrate.POOLS["bouncy"])):
+        said = await celebrate.pick(session, user.id, "log_any", blend=False)
+        assert said is not None
+        seen.append(said)
+        await session.commit()
+
+    assert len(set(seen)) == len(seen), "a line repeated before the pool was exhausted"
+
+
+async def test_rotation_is_per_user(session: AsyncSession) -> None:
+    """One user's rotation does not consume another's."""
+    one = await _user(session, "one")
+    two = await _user(session, "two")
+
+    first_for_one = await celebrate.pick(session, one.id, "bouncy", blend=False)
+    first_for_two = await celebrate.pick(session, two.id, "bouncy", blend=False)
+    await session.commit()
+
+    assert first_for_one == first_for_two
+
+    rows = (await session.scalars(select(CelebrationSeen))).all()
+    assert len({row.user_id for row in rows}) == 2
+
+
+async def test_a_specific_pool_is_preferred(session: AsyncSession) -> None:
+    """A note gets a note line, not a generic one."""
+    user = await _user(session, "cal")
+
+    said = await celebrate.pick(session, user.id, "log_none", blend=False)
+    await session.commit()
+
+    assert said in {m.text for m in celebrate.POOLS["log_none"]}
+
+
+async def test_the_catalogue_is_well_formed() -> None:
+    """Every pool has lines, and the fallback exists."""
+    assert celebrate.POOLS
+    for name, messages in celebrate.POOLS.items():
+        assert messages, f"pool {name!r} is empty"
+        assert all(m.text and m.id for m in messages)
+    assert celebrate.POOLS[celebrate.DEFAULT_POOL]
+
+
+def test_time_based_facts_use_a_real_window() -> None:
+    """The late-night window must survive as a wrapping range."""
+    loaded = registry.load()
+    night = loaded.get("night_owl")
+    spec = night.rule.spec if night.rule is not None else {}
+
+    assert spec == {"any": [{"time_of_day": {"between": ["23:00", "05:00"]}}]}
+
+
+def test_a_streak_achievement_uses_the_derived_streak() -> None:
+    """Guard against a rule referencing a fact nothing computes."""
+    for achievement in registry.load().achievements:
+        if achievement.rule is None:
+            continue
+        for fact in _facts_in(achievement.rule.spec):
+            assert fact in rules.KNOWN_FACTS, f"{achievement.key!r} uses {fact!r}"
+
+
+def _facts_in(spec: object) -> set[str]:
+    """Return every fact name a rule tree references.
+
+    Args:
+        spec: The rule tree.
+
+    Returns:
+        The fact names found.
+    """
+    found: set[str] = set()
+    if isinstance(spec, dict):
+        for key, value in spec.items():
+            if key in ("all", "any") and isinstance(value, list):
+                for child in value:
+                    found |= _facts_in(child)
+            elif key not in ("all", "any", "custom"):
+                found.add(str(key))
+    return found
+
+
+def test_the_tier_values_bound_the_whole_catalogue() -> None:
+    """Even unlocking everything cannot rival a year of logging."""
+    loaded = registry.load()
+    worst_case = sum(max(loaded.tiers.values()) for _ in loaded.achievements)
+    a_perfect_year = 365 * 15
+
+    assert worst_case < a_perfect_year

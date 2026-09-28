@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>Leaderboard {{ year }}</h1>
+
+  <form method="get" action="/leaderboard" class="d-flex flex-wrap align-items-end gap-2 mb-3">
+    <label for="year">Year</label>
+    <input class="form-control" type="number" id="year" name="year" value="{{ year }}" min="2020" max="2100" />
+    <button type="submit" class="btn btn-outline-secondary">Show</button>
+  </form>
+
+  <table class="table table-sm align-middle board">
+    <thead>
+      <tr>
+        <th>#</th><th>Person</th><th>Points</th><th>Streak</th>
+        <th>Longest</th><th>Days</th><th>BMs</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr {% if row.is_you %}class="is-you"{% endif %}>
+        <td data-label="#">{{ row.rank }}</td>
+        <td data-label="Person">
+          <strong>{{ row.person.display_name }}</strong>
+          {% if row.is_you %}<span class="badge text-bg-success">you</span>{% endif %}
+        </td>
+        <td data-label="Points"><strong>{{ row.score.logging_points }}</strong></td>
+        <td data-label="Streak">{{ row.score.current_streak }}</td>
+        <td data-label="Longest">{{ row.score.longest_streak }}</td>
+        <td data-label="Days">{{ row.score.days_logged }}</td>
+        <td data-label="BMs">{{ row.score.bms }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="text-body-secondary">Nobody has logged anything yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="text-body-secondary">
+    Ranked on logging points. Achievement points are tracked separately so a
+    badge cannot reorder this table.
+  </p>
+</main>
+{% endblock %}

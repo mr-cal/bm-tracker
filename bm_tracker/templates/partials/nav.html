@@ -1,0 +1,75 @@
+{% from "partials/icon.html" import icon_svg %}
+{#
+  Navigation: a slim top bar, a bottom tab bar, and a drawer.
+
+  The top bar used to carry five links in a `nowrap` row, which on a 390px phone
+  made the document 536px wide — the page could scroll sideways, and a sideways
+  document is what makes a fixed bottom bar look like it has vanished. Those
+  links now live in the drawer, behind one button, so the bar has room to
+  breathe and nothing overflows.
+
+  The drawer is plain CSS driven by `:target` on a hash, so it works before any
+  script has run and needs no framework. `:target` cannot be closed by Escape on
+  its own, so `js/nav.js` adds that one key, plus returning focus to the button
+  that opened it.
+
+  Icons are SVG, not emoji. Emoji need a colour-emoji font installed; where one
+  is missing they render as a tofu box, which is what the date picker was doing.
+#}
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="navbar bg-body-tertiary border-bottom app-topbar">
+  <div class="container-fluid app-topbar__inner">
+    <a class="app-drawer-toggle" href="#nav" aria-label="Open menu" aria-controls="nav"
+       data-nav-toggle>
+      {{ icon_svg("menu", "app-drawer-toggle__glyph") }}
+    </a>
+
+    <a class="navbar-brand app-topbar__brand" href="/">
+      {{ icon_svg("flame", "app-topbar__flame") }}
+      bm-tracker
+    </a>
+
+
+  </div>
+</nav>
+
+<div class="app-drawer" id="nav" data-nav-drawer>
+  <a class="app-drawer__scrim" href="#main" aria-label="Close menu"></a>
+  <div class="app-drawer__panel" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="app-drawer__head">
+      <span class="app-drawer__title">bm-tracker</span>
+      <a class="app-drawer__close" href="#main" aria-label="Close menu">
+        {{ icon_svg("close") }}
+      </a>
+    </div>
+
+    <ul class="app-drawer__list">
+      <li><a href="/">Feed</a></li>
+      <li><a href="/dashboard">You</a></li>
+      <li><a href="/people">People</a></li>
+      <li><a href="/leaderboard">Board</a></li>
+      <li><a href="/achievements">Badges</a></li>
+      <li><a href="/settings">Settings</a></li>
+      {% if user is defined and user.is_admin %}
+      <li><a href="/admin">Admin</a></li>
+      {% endif %}
+      <li><a href="/help">Help</a></li>
+    </ul>
+  </div>
+</div>
+
+<nav class="app-tabs" aria-label="Main">
+  <a class="app-tab{% if nav == 'log' %} app-tab--on{% endif %}" href="/log">
+    {{ icon_svg("log", "app-tab__glyph") }}<span>Log</span>
+  </a>
+  <a class="app-tab{% if nav == 'feed' %} app-tab--on{% endif %}" href="/">
+    {{ icon_svg("feed", "app-tab__glyph") }}<span>Feed</span>
+  </a>
+  <a class="app-tab{% if nav == 'people' %} app-tab--on{% endif %}" href="/people">
+    {{ icon_svg("people", "app-tab__glyph") }}<span>People</span>
+  </a>
+  <a class="app-tab{% if nav == 'board' %} app-tab--on{% endif %}" href="/leaderboard">
+    {{ icon_svg("trophy", "app-tab__glyph") }}<span>Board</span>
+  </a>
+</nav>

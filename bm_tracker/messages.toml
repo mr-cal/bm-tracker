@@ -1,0 +1,110 @@
+# Celebration copy.
+#
+# Same rule as the achievement registry: adding message #301 is a diff here.
+# Every message names a pool, and a pool is chosen by the event that just
+# happened — so somebody who always writes notes sees the note lines, and
+# somebody who does not sees the general ones.
+#
+# Rotation is fair by construction, not by luck: within a pool, the line with the
+# fewest showings wins, ties broken by longest unseen. Ten days of noting cycles
+# every note line before repeating any.
+
+[[message]]
+id = "log_any_01"
+pool = "log_any"
+text = "Great job being a food funnel."
+
+[[message]]
+id = "log_any_02"
+pool = "log_any"
+text = "The pipeline is running smoothly."
+
+[[message]]
+id = "log_any_03"
+pool = "log_any"
+text = "Logged. Nature abhors a vacuum, except today."
+
+[[message]]
+id = "log_any_04"
+pool = "log_any"
+text = "Another one in the books. The ledger balances."
+
+[[message]]
+id = "log_any_05"
+pool = "log_any"
+text = "That is one more data point than yesterday."
+
+[[message]]
+id = "log_none_06"
+pool = "log_none"
+text = "Nothing today. Still showing up — that is the whole game."
+
+[[message]]
+id = "log_none_07"
+pool = "log_none"
+text = "A day of holding it in. Respect."
+
+[[message]]
+id = "log_none_08"
+pool = "log_none"
+text = "No output, full marks. The streak lives."
+
+[[message]]
+id = "log_none_09"
+pool = "log_none"
+text = "Rest day logged. Your future self says thanks."
+
+[[message]]
+id = "quick_entry_10"
+pool = "quick_entry"
+text = "Ten minutes or less. Speedrunner."
+
+[[message]]
+id = "quick_entry_11"
+pool = "quick_entry"
+text = "Logged before the paperwork was done. Respect."
+
+[[message]]
+id = "note_added_12"
+pool = "note_added"
+text = "A note! Points for the diary."
+
+[[message]]
+id = "note_added_13"
+pool = "note_added"
+text = "Future you is going to love reading that."
+
+[[message]]
+id = "backfill_14"
+pool = "backfill"
+text = "Backfilled. Better late than never, and honest about it."
+
+[[message]]
+id = "backfill_15"
+pool = "backfill"
+text = "Filling in the past. The record appreciates it."
+
+[[message]]
+id = "streak_16"
+pool = "streak"
+text = "The streak is catching fire."
+
+[[message]]
+id = "streak_17"
+pool = "streak"
+text = "Do not break the chain now."
+
+[[message]]
+id = "bouncy_18"
+pool = "bouncy"
+text = "That is a fine specimen of a bowel movement."
+
+[[message]]
+id = "bouncy_19"
+pool = "bouncy"
+text = "Consider it logged and out of your head."
+
+[[message]]
+id = "bouncy_20"
+pool = "bouncy"
+text = "The Bristol scale is satisfied."

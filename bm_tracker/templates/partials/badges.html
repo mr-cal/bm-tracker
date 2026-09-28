@@ -1,0 +1,21 @@
+{#
+  A person's badges, as icons that explain themselves. The description comes
+  from the registry, so a badge can never say something different from what the
+  achievement actually is.
+
+  `tabindex` and `aria-label` mean the explanation is not mouse-only: a keyboard
+  or screen reader user gets it on focus, and a screen reader announces it
+  without the tooltip at all.
+#}
+<span class="badge-icons">
+  {% for badge in badges %}
+  <span class="badge-icon badge-icon--{{ badge.tier }}" tabindex="0"
+        aria-label="{{ badge.name }}. {{ badge.description }}">
+    <img src="/static/img/badges/{{ badge.icon }}.svg" alt="" width="30" height="30" loading="lazy" />
+    <span class="badge-icon__tip" role="tooltip">
+      <strong>{{ badge.name }}</strong>
+      <span>{{ badge.description }}</span>
+    </span>
+  </span>
+  {% endfor %}
+</span>

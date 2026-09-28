@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Set your password — bm-tracker{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>Set your password</h1>
+
+  {% if error %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+  {% endif %}
+
+  {% if token %}
+  <form method="post" action="/setup/{{ token }}" >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+    <div class="mb-3">
+      <label for="password">Password</label>
+      <input class="form-control" type="password" id="password" name="password"
+             autocomplete="new-password" required minlength="12" />
+      <p class="form-text">At least 12 characters. Length matters more than
+         symbols — a passphrase of four unrelated words is strong and easy to remember.</p>
+    </div>
+    <div class="mb-3">
+      <label for="confirm_password">Confirm password</label>
+      <input class="form-control" type="password" id="confirm_password" name="confirm_password"
+             autocomplete="new-password" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Set password</button>
+  </form>
+  {% endif %}
+</main>
+{% endblock %}

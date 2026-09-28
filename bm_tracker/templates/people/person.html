@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ subject.display_name }} — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>{{ subject.display_name }}</h1>
+  <p class="text-body-secondary">@{{ subject.username }} · {{ year }}</p>
+
+  <ul class="tiles">
+    <li class="tile"><span class="tile__value">{{ score.logging_points }}</span><span class="tile__label">points</span></li>
+    <li class="tile"><span class="tile__value">{{ score.current_streak }}</span><span class="tile__label">day streak</span></li>
+    <li class="tile"><span class="tile__value">{{ score.longest_streak }}</span><span class="tile__label">longest</span></li>
+    <li class="tile"><span class="tile__value">{{ score.days_logged }}</span><span class="tile__label">days logged</span></li>
+  </ul>
+
+  <h2>Badges</h2>
+  {% if badges %}
+  {% include "partials/badges.html" %}
+  {% else %}
+  <p class="text-body-secondary">No badges yet this year.</p>
+  {% endif %}
+
+  <h2>Notes</h2>
+  <ul class="bm-entries">
+    {% for note in notes %}
+    <li>
+      <strong>{{ note.day.strftime('%d %b') }}</strong>
+      <p class="bm-note">“{{ note.text }}”</p>
+    </li>
+    {% else %}
+    <li class="text-body-secondary">Nothing noted.</li>
+    {% endfor %}
+  </ul>
+  {% if not see_detail %}
+  <p class="text-body-secondary small">
+    Times, types and individual entries are not shown to other people.
+  </p>
+  {% endif %}
+
+  <p><a class="btn btn-outline-secondary" href="/people">Everyone</a></p>
+</main>
+{% endblock %}

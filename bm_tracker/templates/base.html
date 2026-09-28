@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{% block title %}bm-tracker{% endblock %}</title>
+    <script>
+      // Bootstrap 5.3 ships a dark colour mode, but it only engages when the
+      // root carries data-bs-theme="dark" — it does not follow the OS on its
+      // own. Four lines here do that, and they run before the stylesheet so
+      // there is no white flash on a dark-mode phone at night.
+      (function () {
+        var root = document.documentElement;
+        var set = function (dark) {
+          root.setAttribute("data-bs-theme", dark ? "dark" : "light");
+        };
+        set(window.matchMedia("(prefers-color-scheme: dark)").matches);
+        window
+          .matchMedia("(prefers-color-scheme: dark)")
+          .addEventListener("change", function (e) { set(e.matches); });
+      })();
+    </script>
+    <!--
+      Bootstrap 5.3.8, self-hosted rather than pulled from a CDN: one less
+      third party between the app and its stylesheet, no external request on
+      every page load, and a pinned version that cannot change underneath us.
+      To update, replace the file and bump the name; nothing references a hash.
+    -->
+    <link
+      rel="stylesheet"
+      href="/static/css/bootstrap-5.3.8.min.css?v={{ cache_bust }}"
+    />
+    <link rel="stylesheet" href="/static/css/custom.css?v={{ cache_bust }}" />
+    {#
+      htmx was loaded here from unpkg, with an integrity hash and no defer, and
+      nothing in the app used it: no `hx-` attributes, no htmx calls, no partial
+      swaps. It was a render-blocking third-party request in exchange for
+      nothing, and a slow or unreachable CDN held up the whole page — including
+      the deferred scripts below, which never got their turn. It is gone rather
+      than self-hosted, because self-hosting something unused is still a
+      dependency. Bootstrap is self-hosted for the opposite reason.
+    #}
+    {% block head %}{% endblock %}
+  </head>
+  <body class="bg-body">
+    {% block nav %}{% endblock %}
+    {% block layout %}{% block content %}{% endblock %}{% endblock %}
+    <script src="/static/js/badges.js" defer></script>
+    <script src="/static/js/nav.js" defer></script>
+    <script src="/static/js/datepicker.js" defer></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

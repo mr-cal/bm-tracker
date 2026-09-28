@@ -1,0 +1,193 @@
+# The achievement registry.
+#
+# Adding achievement #301 is a diff in this file. Nothing else has to change:
+# the engine reads whatever is here, validates it at startup, and the page
+# renders whatever exists. That is the whole reason this is a data file rather
+# than a class per achievement.
+#
+# Rules use a small vocabulary (see rules.py): numeric comparisons, a
+# wrap-around `between` for times of day, bare equality, and the combinators
+# all / any / not. Anything genuinely novel gets a Python callable in custom.py
+# under the same key.
+#
+# Every achievement is visible from the start. A collection of 300 where most
+# are locked behind a name you cannot read is duller than one where the absurdity
+# is the point.
+
+[achievement_tiers]
+# Points come from the tier, not from each achievement, so the total is bounded
+# by arithmetic rather than by my discipline: even unlocking all 300 as
+# legendary would be 6,000, against ~5,475 for one perfect year of logging.
+common = 2
+uncommon = 5
+rare = 10
+legendary = 20
+joke = 25
+
+[[achievement]]
+key = "first_blood"
+name = "First Blood"
+description = "Your first entry, ever."
+tier = "common"
+icon = "first_blood"
+rule.all = [{ bm_count_total = { gte = 1 } }]
+
+[[achievement]]
+key = "night_owl"
+name = "Late Night Larry"
+description = "Logged one between 11pm and 5am."
+tier = "common"
+icon = "night_owl"
+rule.any = [{ time_of_day = { between = ["23:00", "05:00"] } }]
+
+[[achievement]]
+key = "early_bird"
+name = "The Early Bird"
+description = "Logged one before 6am."
+tier = "common"
+icon = "early_bird"
+rule.any = [{ time_of_day = { between = ["04:00", "06:00"] } }]
+
+[[achievement]]
+key = "type_7"
+name = "Ring the Bell"
+description = "A Bristol type 7. Entirely liquid."
+tier = "common"
+icon = "type_7"
+rule.any = [{ bristol_type = 7 }]
+
+[[achievement]]
+key = "type_1"
+name = "Hard as Nails"
+description = "A Bristol type 1. Difficult to pass."
+tier = "common"
+icon = "type_1"
+rule.any = [{ bristol_type = 1 }]
+
+[[achievement]]
+key = "gold_star"
+name = "Gold Star"
+description = "A Bristol type 4. The classic."
+tier = "common"
+icon = "gold_star"
+rule.any = [{ bristol_type = 4 }]
+
+[[achievement]]
+key = "connoisseur"
+name = "Bristol Connoisseur"
+description = "All seven types, at least once each."
+tier = "rare"
+icon = "connoisseur"
+rule.all = [{ bristol_types_seen = { gte = 7 } }]
+
+[[achievement]]
+key = "the_double"
+name = "The Double"
+description = "Two in a single day."
+tier = "common"
+icon = "the_double"
+rule.all = [{ bm_count_day = { gte = 2 } }]
+
+[[achievement]]
+key = "triple_threat"
+name = "Triple Threat"
+description = "Three in a single day."
+tier = "uncommon"
+icon = "triple_threat"
+rule.all = [{ bm_count_day = { gte = 3 } }]
+
+[[achievement]]
+key = "marathon"
+name = "The Marathon"
+description = "Five in a single day."
+tier = "rare"
+icon = "marathon"
+rule.all = [{ bm_count_day = { gte = 5 } }]
+
+[[achievement]]
+key = "blatherer"
+name = "Blatherer"
+description = "Ten in a single day. Nobody is having a good time."
+tier = "joke"
+icon = "blatherer"
+rule.all = [{ bm_count_day = { gte = 10 } }]
+
+[[achievement]]
+key = "note_to_self"
+name = "Note to Self"
+description = "Added a note to anything."
+tier = "common"
+icon = "note_to_self"
+rule.all = [{ note_count = { gte = 1 } }]
+
+[[achievement]]
+key = "lore_master"
+name = "Lore Master"
+description = "Fifty notes written."
+tier = "rare"
+icon = "lore_master"
+rule.all = [{ note_count = { gte = 50 } }]
+
+[[achievement]]
+key = "ghost_writer"
+name = "Ghost Writer"
+description = "Twenty entries, every single one with a note."
+tier = "legendary"
+icon = "ghost_writer"
+rule = { custom = "every_entry_noted" }
+
+[[achievement]]
+key = "speed_run"
+name = "Speedrun"
+description = "Logged within a minute of it happening."
+tier = "rare"
+icon = "speed_run"
+rule.any = [{ fastest_entry_delay = { lte = 1 } }]
+
+[[achievement]]
+key = "perfect_week"
+name = "Perfect Week"
+description = "A seven-day streak."
+tier = "uncommon"
+icon = "perfect_week"
+rule.all = [{ streak_longest = { gte = 7 } }]
+
+[[achievement]]
+key = "fortnight"
+name = "Fortnight"
+description = "A fourteen-day streak."
+tier = "rare"
+icon = "fortnight"
+rule.all = [{ streak_longest = { gte = 14 } }]
+
+[[achievement]]
+key = "unbroken"
+name = "Unbroken"
+description = "A thirty-day streak."
+tier = "legendary"
+icon = "unbroken"
+rule.all = [{ streak_longest = { gte = 30 } }]
+
+[[achievement]]
+key = "comeback_kid"
+name = "Comeback Kid"
+description = "Returned after a week away and logged the same day."
+tier = "rare"
+icon = "comeback_kid"
+rule.all = [{ gap_since_previous_days = { gte = 7 } }, { logged_same_day = true }]
+
+[[achievement]]
+key = "spicy_baby"
+name = "Spicy Baby"
+description = "Your first spicy entry."
+tier = "common"
+icon = "spicy_baby"
+rule.all = [{ spicy_count = { gte = 1 } }]
+
+[[achievement]]
+key = "fiery_streak"
+name = "The Inferno"
+description = "Five spicy entries in five consecutive logged days."
+tier = "joke"
+icon = "fiery_streak"
+rule = { custom = "fiery_streak" }

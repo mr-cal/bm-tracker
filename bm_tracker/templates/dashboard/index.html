@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>{{ user.display_name }}</h1>
+
+  <form method="get" action="/dashboard" class="d-flex flex-wrap align-items-end gap-2 mb-3">
+    <label for="year">Year</label>
+    <select class="form-select" id="year" name="year">
+      {% if not years %}<option value="{{ year }}">{{ year }}</option>{% endif %}
+      {% for y in years %}
+      <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-outline-secondary">Show</button>
+  </form>
+
+  {% if score.days_logged == 0 %}
+  <p>Nothing logged in {{ year }} yet.</p>
+  {% else %}
+  <ul class="tiles">
+    <li class="tile">
+      <span class="tile__value">{{ score.logging_points }}</span>
+      <span class="tile__label">points</span>
+    </li>
+    <li class="tile {{ 'tile--flame' if score.current_streak else '' }}">
+      <span class="tile__value">{{ score.current_streak }}</span>
+      <span class="tile__label">day streak</span>
+    </li>
+    <li class="tile">
+      <span class="tile__value">{{ score.longest_streak }}</span>
+      <span class="tile__label">longest</span>
+    </li>
+    <li class="tile">
+      <span class="tile__value">{{ score.days_logged }}</span>
+      <span class="tile__label">days logged</span>
+    </li>
+    <li class="tile">
+      <span class="tile__value">{{ score.bms }}</span>
+      <span class="tile__label">BMs</span>
+    </li>
+  </ul>
+
+  <p class="text-body-secondary">
+    {{ score.qualifying_days }} of {{ score.days_logged }} days were logged on
+    the day. {{ score.entry_points }} quick-entry bonus,
+    {{ score.note_points }} for notes.
+  </p>
+
+  <h2>Bristol types</h2>
+  <ul class="bristol-bars">
+    {% for type in bristol_scale %}
+    <li>
+      <span class="bristol-dot bristol-{{ type.band }}">{{ type.value }}</span>
+      <span class="bristol-bars__note">{{ type.label }}</span>
+      <span class="bar" style="--w: {{ bar_pct[type.value] }}"></span>
+      <span class="bristol-bars__count">{{ distribution[type.value] }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <h2>Recent</h2>
+  <ul class="bm-entries">
+    {% for entry in recent %}
+    <li>
+      <strong>{{ entry.occurred_local.strftime("%d %b %H:%M") }}</strong>
+      — type
+      <span class="bristol-dot bristol-{{ bristol_by_value[entry.bristol_type].band }}">{{ entry.bristol_type }}</span>
+      {% if entry.spicy %}<span class="badge text-bg-warning">spicy</span>{% endif %}
+      {% if entry.urgent %}<span class="badge text-bg-danger">urgent</span>{% endif %}
+      {% if entry.has_note %}<p class="bm-note">“{{ entry.notes }}”</p>{% endif %}
+    </li>
+    {% else %}
+    <li class="text-body-secondary">Nothing yet.</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <p class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-primary" href="/log">Log a BM</a>
+    <a class="btn btn-outline-secondary" href="/dashboard/entries?year={{ year }}">
+      More — all {{ score.bms }} of your entries
+    </a>
+  </p>
+</main>
+{% endblock %}

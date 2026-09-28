@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}People — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>People</h1>
+
+  <ul class="list-group list-group-flush">
+    {% for row in rows %}
+    <li class="list-group-item d-flex justify-content-between align-items-center
+               {% if row.is_you %}is-you{% endif %}">
+      <div>
+        <a href="/people/{{ row.user.username }}">
+          <strong>{{ row.user.display_name }}</strong>
+        </a>
+        {% if row.user.is_admin %}<span class="badge text-bg-secondary">admin</span>{% endif %}
+        {% if row.is_you %}<span class="badge text-bg-info">you</span>{% endif %}
+        <div class="text-body-secondary small">
+          {{ row.score.logging_points }} pts · {{ row.score.current_streak }} day streak
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="text-body-secondary small">{{ row.score.days_logged }} days</div>
+        <div class="text-body-secondary small">
+          {{ row.badges | length }} badge{{ '' if row.badges | length == 1 else 's' }}
+        </div>
+        {% if row.badges %}{% include "partials/badges.html" %}{% endif %}
+      </div>
+    </li>
+    {% else %}
+    <li class="list-group-item text-body-secondary">Nobody yet.</li>
+    {% endfor %}
+  </ul>
+</main>
+{% endblock %}

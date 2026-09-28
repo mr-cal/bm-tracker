@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Admin — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>Admin</h1>
+
+  {% if error %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+  {% endif %}
+
+  {% if created %}
+  <div class="alert alert-success">
+    <h3>Created {{ created.display_name }} ({{ created.username }})</h3>
+    <p>Send them this link. It works once, and expires in
+       {{ created.hours_valid }} hours.</p>
+    <p><code id="setup-link">{{ request.base_url }}{{ created.setup_path }}</code></p>
+    <p>
+      <button type="button" class="btn btn-outline-secondary"
+              onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)">
+        Copy link
+      </button>
+    </p>
+  </div>
+  {% endif %}
+
+  <h2>Add someone</h2>
+  <form method="post" action="/admin/users" class="row g-2 align-items-end mb-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+    <div class="mb-3">
+      <label for="username">Username</label>
+      <input class="form-control" type="text" id="username" name="username" required
+             autocapitalize="none" autocorrect="off" />
+    </div>
+    <div class="mb-3">
+      <label for="display_name">Display name</label>
+      <input class="form-control" type="text" id="display_name" name="display_name" />
+    </div>
+    <div class="mb-3">
+      <label for="timezone">Timezone</label>
+      <input class="form-control" type="text" id="timezone" name="timezone" value="UTC" />
+    </div>
+    <div class="mb-3">
+      <label class="form-check">
+        <input type="checkbox" name="is_admin" /> <span>Administrator</span>
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+
+  <h2>People ({{ users | length }})</h2>
+  <table class="table table-sm align-middle board">
+    <thead>
+      <tr><th>User</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td data-label="User">
+          <strong>{{ user.display_name }}</strong><br />
+          <span class="text-body-secondary">{{ user.username }}</span>
+          {% if user.is_admin %}<span class="badge text-bg-success">admin</span>{% endif %}
+        </td>
+        <td data-label="Status">
+          {% if user.is_active %}
+            <span class="badge text-bg-success">active</span>
+          {% else %}
+            <span class="badge text-bg-danger">suspended</span>
+          {% endif %}
+          {% if not user.password_hash %}
+            <span class="badge text-bg-info">not yet set up</span>
+          {% endif %}
+          {% if live_invite_counts.get(user.id) %}
+            <span class="text-body-secondary">{{ live_invite_counts[user.id] }} live link(s)</span>
+          {% endif %}
+        </td>
+        <td data-label="Actions">
+          {% if user.id != admin.id %}
+          <form method="post" action="/admin/users/{{ user.username }}/deactivate"
+                class="d-flex flex-wrap align-items-end gap-2 mb-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Suspend</button>
+          </form>
+          <form method="post" action="/admin/users/{{ user.username }}/reissue"
+                class="d-flex flex-wrap align-items-end gap-2 mb-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <button type="submit" class="btn btn-outline-secondary btn-sm">New link</button>
+          </form>
+          <form method="post" action="/admin/users/{{ user.username }}/admin"
+                class="d-flex flex-wrap align-items-end gap-2 mb-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+              {% if user.is_admin %}Revoke admin{% else %}Make admin{% endif %}
+            </button>
+          </form>
+          <form method="post" action="/admin/users/{{ user.username }}/delete"
+                class="d-flex flex-wrap align-items-end gap-2 mb-3"
+                onsubmit="return confirm('Delete {{ user.username }} and everything they logged? This cannot be undone.')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+          {% else %}
+          <span class="text-body-secondary">that is you</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</main>
+{% endblock %}

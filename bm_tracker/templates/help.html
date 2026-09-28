@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}How this works — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3 help" role="main">
+  <h1>How this works</h1>
+
+  <h2>Log it as it happens</h2>
+  <p>
+    A day counts if you record it <strong>on the day it happened</strong>, in
+    your own timezone. There is no grace period and no way to waive a missed day —
+    the whole game is opening the app at the moment it happens.
+  </p>
+
+  <h2>Nothing is a valid answer</h2>
+  <p>
+    You do not have to have pooped. Recording "nothing today" is a real entry: it
+    counts, it keeps your streak, and it can carry a note. "Long flight, nothing
+    happened" is a better diary entry than no entry at all.
+  </p>
+
+  <h2>The points</h2>
+  <dl class="help__rules">
+    <dt>Logging a day</dt>
+    <dd>{{ constants.day_points }} points</dd>
+
+    <dt>Every day after the first, up to a week</dt>
+    <dd>
+      +1, +2, +3, +4, then +{{ constants.streak_max }}
+    </dd>
+
+    <dt>Writing a note</dt>
+    <dd>+{{ constants.note_points }} each, however many you write</dd>
+
+    <dt>Logging within {{ constants.quick_window }} minutes of it happening</dt>
+    <dd>+{{ constants.quick_points }} each</dd>
+
+    <dt>Filling in a day you missed</dt>
+    <dd>+{{ constants.backfill_points }}, but it does not join your streak</dd>
+
+    <dt>An achievement</dt>
+    <dd>{{ constants.tier_points }}, by how rare it is</dd>
+  </dl>
+  <p class="text-body-secondary">
+    The streak bonus stops climbing at day six, on purpose. A long run should be
+    worth something without one missed day becoming a debt you never clear.
+  </p>
+
+  <h2>A worked day</h2>
+  <ul class="help__worked">
+    <li><strong>Monday.</strong> Your first of a run: {{ constants.day_points }} points.</li>
+    <li><strong>Tuesday.</strong> Second day, so {{ constants.day_points }} + 1.</li>
+    <li>
+      <strong>Wednesday.</strong> Third day, {{ constants.day_points }} + 2, and you
+      wrote a note, so +{{ constants.note_points }} more.
+    </li>
+    <li>
+      <strong>Thursday.</strong> You ate a curry and the note says so. Fourth day,
+      {{ constants.day_points }} + 3.
+    </li>
+    <li>
+      <strong>Friday.</strong> Fifth day: {{ constants.day_points }} + 4. From here the
+      bonus stops moving.
+    </li>
+  </ul>
+  <p>
+    So five days in a row is {{ worked_total }} points, and a week is
+    {{ week_total }}. A whole year of perfect logging is about
+    {{ year_total }} points.
+  </p>
+
+  <h2>A new year starts over</h2>
+  <p>
+    Streaks stop at 31 December and achievements re-earn every January, so
+    everyone competes over the same window and nobody is permanently behind
+    because they joined in March.
+  </p>
+
+  <h2>What everyone can see</h2>
+  <p>
+    Other people in the group can see your <strong>notes, streak, points and
+    achievements</strong>. They cannot see the time of day of a BM, its Bristol
+    type as an individual event, or which days you filled in late — only you and
+    an admin can.
+  </p>
+
+  <h2>Achievements</h2>
+  <p>
+    {{ constants.achievement_count }} of them so far, all listed from the start
+    whether you have earned them or not — most are unlikely and the absurdity is
+    the point. The {{ constants.tier_points }} is a flat daily total, and the
+    leaderboard ranks on logging points, so a badge can never reorder the board.
+  </p>
+</main>
+{% endblock %}

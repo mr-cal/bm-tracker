@@ -1,0 +1,33 @@
+# gitleaks configuration for bm-tracker.
+#
+# The default ruleset catches recognised token formats (GitHub, AWS, Slack and
+# so on). A SESSION_SECRET or a VPSINFRA_PAT is an unrecognised string, so the
+# two patterns below are what actually protect this repo.
+#
+# Run standalone with `make lint-secrets`, and in CI as its own job. See
+# `plans/plan-01-bootstrapping.md` section 5.6.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "session-secret"
+description = "A bm-tracker session signing secret"
+regex = '''(?i)session_secret\s*[:=]\s*["']?[A-Za-z0-9+/=_-]{32,}["']?'''
+keywords = ["session_secret"]
+
+[[rules]]
+id = "vpsinfra-pat"
+description = "A fine-grained PAT that can trigger the vps-infra deploy"
+regex = '''(?i)vpsinfra_pat\s*[:=]\s*["']?github_pat_[A-Za-z0-9_]{20,}["']?'''
+keywords = ["vpsinfra_pat"]
+
+[allowlist]
+# The example files exist to be copied and filled in, so their placeholder
+# values are not secrets. Without this, the first person to hit a false
+# positive reaches for --no-verify, which defeats the scanner entirely.
+paths = [
+  '''bm-tracker\.env\.example''',
+  '''^\.env\.example$''',
+  '''^plans/''',
+]

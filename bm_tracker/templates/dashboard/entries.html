@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}All entries — bm-tracker{% endblock %}
+{% block nav %}{% include "partials/nav.html" %}{% endblock %}
+{% block content %}
+<main class="container py-3" role="main">
+  <h1>All entries</h1>
+
+  <form method="get" action="/dashboard/entries" class="d-flex flex-wrap align-items-end gap-2 mb-3">
+    <label for="year">Year</label>
+    <select class="form-select" id="year" name="year">
+      {% if not years %}<option value="{{ year }}">{{ year }}</option>{% endif %}
+      {% for y in years %}
+      <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-outline-secondary">Show</button>
+    <span class="text-body-secondary ms-auto">
+      {{ total }} entr{{ '' if total == 1 else 'ies' }} in {{ year }}
+    </span>
+  </form>
+
+  {% if not entries %}
+  <p class="text-body-secondary">Nothing logged in {{ year }}.</p>
+  {% else %}
+  <ul class="tiles">
+    <li class="tile">
+      <span class="tile__value">{{ total }}</span>
+      <span class="tile__label">entries</span>
+    </li>
+    <li class="tile">
+      <span class="tile__value">{{ per_page }}</span>
+      <span class="tile__label">per page</span>
+    </li>
+    <li class="tile">
+      <span class="tile__value">{{ page }}/{{ pages }}</span>
+      <span class="tile__label">page</span>
+    </li>
+  </ul>
+
+  {#
+    One markup, two shapes. On a wide screen the rows are a table, because
+    comparing columns is the point of a table. On a phone they restyle as
+    stacked cards, because six columns cannot fit 390px and a table that
+    scrolls sideways makes you pan to read a single note.
+
+    Both shapes read the same data, so there is one source of truth and the
+    `data-label` attributes below are what the cards use as their field names.
+  #}
+  <table class="table table-sm align-middle entries">
+    <thead>
+      <tr>
+        <th scope="col">When</th>
+        <th scope="col">Bristol</th>
+        <th scope="col">Strain</th>
+        <th scope="col">Urgent</th>
+        <th scope="col">Spicy</th>
+        <th scope="col">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in entries %}
+      <tr>
+        <td data-label="When" class="text-nowrap">{{ entry.occurred_local.strftime("%d %b %H:%M") }}</td>
+        <td data-label="Bristol">
+          <span class="bristol-dot bristol-{{ bristol_by_value[entry.bristol_type].band }}">{{ entry.bristol_type }}</span>
+        </td>
+        <td data-label="Strain">
+          {% if entry.strain %}
+          <span class="strain-pill strain-{{ entry.strain }}">{{ strain_by_value[entry.strain].label }}</span>
+          {% else %}
+          <span class="text-body-secondary">—</span>
+          {% endif %}
+        </td>
+        <td data-label="Urgent">
+          {% if entry.urgent %}
+          <span class="badge text-bg-warning" aria-label="was urgent">Urgent</span>
+          {% else %}
+          <span class="text-body-secondary">—</span>
+          {% endif %}
+        </td>
+        <td data-label="Spicy">
+          {% if entry.spicy %}<span class="badge text-bg-danger" aria-label="followed spicy food">Spicy</span>
+          {% else %}<span class="text-body-secondary">—</span>{% endif %}
+        </td>
+        <td data-label="Notes" class="entries__note">{{ entry.notes if entry.has_note else "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Entry pages">
+    {% if page > 1 %}
+    <a class="btn btn-outline-secondary" href="/dashboard/entries?year={{ year }}&page={{ page - 1 }}">← Newer</a>
+    {% else %}
+    <span class="btn btn-outline-secondary disabled">← Newer</span>
+    {% endif %}
+
+    <span class="pager__pos">Page {{ page }} of {{ pages }}</span>
+
+    {% if page < pages %}
+    <a class="btn btn-outline-secondary" href="/dashboard/entries?year={{ year }}&page={{ page + 1 }}">Older →</a>
+    {% else %}
+    <span class="btn btn-outline-secondary disabled">Older →</span>
+    {% endif %}
+  </nav>
+  {% endif %}
+  {% endif %}
+
+  <p><a class="btn btn-primary" href="/dashboard">Back to your year</a></p>
+</main>
+{% endblock %}

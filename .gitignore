@@ -9,7 +9,7 @@ build/
 .eggs/
 
 # Version
-craft_dashboard/_version.py
+bm_tracker/_version.py
 
 # Virtual environments
 .venv/
@@ -32,9 +32,12 @@ htmlcov/
 # Environment
 .env*
 !.env.example
+bm-tracker.env
 .envrc
-provisioning/secrets.env
 *.sql.gz
+
+# Local development database
+data/
 
 # OS
 .DS_Store
