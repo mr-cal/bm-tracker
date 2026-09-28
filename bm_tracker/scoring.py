@@ -190,6 +190,44 @@ def total_for_run(days: int) -> int:
     )
 
 
+def position_in_run(rows: list[DailyLog], timezone_name: str) -> dict[date, int]:
+    """Return each qualifying day's position in its run of consecutive days.
+
+    Extracted from `score_year`, which used to walk the streak inline. The walk
+    is bounded at the year boundary, so a streak never crosses it: a new year is
+    a fresh start and everybody competes over the same window.
+
+    Args:
+        rows: The user's days in one year, in any order.
+        timezone_name: The owner's timezone, which decides what "the same day"
+            means.
+
+    Returns:
+        A day to position mapping, containing only qualifying days.
+
+    """
+    if not rows:
+        return {}
+    by_day = {row.day: row for row in rows}
+    floor = min(by_day) - timedelta(days=1)
+    positions: dict[date, int] = {}
+    for row in rows:
+        if not qualifies(row.day, row.logged_at, timezone_name):
+            continue
+        position = 1
+        cursor = row.day - timedelta(days=1)
+        while cursor >= floor:
+            previous = by_day.get(cursor)
+            if previous is None or not qualifies(
+                previous.day, previous.logged_at, timezone_name
+            ):
+                break
+            position += 1
+            cursor -= timedelta(days=1)
+        positions[row.day] = position
+    return positions
+
+
 def day_points(*, qualified: bool, position: int) -> int:
     """Return the base points for a day.
 
@@ -377,7 +415,6 @@ def _derive(
 
     """
     start, _ = year_bounds(year)
-    by_day = {row.day: row for row in rows}
     entry_ids_by_day: dict[date, set[int]] = {}
     noted_by_day: dict[date, set[int]] = {}
     quick_by_day: dict[date, set[int]] = {}
@@ -392,22 +429,7 @@ def _derive(
             if is_quick(entry.created_at, entry.occurred_local, window_minutes)
         }
 
-    positions: dict[date, int] = {}
-    floor = start - timedelta(days=1)
-    for row in rows:
-        if not qualifies(row.day, row.logged_at, user.timezone):
-            continue
-        position = 1
-        cursor = row.day - timedelta(days=1)
-        while cursor >= floor and cursor >= start - timedelta(days=1):
-            previous = by_day.get(cursor)
-            if previous is None or not qualifies(
-                previous.day, previous.logged_at, user.timezone
-            ):
-                break
-            position += 1
-            cursor -= timedelta(days=1)
-        positions[row.day] = position
+    positions = position_in_run(rows, user.timezone)
 
     days: list[DayScore] = []
     for row in rows:

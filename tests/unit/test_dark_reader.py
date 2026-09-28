@@ -110,3 +110,40 @@ def test_icons_inherit_the_text_colour() -> None:
         assert "#" not in body.split("stroke=", 1)[1][:40], (
             f"{path.name} has a hex colour"
         )
+
+
+def test_no_token_defines_itself() -> None:
+    """`--bm-warn: var(--bm-warn)` is invalid, and silently so.
+
+    A custom property that refers to itself in its own definition resolves to
+    the guaranteed-invalid value, and every property that used it falls back to
+    its initial value — no error, no warning, just a colour that silently
+    stopped applying. Five of them were written that way by a blanket
+    find-and-replace during the tokenising pass.
+    """
+    css = _rules()
+    circular = re.findall(r"(--bm-[a-z-]+):\s*var\((--bm-[a-z-]+)\)", css)
+
+    offenders = [name for name, ref in circular if name == ref]
+    assert not offenders, f"tokens that define themselves: {offenders}"
+
+
+def test_every_token_used_is_defined_in_both_themes() -> None:
+    """A token used in the stylesheet must resolve in light *and* dark.
+
+    A `--bm-warn` that only exists under `[data-bs-theme="dark"]` is not a dark
+    accent, it is an invisible declaration in the light theme.
+    """
+    css = _rules()
+    used = set(re.findall(r"var\((--bm-[a-z-]+)", css))
+    assert used, "no tokens in use at all"
+
+    light = re.search(r"(?ms)^:root\s*\{(.*?)^\}", css)
+    dark = re.search(r'(?ms)^\[data-bs-theme="dark"\]\s*\{(.*?)^\}', css)
+    assert light, "no light theme block"
+    assert dark, "no dark theme block"
+
+    for block, name in ((light.group(1), "light"), (dark.group(1), "dark")):
+        defined = set(re.findall(r"(--bm-[a-z-]+):", block))
+        missing = used - defined
+        assert not missing, f"{name} theme does not define: {sorted(missing)}"

@@ -1449,32 +1449,6 @@ async def test_achievement_tiers_are_ordered_by_what_they_are_worth(
     ], "every tier should appear"
 
 
-async def test_the_log_form_says_the_quick_entry_window_is_open(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    """The bonus the whole design is pushing you towards is now visible.
-
-    The time field defaulted to now and nothing said there was a ten-minute
-    window, so you filled in the rest of the form with no idea the bonus was
-    closing. The threshold comes from the same setting the scorer reads, so the
-    countdown and the score cannot disagree.
-    """
-    from bm_tracker.settings import Settings  # noqa: PLC0415
-
-    window = Settings(app_env="development").quick_entry_window_minutes
-
-    await _user(session)
-    await _sign_in(client)
-    page = await client.get("/log")
-
-    # The window on the form is the setting the bonus is judged against, read
-    # from the configuration rather than written into the template.
-    assert f'data-quick-window="{window}"' in page.text
-    assert "data-quick-at=" in page.text, "no deadline for the countdown"
-    assert "data-quick-state" in page.text, "nowhere to show the countdown"
-    assert "/static/js/quickentry.js" in page.text
-
-
 async def test_the_settings_confirmation_does_not_outlive_the_moment(
     client: AsyncClient, session: AsyncSession
 ) -> None:
@@ -1538,3 +1512,91 @@ async def test_your_own_name_is_not_a_tab_stop_on_the_feed(
     )
     # Other people remain reachable.
     assert 'href="/people/' in page.text or mine > 0
+
+
+async def test_the_reward_screen_itemises_what_was_earned(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Every rule that fired, one line each, then the total, then the message.
+
+    A single number does not teach anyone how the scoring works, and this is the
+    one moment where they would listen. The order is the argument: a total shown
+    first is a number that means nothing yet.
+    """
+    await _user(session)
+    await _sign_in(client)
+    day = now_in("Europe/London")[0]
+    token = csrf_of((await client.get("/log")).text)
+
+    await client.post(
+        "/log",
+        data={
+            CSRF_FIELD_NAME: token,
+            "date": day.isoformat(),
+            "time": now_in("Europe/London")[1].strftime("%H:%M"),
+            "choice": "bm:4",
+            "notes": "a note is worth a point",
+        },
+        follow_redirects=False,
+    )
+    page = await client.get("/log")
+
+    assert "reward__panel" in page.text
+    assert "Logged today" in page.text
+    assert "Wrote a note" in page.text
+    assert "Total" in page.text
+    assert "reward__total-points" in page.text
+    assert "reward__dismiss" in page.text
+    # The animation reveals everything eventually; nothing is left hidden.
+    assert "reward__pending" not in page.text
+
+
+async def test_the_reward_total_is_the_sum_of_its_lines(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The breakdown and the total are derived together, so they cannot drift.
+
+    Each line comes from the same constants the scorer uses. A total that was
+    added up separately would be a second implementation of the scoring rules,
+    and would be wrong the day one of them changed.
+    """
+    await _user(session)
+    await _sign_in(client)
+    day = now_in("Europe/London")[0]
+    token = csrf_of((await client.get("/log")).text)
+    await client.post(
+        "/log",
+        data={
+            CSRF_FIELD_NAME: token,
+            "date": day.isoformat(),
+            "time": now_in("Europe/London")[1].strftime("%H:%M"),
+            "choice": "bm:6",
+            "notes": "with a note",
+        },
+        follow_redirects=False,
+    )
+    page = await client.get("/log")
+
+    points = [int(m) for m in re.findall(r'reward__points">\+(\d+)', page.text)]
+    total = int(re.search(r'reward__total-points">\+(\d+)', page.text).group(1))
+    assert points, "no itemised lines"
+    assert sum(points) == total, f"lines sum to {sum(points)}, total says {total}"
+
+
+async def test_the_log_form_no_longer_counts_down_the_quick_window(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The bonus is revealed on the reward screen instead, after submitting.
+
+    Counting it down beforehand was me over-correcting. The window is not
+    something to manage while filling in a form; it is something to be paid for,
+    and being told afterwards is the reward rather than a nag.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/log")
+
+    assert "quick-entry" not in page.text
+    assert "data-quick-window" not in page.text
+    assert "/static/js/quickentry.js" not in page.text

@@ -8,7 +8,8 @@ large share of days actually are.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from dataclasses import field as dataclasses_field
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -23,7 +24,7 @@ from bm_tracker.dependencies import (
     csrf_token,
 )
 from bm_tracker.models import BmEntry, DailyLog, User
-from bm_tracker.services import audit_service, bm_service
+from bm_tracker.services import audit_service, bm_service, rewards
 from bm_tracker.timezones import now_in, parse_date
 
 #: Matches the configured default; the app setting is applied where scoring runs.
@@ -43,6 +44,10 @@ class Celebration:
 
     said: str | None = None
     unlocked: tuple[str, ...] = ()
+    # The itemised breakdown of what the last write earned, so the reward
+    # screen can show the rules one at a time rather than a single number.
+    reward: list[dict[str, object]] = dataclasses_field(default_factory=list)
+    reward_total: int = 0
 
 
 router = APIRouter(tags=["log"])
@@ -101,7 +106,6 @@ async def _render_log(
             "flash": flash,
             "today": local_today,
             "now": now,
-            "quick_window_minutes": request.app.state.settings.quick_entry_window_minutes,
             "bristol_scale": bristol.BRISTOL_SCALE,
             "strain_scale": strain.STRAIN_SCALE,
             "csrf_token": csrf_token(request),
@@ -134,6 +138,21 @@ async def _reload(session: DbSession, user_id: int) -> User:
     )
 
 
+def _reward_row(line: rewards.RewardLine) -> dict[str, object]:
+    """Return a reward line as something the session can hold.
+
+    The session is JSON, so a dataclass cannot go in it as one.
+
+    Args:
+        line: The line to record.
+
+    Returns:
+        A mapping of label, points and detail.
+
+    """
+    return {"label": line.label, "points": line.points, "detail": line.detail}
+
+
 def _back_to_log(request: Request, celebration: Celebration) -> RedirectResponse:
     """Redirect back to the form, carrying any celebration in the session.
 
@@ -149,10 +168,12 @@ def _back_to_log(request: Request, celebration: Celebration) -> RedirectResponse
         The redirect.
 
     """
-    if celebration.said or celebration.unlocked:
+    if celebration.said or celebration.unlocked or celebration.reward:
         request.session[FLASH_KEY] = {
             "said": celebration.said,
             "unlocked": list(celebration.unlocked),
+            "reward": list(celebration.reward),
+            "reward_total": celebration.reward_total,
         }
     return RedirectResponse("/log", status_code=303)
 
@@ -304,6 +325,8 @@ async def submit_log(
         return RedirectResponse("/log", status_code=303)
     user_id = user.id  # captured before a rollback can expire the instance
     notes = forms.form_text(form, "notes")
+    window = request.app.state.settings.quick_entry_window_minutes
+    lines: list[rewards.RewardLine] = []
 
     # `choice` is the single source of truth for what happened: either "nothing"
     # or "bm:<type>". A separate `bristol_type` field would be a second thing to
@@ -356,7 +379,16 @@ async def submit_log(
             celebration = await _celebrate_after(
                 session, user, "log_any", extra=_event_flags(entry, row)
             )
+            lines = await rewards.for_entry(
+                session, entry, row, user, window_minutes=window
+            )
         await session.commit()
+        if lines:
+            celebration = replace(
+                celebration,
+                reward=[_reward_row(line) for line in lines],
+                reward_total=rewards.total_of(lines),
+            )
     except (ValueError, bm_service.DayInFutureError) as exc:
         await session.rollback()
         return await _render_log(

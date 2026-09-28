@@ -1,0 +1,52 @@
+{#
+  The reward screen.
+
+  A single number does not teach anybody how the scoring works, and this is the
+  one moment where they would listen. So the rules are listed one at a time as
+  they were actually applied, the total arrives last, and only then does the
+  message — the sequence is the argument, and a total shown first is a number
+  that means nothing yet.
+
+  `reward.js` staggers it. The markup is the finished state, so it is readable
+  with the script blocked; nothing here is invisible without JavaScript, it
+  just arrives all at once instead of in order.
+#}
+{% if flash and (flash.reward or flash.said or flash.unlocked) %}
+<div class="reward" data-reward role="status" aria-live="polite">
+  <div class="reward__panel">
+
+    {% if flash.reward %}
+    <ul class="reward__lines">
+      {% for line in flash.reward %}
+      <li class="reward__line">
+        <span class="reward__label">
+          {{ line.label }}
+          {% if line.detail %}<span class="reward__detail">{{ line.detail }}</span>{% endif %}
+        </span>
+        <span class="reward__points">+{{ line.points }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <p class="reward__total">
+      <span class="reward__total-label">Total</span>
+      <span class="reward__total-points">+{{ flash.reward_total }}</span>
+    </p>
+    {% endif %}
+
+    {% if flash.said %}
+    <p class="reward__said">{{ flash.said }}</p>
+    {% endif %}
+
+    {% if flash.unlocked %}
+    <p class="reward__unlocked">
+      {% for name in flash.unlocked %}
+      <span class="badge text-bg-warning">{{ icon("trophy") }} {{ name }}</span>
+      {% endfor %}
+    </p>
+    {% endif %}
+
+    <a class="btn btn-primary reward__dismiss" href="/dashboard">Done</a>
+  </div>
+</div>
+{% endif %}

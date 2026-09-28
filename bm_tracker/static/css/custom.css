@@ -9,11 +9,28 @@
  */
 
 :root {
-  --bm-hard: #a4361c;
-  --bm-normal: #2e7d32;
-  --bm-loose: #1565c0;
-  --bm-flame: #c25a00;
-  --bm-flame-glow: rgba(226, 118, 27, 0.55);
+  --bm-accent: #0d6efd;
+  --bm-accent-soft: rgba(13, 110, 253, 0.1);
+  --bm-normal: #198754;
+  --bm-hard: #dc3545;
+  --bm-loose: #0d6efd;
+  --bm-flame: #fd7e14;
+  --bm-flame-glow: rgba(253, 126, 20, 0.6);
+  --bm-warn: #997404;
+  --bm-warn-soft: rgba(255, 193, 7, 0.18);
+  --bm-danger-soft: rgba(220, 53, 69, 0.12);
+  --bm-normal-soft: rgba(25, 135, 84, 0.12);
+  --bm-normal-edge: rgba(25, 135, 84, 0.4);
+  --bm-warn-edge: rgba(255, 193, 7, 0.5);
+  --bm-danger-edge: rgba(220, 53, 69, 0.45);
+  --bm-scrim: rgba(0, 0, 0, 0.45);
+  --bm-rare: #6f42c1;
+  --bm-legendary: #d39e00;
+  --bm-on-accent: #fff;
+  /* The text on an inverted surface. Two variables, never one twice: this
+     used to be the same variable as the background, which made the badge
+     tooltip invisible in both themes. */
+  --bm-tooltip-text: #f8f9fa;
 }
 
 /* --- the log page ------------------------------------------------------ */
@@ -373,12 +390,16 @@ body {
 
 /* Shown on hover *and* on focus, so it is not mouse-only. */
 .badge-icon__tip {
+  /* An inverse pair, not one variable twice: the text has to be the other
+     colour from the background, and it has to stay that way when the theme
+     flips. The text once read from the same variable as the background, which
+     made the label invisible in both themes. */
   background-color: var(--bs-body-color);
   border: 1px solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);
   bottom: calc(100% + 0.4rem);
   box-shadow: var(--bs-box-shadow);
-  color: var(--bs-body-color);
+  color: var(--bm-tooltip-text);
   display: none;
   font-size: 0.78rem;
   font-weight: 400;
@@ -1439,18 +1460,6 @@ input[type="date"]::-webkit-inner-spin-button {
  * light, dark, or a reader-mode inversion lands on a palette that is already
  * coherent, rather than on a light palette with dark patches in it.
  */
-:root {
-  --bm-accent: #0d6efd;
-  --bm-accent-soft: var(--bm-accent-soft);
-  --bm-normal: #198754;
-  --bm-hard: #dc3545;
-  --bm-loose: #0d6efd;
-  --bm-flame: #fd7e14;
-  --bm-warn: var(--bm-warn);
-  --bm-warn-soft: var(--bm-warn-soft);
-  --bm-danger-soft: var(--bm-danger-soft);
-  --bm-normal-soft: var(--bm-normal-soft);
-}
 
 [data-bs-theme="dark"] {
   --bm-accent: #6ea8fe;
@@ -1459,6 +1468,7 @@ input[type="date"]::-webkit-inner-spin-button {
   --bm-hard: #ff6b6b;
   --bm-loose: #6ea8fe;
   --bm-flame: #ffa94d;
+  --bm-flame-glow: rgba(255, 169, 77, 0.55);
   --bm-warn: #ffd43b;
   --bm-warn-soft: rgba(255, 212, 59, 0.18);
   --bm-danger-soft: rgba(255, 107, 107, 0.16);
@@ -1470,6 +1480,7 @@ input[type="date"]::-webkit-inner-spin-button {
   --bm-rare: #a78bfa;
   --bm-legendary: #ffd43b;
   --bm-on-accent: #212529;
+  --bm-tooltip-text: #212529;
 }
 
 .settings-section {
@@ -1687,25 +1698,140 @@ input[type="date"]::-webkit-inner-spin-button {
   min-height: 44px;
 }
 
-/* --- the quick-entry countdown ------------------------------------------- */
 
-/*
- * Green while there is time, amber for the last minute, and grey once it has
- * gone. The state is a data attribute rather than a class so the script writes
- * text and this decides what it looks like.
- */
-.quick-entry {
-  font-size: 0.8rem;
-  margin: 0.25rem 0 0;
-  min-height: 1.2em;
+/* --- the reward screen --------------------------------------------------- */
+
+.reward {
+  inset: 0;
+  position: fixed;
+  z-index: 1080;
 }
 
-.quick-entry[data-quick-state="open"] { color: var(--bm-normal); }
-.quick-entry[data-quick-state="soon"] { color: var(--bm-warn); }
-.quick-entry[data-quick-state="expired"] { color: var(--bs-secondary-color); }
+.reward::before {
+  background-color: var(--bm-scrim);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
 
-/* Your own name on a feed card, not a link: see the note in the template. */
-.feed__who--plain {
-  color: var(--bs-body-color);
+.reward__panel {
+  background-color: var(--bs-body-bg);
+  border-radius: var(--bs-border-radius-lg);
+  left: 50%;
+  max-width: 24rem;
+  padding: 1.25rem 1.25rem 1.1rem;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 2rem);
+  box-shadow: var(--bs-box-shadow-lg);
+}
+
+.reward__lines {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  text-align: left;
+}
+
+.reward__line {
+  align-items: baseline;
+  border-bottom: 1px solid var(--bs-border-color);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+}
+
+.reward__line:last-child {
+  border-bottom: 0;
+}
+
+.reward__label {
+  font-size: 0.92rem;
+}
+
+.reward__detail {
+  color: var(--bs-secondary-color);
+  display: block;
+  font-size: 0.74rem;
+}
+
+.reward__points {
+  color: var(--bm-normal);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.reward__total {
+  align-items: baseline;
+  border-top: 2px solid var(--bs-border-color);
+  display: flex;
+  justify-content: space-between;
+  margin: 0.3rem 0 0.8rem;
+  padding-top: 0.6rem;
+}
+
+.reward__total-label {
+  font-size: 1rem;
   font-weight: 600;
+}
+
+.reward__total-points {
+  color: var(--bm-normal);
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.reward__said {
+  color: var(--bs-body-color);
+  font-size: 0.95rem;
+  margin: 0 0 0.7rem;
+}
+
+.reward__unlocked {
+  margin: 0 0 0.7rem;
+}
+
+.reward__dismiss {
+  min-height: 44px;
+  padding: 0.5rem 2rem;
+}
+
+/* Hidden before its turn, and arrived into place. Both are opt-in on a class,
+ * so the finished markup is the default and a blocked script still shows
+ * everything. */
+.reward__pending {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.reward__arrive {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.32s ease-out, transform 0.32s ease-out;
+}
+
+.reward__arrive--total {
+  transform: scale(1.06);
+}
+
+.reward__arrive--total.reward__total {
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reward__pending {
+    opacity: 1;
+    transform: none;
+  }
+
+  .reward__arrive,
+  .reward__arrive--total {
+    transition: none;
+  }
 }
