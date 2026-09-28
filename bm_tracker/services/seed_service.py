@@ -79,6 +79,14 @@ P_BACKFILLED = 0.12
 P_DAY_HAS_NOTE = 0.35
 P_QUICK_ENTRY = 0.08
 P_SPICY = 0.18
+
+# The first seeded account gets exactly this many entries today, so that the
+# next one logged lands on The Marathon and the reward screen shows an unlock.
+# A seeded history has usually earned the reachable achievements already, which
+# means nobody ever sees the one moment the reward screen exists for.
+DEMO_TODAY_BMS = 4
+DEMO_UNLOCK_KEY = "marathon"
+DEMO_UNLOCK_NAME = "The Marathon"
 # How often a BM is recorded as urgent. Rare on purpose.
 P_URGENT = 0.12
 # Strain is optional, so most entries do not have it. The plan says ~60%.
@@ -99,6 +107,8 @@ class SeedResult:
     backfills: int
     quick_entries: int
     unlocks: int
+    # What the next log will earn, kept for anyone who wants to say so out loud.
+    next_unlock: str | None = None
 
 
 def _weighted_type(rng: random.Random) -> int:
@@ -227,7 +237,10 @@ async def seed(
     total_backfills = 0
     total_quick = 0
 
-    for user in accounts:
+    for position, user in enumerate(accounts):
+        # Only the first account is staged for a demo unlock. A demo that fires
+        # for one person is a demo; one that fires for all eight is noise.
+        is_demo = position == 0
         # Each user's "today" is their own. Computing one date for the whole
         # group means someone in a western timezone is handed a day they have
         # not reached yet, and `log_nothing_today` rightly refuses it.
@@ -241,7 +254,10 @@ async def seed(
         )
         for offset in range(days, -1, -1):
             day = today - timedelta(days=offset)
-            if rng.random() > P_CHANCE_DAY_LOGGED:
+            # The demo day is never a missed day: the whole point is that the
+            # next log lands on an achievement, and a seeded gap would leave the
+            # account with nothing to add to.
+            if not (is_demo and offset == 0) and rng.random() > P_CHANCE_DAY_LOGGED:
                 # The odd missed day, so streaks vary the way real ones do.
                 continue
             total_days += 1
@@ -261,13 +277,15 @@ async def seed(
             if note:
                 total_notes += 1
 
-            if rng.random() < P_EMPTY_DAY:
+            if not (is_demo and offset == 0) and rng.random() < P_EMPTY_DAY:
                 await bm_service.log_nothing_today(
                     session, user, day, notes=note, logged_at=logged_at
                 )
                 continue
 
             count = rng.choices(BM_COUNTS, weights=BM_COUNT_WEIGHTS)[0]
+            if is_demo and offset == 0:
+                count = DEMO_TODAY_BMS
             quick = rng.random() < P_QUICK_ENTRY
             for index in range(count):
                 hour = rng.randint(6, 22)
@@ -310,6 +328,11 @@ async def seed(
 
     unlocks = await achievements.rebuild(session, today.year)
     await _backdate_unlocks(session, accounts, now=now)
+
+    # Leave the first account exactly one entry short of an achievement, so that
+    # logging a BM after seeding *shows* the unlock. The reward screen is the
+    # whole point of the streak and the collection, and a seeded history that
+    # has already earned everything means nobody ever sees one.
     await session.commit()
 
     return SeedResult(

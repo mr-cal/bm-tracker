@@ -18,17 +18,58 @@
   </form>
 
   {% for tier, group in grouped.items() %}
-  <h2>{{ tier | replace('_', ' ') | title }}<span class="text-body-secondary small"> · {{ tier_points[tier] }} pts</span></h2>
-  <ul class="badge-grid">
+  {% set needed = tier_reveal.get(tier, 0) %}
+  {% set locked = needed > lifetime_points %}
+  <h2>
+    {{ tier | replace('_', ' ') | title }}<span class="text-body-secondary small"> · {{ tier_points[tier] }} pts</span>
+  </h2>
+
+  {% if locked %}
+  {#
+    Hidden on purpose. A catalogue of 300 revealed on day one is a list of things
+    to grind rather than a collection to look at, and the names are the whole
+    reward. The count stays, because it says how much there is without saying
+    what any of it is.
+  #}
+  <p class="text-body-secondary achievements__locked">
+    You need {{ needed }} points to view these achievements.
+    You have {{ lifetime_points }}.
+  </p>
+  <ul class="achievement-grid">
     {% for status in group %}
-    <li class="badge-tile badge-tile--{{ status.achievement.tier }}
-               {{ 'badge-tile--on' if status.unlocked else '' }}">
-      <img class="badge-tile__glyph"
+    {#
+      The threshold gates discovery, not the record. Somebody who unlocked a
+      legendary in their first week keeps seeing it, or hiding it would be a
+      bug wearing a disguise.
+    #}
+    {% if status.unlocked %}
+    <li class="achievement-tile achievement-tile--on achievement-tile--{{ status.achievement.tier }}">
+      <img class="achievement-tile__glyph"
+           src="/static/img/badges/{{ status.achievement.icon }}.svg"
+           alt="" width="40" height="40" loading="lazy" />
+      <span class="achievement-tile__name">{{ status.achievement.name }}</span>
+      <span class="achievement-tile__desc">{{ status.achievement.description }}</span>
+      <span class="badge text-bg-success">+{{ status.points }} · {{ status.year }}</span>
+    </li>
+    {% else %}
+    <li class="achievement-tile achievement-tile--hidden">
+      <span class="achievement-tile__glyph achievement-tile__glyph--hidden" aria-hidden="true">?</span>
+      <span class="achievement-tile__name">???</span>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+  {% else %}
+  <ul class="achievement-grid">
+    {% for status in group %}
+    <li class="achievement-tile achievement-tile--{{ status.achievement.tier }}
+               {{ 'achievement-tile--on' if status.unlocked else '' }}">
+      <img class="achievement-tile__glyph"
            src="/static/img/badges/{{ status.achievement.icon }}.svg"
            alt="" width="40" height="40" loading="lazy"
            {% if not status.unlocked %}style="opacity:.45"{% endif %} />
-      <span class="badge-tile__name">{{ status.achievement.name }}</span>
-      <span class="badge-tile__desc">{{ status.achievement.description }}</span>
+      <span class="achievement-tile__name">{{ status.achievement.name }}</span>
+      <span class="achievement-tile__desc">{{ status.achievement.description }}</span>
       {% if status.unlocked %}
       <span class="badge text-bg-success">+{{ status.points }} · {{ status.year }}</span>
       {% elif status.progress > 0 %}
@@ -44,6 +85,7 @@
     </li>
     {% endfor %}
   </ul>
+  {% endif %}
   {% endfor %}
 </main>
 {% endblock %}

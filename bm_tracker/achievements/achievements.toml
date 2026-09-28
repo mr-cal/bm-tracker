@@ -23,6 +23,18 @@ uncommon = 5
 rare = 10
 legendary = 20
 
+# How many lifetime points before a tier's achievements become visible. The
+# first week of real use is worth about 90, three weeks about 300, six about
+# 615 and ten about 1,100 -- each taken from scoring.total_for_run rather than
+# guessed. An achievement you have earned is always shown whatever this says;
+# this only hides the ones you have not, because a wall of locked names is a
+# list of things to grind rather than a collection to look at.
+[tier_reveal]
+common = 90
+uncommon = 300
+rare = 615
+legendary = 1100
+
 [[achievement]]
 key = "first_blood"
 name = "First Blood"

@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from bm_tracker import auth, theme
+from bm_tracker.achievements import engine
 from bm_tracker.dependencies import CSRF_FIELD_NAME, CSRF_HEADER_NAME
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
 from bm_tracker.services import bm_service
@@ -1440,7 +1441,9 @@ async def test_achievement_tiers_are_ordered_by_what_they_are_worth(
 
     page = await client.get("/achievements")
 
-    headings = re.findall(r"<h2>([A-Za-z]+)<span[^>]*> · (\d+) pts", page.text)
+    # The heading wraps across lines, so match with whitespace rather than
+    # assuming one line of markup.
+    headings = re.findall(r"<h2>\s*([A-Za-z]+)\s*<span[^>]*> · (\d+) pts", page.text)
     assert headings, "no tier headings found"
     points = [int(value) for _, value in headings]
     assert points == sorted(points), f"tiers are out of order: {headings}"
@@ -1641,3 +1644,90 @@ async def test_achievement_points_reach_the_leaderboard(
         "the achievement points should have lifted Bee above Cal"
     )
     assert "Of which achievements" in first, "the row should say where it came from"
+
+
+async def test_a_locked_tier_shows_question_marks_and_what_it_costs(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A tier you have not earned the right to see says so, and shows nothing else.
+
+    A catalogue of 300 revealed on day one is a list of things to grind rather
+    than a collection to look at, and the names are the entire reward. So the
+    names, the descriptions and the icons are all gone, and the header says how
+    many points it would take.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/achievements")
+    body = page.text
+
+    assert "You need" in body
+    assert "points to view these achievements" in body
+    assert "???" in body
+    # And nothing from a locked tier leaks: no name, no description, no icon.
+    for hidden in ("Blatherer", "Ghost Writer", "ten in a single day"):
+        assert hidden not in body, f"{hidden!r} leaked from a locked tier"
+
+
+async def test_an_earned_achievement_shows_whatever_its_tier(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Hiding something you already have is a bug wearing a disguise.
+
+    The thresholds gate discovery, not the record. Somebody who unlocked a
+    legendary achievement in their first week has earned the right to see it
+    named forever.
+    """
+    user = await _user(session)
+    await _sign_in(client)
+
+    earned = next(a for a in engine.REGISTRY.achievements if a.tier == "legendary")
+    page = await client.get("/achievements")
+    assert (
+        f"You need {engine.REGISTRY.points_to_reveal('legendary')} points" in page.text
+    )
+    assert earned.name not in page.text, "an unearned legendary should be hidden"
+
+    session.add(
+        AchievementUnlock(
+            user_id=user.id,
+            achievement_key=earned.key,
+            year=now_in("UTC")[0].year,
+            points=earned.points,
+        )
+    )
+    await session.commit()
+
+    after = await client.get("/achievements")
+    assert earned.name in after.text, (
+        "an achievement you have earned must stay visible whatever the threshold"
+    )
+
+
+async def test_the_reveal_thresholds_track_real_usage(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """They are computed from the scoring, not guessed at.
+
+    `scoring.total_for_run` is what a perfect run of n days is worth, so the
+    thresholds are the points a diligent person actually reaches at one, three,
+    six and ten weeks. A test that only asserted the numbers exist would not
+    notice them drifting away from the rules.
+    """
+    from bm_tracker import scoring  # noqa: PLC0415
+
+    reveal = engine.REGISTRY.reveal_at
+    assert set(reveal) == set(engine.REGISTRY.tiers), (
+        "every tier needs a threshold, or a new one is visible from the start"
+    )
+
+    # Ascending, and none beyond a plausible two-year run.
+    values = [reveal[t] for t in sorted(reveal, key=lambda t: reveal[t])]
+    assert values == sorted(values)
+    assert values[0] <= scoring.total_for_run(7), (
+        "the first tier should open within about a week of use"
+    )
+    assert values[-1] < scoring.total_for_run(365), (
+        "the last tier should open within a year, not never"
+    )

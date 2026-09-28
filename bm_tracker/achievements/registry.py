@@ -62,10 +62,26 @@ class Registry:
 
     achievements: tuple[Achievement, ...]
     tiers: dict[str, int]
+    # Lifetime points before each tier's names become visible. A tier missing
+    # from this is visible from the start, so a new tier cannot accidentally
+    # hide itself.
+    reveal_at: dict[str, int]
 
     def __len__(self) -> int:
         """Return how many achievements are defined."""
         return len(self.achievements)
+
+    def points_to_reveal(self, tier: str) -> int:
+        """Return the points needed before a tier's names are visible.
+
+        Args:
+            tier: The tier name.
+
+        Returns:
+            The threshold, or 0 for a tier that is never hidden.
+
+        """
+        return self.reveal_at.get(tier, 0)
 
     def get(self, key: str) -> Achievement:
         """Return an achievement by key.
@@ -126,7 +142,40 @@ def load(path: Path | None = None) -> Registry:
             msg = f"Custom rule {name!r} is defined but never used"
             raise RegistryError(msg)
 
-    return Registry(achievements=tuple(compiled), tiers=tiers)
+    return Registry(
+        achievements=tuple(compiled), tiers=tiers, reveal_at=_reveal_at(data, tiers)
+    )
+
+
+def _reveal_at(data: dict[str, Any], tiers: dict[str, int]) -> dict[str, int]:
+    """Validate the tier-to-reveal-points table.
+
+    Args:
+        data: The parsed registry.
+        tiers: The known tier names, so a typo cannot silently hide a tier
+            forever.
+
+    Returns:
+        A mapping of tier name to the points needed to see it.
+
+    Raises:
+        RegistryError: If the table names a tier that does not exist.
+
+    """
+    raw = data.get("tier_reveal", {})
+    if not isinstance(raw, dict):
+        msg = "[tier_reveal] must be a table of tier to points"
+        raise RegistryError(msg)
+    reveal: dict[str, int] = {}
+    for name, points in raw.items():
+        if str(name) not in tiers:
+            msg = f"[tier_reveal] names unknown tier {name!r}"
+            raise RegistryError(msg)
+        if not isinstance(points, int) or points < 0:
+            msg = f"Tier {name!r} must have a non-negative integer reveal value"
+            raise RegistryError(msg)
+        reveal[str(name)] = points
+    return reveal
 
 
 def _tiers(data: dict[str, Any]) -> dict[str, int]:

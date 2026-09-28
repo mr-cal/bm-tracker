@@ -215,6 +215,11 @@ def seed(
     result = asyncio.run(_run())
 
     click.echo(
+        f"  log one BM as the first account and you will earn "
+        f"{seed_service.DEMO_UNLOCK_NAME}"
+    )
+
+    click.echo(
         f"Seeded {result.users} users, {result.days} days, {result.bms} BMs\n"
         f"  {result.notes} notes · {result.backfills} backfills · "
         f"{result.quick_entries} quick entries\n"

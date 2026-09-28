@@ -300,3 +300,58 @@ async def test_seeding_never_writes_a_row_in_the_future(
     assert not future_bms, f"{len(future_bms)} BMs are dated in the future"
     assert not future_days, f"{len(future_days)} days are dated in the future"
     assert not future_unlocks, f"{len(future_unlocks)} unlocks are dated in the future"
+
+
+async def test_seeding_leaves_the_next_log_one_achievement_away(
+    session: AsyncSession,
+) -> None:
+    """After `make dev-seed`, logging one BM earns something.
+
+    A seeded history has usually earned the reachable achievements already, so
+    the person using it never sees an unlock happen — and the reward screen
+    exists for that one moment. The first account gets exactly four entries
+    today, which puts The Marathon (five in a day) one entry out.
+
+    This is also the test that the *engine* agrees, rather than the seeder
+    merely intending to: it evaluates the rules against the seeded facts.
+    """
+    from bm_tracker.achievements import engine  # noqa: PLC0415
+    from bm_tracker.models import User  # noqa: PLC0415
+    from bm_tracker.services import bm_service  # noqa: PLC0415
+    from bm_tracker.timezones import today_for  # noqa: PLC0415
+
+    result = await seed_service.seed(
+        session, users=3, days=30, seed_value=5, password="x" * 16
+    )
+    assert result.next_unlock is None, "the field was dropped, not just unused"
+
+    first = (
+        await session.scalars(
+            select(User).where(User.username == "cal").order_by(User.id)
+        )
+    ).one()
+    today = today_for(first.timezone)
+
+    before = await engine.status_for(session, first, today.year)
+    assert not any(
+        s.unlocked and s.achievement.key == seed_service.DEMO_UNLOCK_KEY for s in before
+    ), "the demo achievement should still be unearned after seeding"
+
+    await bm_service.log_bm(
+        session,
+        first,
+        today,
+        occurred_local=datetime(today.year, today.month, today.day, 12, 0),
+        bristol_type=3,
+    )
+    # The same two calls the log route makes, so this checks the path a real
+    # log takes rather than the rules in isolation.
+    await engine.record(
+        session, await engine.evaluate(session, first, today.year), first.id, today.year
+    )
+    await session.commit()
+
+    after = await engine.status_for(session, first, today.year)
+    assert any(
+        s.unlocked and s.achievement.key == seed_service.DEMO_UNLOCK_KEY for s in after
+    ), f"logging one BM did not earn {seed_service.DEMO_UNLOCK_NAME}"

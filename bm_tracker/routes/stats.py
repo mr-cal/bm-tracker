@@ -172,11 +172,17 @@ async def achievements_page(
     session: DbSession,
     user: AuthenticatedUser,
 ) -> HTMLResponse:
-    """Show the whole collection, earned and not, with progress on the rest.
+    """Show the collection, tier by tier, earning the right to see each one.
 
-    Every achievement is listed. With 300 coming and most unlikely for anyone, a
-    wall of locked icons with no names is duller than one that says "Blatherer:
-    ten in a single day" — the absurdity is the point.
+    A tier's names stay hidden until enough points have been earned, because a
+    catalogue of 300 revealed on day one is a list of things to grind rather
+    than a collection to look at. Within a tier you have unlocked, every
+    achievement is listed whatever its state — the absurdity of "Blatherer: ten
+    entries in a single day" is the point, and it only works if the name is
+    visible.
+
+    An achievement you have earned is always shown, whatever the threshold says.
+    Hiding something you already have is just a bug wearing a disguise.
     """
     year = requested_year(request, user)
     statuses = await engine.status_for(
@@ -209,10 +215,58 @@ async def achievements_page(
             "earned_count": sum(1 for s in statuses if s.unlocked),
             "earned_points": sum(s.points for s in statuses if s.unlocked),
             "tier_points": engine.REGISTRY.tiers,
+            "lifetime_points": await _lifetime_points(
+                session,
+                user,
+                request.app.state.settings.quick_entry_window_minutes,
+            ),
+            "tier_reveal": engine.REGISTRY.reveal_at,
             "nav": "",
             "csrf_token": csrf_token(request),
         },
     )
+
+
+async def _lifetime_points(session: DbSession, user: User, window_minutes: int) -> int:
+    """Return every point a person has ever earned, across all years.
+
+    The reveal thresholds are about how long somebody has been using the app, so
+    the comparison cannot be against one calendar year: a person who started in
+    December would otherwise unlock a whole year of tiers by January.
+
+    Points are derived rather than stored, so this runs the derivation once per
+    year the person has logged. It is one user, once, on the page that needs it.
+
+    Args:
+        session: The session to read through.
+        user: Whose points to total.
+        window_minutes: The quick-entry window, so the derivation matches.
+
+    Returns:
+        Logging points for every year, plus achievement points ever unlocked.
+
+    """
+    years = (
+        await session.scalars(
+            select(func.strftime("%Y", DailyLog.day))
+            .where(DailyLog.user_id == user.id)
+            .distinct()
+        )
+    ).all()
+
+    logging = 0
+    for year in (int(y) for y in years if y):
+        score = await scoring.score_year(
+            session, user, year, window_minutes=window_minutes
+        )
+        logging += score.logging_points
+
+    unlocked = await session.scalar(
+        select(func.coalesce(func.sum(AchievementUnlock.points), 0)).where(
+            AchievementUnlock.user_id == user.id
+        )
+    )
+    return logging + int(unlocked or 0)
 
 
 @router.get("/leaderboard", response_class=HTMLResponse, response_model=None)
