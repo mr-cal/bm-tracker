@@ -6,19 +6,40 @@
     <meta name="color-scheme" content="light dark" />
     <title>{% block title %}bm-tracker{% endblock %}</title>
     <script>
-      // Bootstrap 5.3 ships a dark colour mode, but it only engages when the
-      // root carries data-bs-theme="dark" — it does not follow the OS on its
-      // own. Four lines here do that, and they run before the stylesheet so
-      // there is no white flash on a dark-mode phone at night.
+      {#
+        Apply the colour scheme before the stylesheet, so there is no flash of
+        the wrong one on a phone at night.
+
+        Three sources, in order: the cookie, which is the only one available
+        before sign-in; the stored account setting; and light, which is the
+        default everywhere.
+
+        The order matters for reader-mode extensions. Dark Reader and its
+        relatives invert whatever the page serves, and most of them skip a site
+        that is already dark. Serving light by default is what lets one of them
+        do the work properly — and somebody who would rather not have an
+        extension at all can set "Dark" here and be done.
+
+        Only `auto` keeps listening. `light` and `dark` mean what they say, so
+        they deliberately ignore a change in the system's setting.
+      #}
       (function () {
-        var root = document.documentElement;
-        var set = function (dark) {
-          root.setAttribute("data-bs-theme", dark ? "dark" : "light");
+        var COOKIE = {{ theme.COOKIE_NAME | tojson }};
+        var wanted =
+          (document.cookie.match(new RegExp("(?:^|; )" + COOKIE + "=([^;]*)")) || [])[1] ||
+          {{ (user.theme if user is defined else theme.DEFAULT_THEME) | tojson }};
+        if (wanted !== "light" && wanted !== "dark" && wanted !== "auto") {
+          wanted = "light";
+        }
+        var dark = window.matchMedia("(prefers-color-scheme: dark)");
+        var apply = function () {
+          document.documentElement.setAttribute(
+            "data-bs-theme",
+            wanted === "auto" ? (dark.matches ? "dark" : "light") : wanted
+          );
         };
-        set(window.matchMedia("(prefers-color-scheme: dark)").matches);
-        window
-          .matchMedia("(prefers-color-scheme: dark)")
-          .addEventListener("change", function (e) { set(e.matches); });
+        apply();
+        if (wanted === "auto") { dark.addEventListener("change", apply); }
       })();
     </script>
     <!--

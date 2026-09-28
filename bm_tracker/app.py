@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
 from bm_tracker import icons
+from bm_tracker import theme as themes
 from bm_tracker.database import check_database, get_engine, get_session_factory
 from bm_tracker.dependencies import LoginRequiredError, login_required_handler
 from bm_tracker.routes import admin, auth, home, log, people, stats
@@ -162,6 +163,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Icons are inlined rather than referenced, so they inherit `currentColor`
     # and an active tab can be a different colour from an inactive one.
     cast(dict[str, object], templates.env.globals)["icon"] = icons.icon
+    # The theme module, so the page can apply the colour scheme before the
+    # stylesheet loads. The cookie name has to be in the document for that, and
+    # duplicating the literal in a template is how the two drift apart.
+    cast(dict[str, object], templates.env.globals)["theme"] = themes
     app.state.templates = templates
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 

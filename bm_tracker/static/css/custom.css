@@ -57,7 +57,7 @@
 .bristol-dot {
   align-items: center;
   border-radius: 50%;
-  color: #fff;
+  color: var(--bm-on-accent);
   display: inline-flex;
   flex: 0 0 auto;
   font-weight: 700;
@@ -104,7 +104,7 @@
 /* The streak flame. One glyph rather than a GIF per streak length: colour and
  * glow step up with the streak, and it themes for free in dark mode. */
 .tile--flame {
-  background-color: rgba(226, 118, 27, 0.08);
+  background-color: var(--bm-warn-soft);
   border-color: var(--bm-flame);
 }
 
@@ -213,8 +213,8 @@ body {
 /* --- celebrations -------------------------------------------------------- */
 
 .celebrate {
-  background: linear-gradient(135deg, rgba(255, 193, 7, 0.18), rgba(255, 152, 0, 0.10));
-  border: 1px solid rgba(255, 152, 0, 0.45);
+  background: linear-gradient(135deg, var(--bm-warn-soft), var(--bm-warn-soft));
+  border: 1px solid var(--bm-warn-edge);
   border-radius: var(--bs-border-radius);
   margin: 0 0 1rem;
   padding: 0.85rem 1rem;
@@ -250,8 +250,8 @@ body {
 }
 
 .badge-tile--on {
-  background-color: rgba(255, 193, 7, 0.10);
-  border-color: rgba(255, 152, 0, 0.5);
+  background-color: var(--bm-warn-soft);
+  border-color: var(--bm-warn-edge);
 }
 
 .badge-tile__glyph {
@@ -368,9 +368,9 @@ body {
 
 .badge-icon--common { border-color: var(--bs-secondary); }
 .badge-icon--uncommon { border-color: var(--bs-info); }
-.badge-icon--rare { border-color: #6f42c1; }
-.badge-icon--legendary { border-color: #d39e00; }
-.badge-icon--joke { border-color: #dc3545; }
+.badge-icon--rare { border-color: var(--bm-rare); }
+.badge-icon--legendary { border-color: var(--bm-legendary); }
+.badge-icon--joke { border-color: var(--bm-hard); }
 
 /* Shown on hover *and* on focus, so it is not mouse-only. */
 .badge-icon__tip {
@@ -379,7 +379,7 @@ body {
   border-radius: var(--bs-border-radius);
   bottom: calc(100% + 0.4rem);
   box-shadow: var(--bs-box-shadow);
-  color: var(--bs-body-color-contrast, #000);
+  color: var(--bs-body-color);
   display: none;
   font-size: 0.78rem;
   font-weight: 400;
@@ -421,9 +421,9 @@ body {
 
 .badge-tile--common { border-left: 3px solid var(--bs-secondary); }
 .badge-tile--uncommon { border-left: 3px solid var(--bs-info); }
-.badge-tile--rare { border-left: 3px solid #6f42c1; }
-.badge-tile--legendary { border-left: 3px solid #d39e00; }
-.badge-tile--joke { border-left: 3px solid #dc3545; }
+.badge-tile--rare { border-left: 3px solid var(--bm-rare); }
+.badge-tile--legendary { border-left: 3px solid var(--bm-legendary); }
+.badge-tile--joke { border-left: 3px solid var(--bm-hard); }
 
 .badge-tile__glyph {
   display: block;
@@ -433,7 +433,7 @@ body {
 }
 
 .badge-tile--on {
-  background-color: rgba(255, 193, 7, 0.10);
+  background-color: var(--bm-warn-soft);
 }
 
 .badge-tile .progress {
@@ -457,7 +457,7 @@ body {
 }
 
 .feed__card--achievement {
-  border-left-color: #d39e00;
+  border-left-color: var(--bm-legendary);
 }
 
 .feed__head {
@@ -658,9 +658,9 @@ body {
   white-space: nowrap;
 }
 
-.strain-1 { background-color: rgba(25, 135, 84, 0.12); border-color: rgba(25, 135, 84, 0.4); }
-.strain-2 { background-color: rgba(255, 193, 7, 0.15); border-color: rgba(255, 193, 7, 0.5); }
-.strain-3 { background-color: rgba(220, 53, 69, 0.12); border-color: rgba(220, 53, 69, 0.4); }
+.strain-1 { background-color: var(--bm-normal-soft); border-color: var(--bm-normal-edge); }
+.strain-2 { background-color: var(--bm-warn-soft); border-color: var(--bm-warn-edge); }
+.strain-3 { background-color: var(--bm-danger-soft); border-color: var(--bm-danger-edge); }
 
 /* --- icons ---------------------------------------------------------------- */
 
@@ -776,7 +776,7 @@ input[type="date"]::-webkit-inner-spin-button {
 }
 
 .app-drawer__scrim {
-  background-color: rgba(0, 0, 0, 0.45);
+  background-color: var(--bm-scrim);
   inset: 0;
   opacity: 0;
   position: fixed;
@@ -889,7 +889,7 @@ input[type="date"]::-webkit-inner-spin-button {
 /* Your own cards are set apart, because the feed is two different things at
  * once: a record of what you did, and a glimpse of everyone else. */
 .feed__card--mine {
-  background-color: rgba(13, 110, 253, 0.05);
+  background-color: var(--bm-accent-soft);
 }
 
 .feed__card--mine.feed__card--note,
@@ -1004,7 +1004,7 @@ input[type="date"]::-webkit-inner-spin-button {
 }
 
 .pick__input:checked + .pick__card {
-  background-color: rgba(13, 110, 253, 0.09);
+  background-color: var(--bm-accent-soft);
   border-color: var(--bs-primary);
   box-shadow: 0 0 0 1px var(--bs-primary) inset;
 }
@@ -1022,19 +1022,19 @@ input[type="date"]::-webkit-inner-spin-button {
  * readable at a glance without reading the number. */
 .pick__card--hard.pick__input:checked + .pick__card,
 .pick__input:checked + .pick__card--hard {
-  background-color: rgba(220, 53, 69, 0.1);
+  background-color: var(--bm-danger-soft);
   border-color: var(--bm-hard);
   box-shadow: 0 0 0 1px var(--bm-hard) inset;
 }
 
 .pick__input:checked + .pick__card--normal {
-  background-color: rgba(25, 135, 84, 0.1);
+  background-color: var(--bm-normal-soft);
   border-color: var(--bm-normal);
   box-shadow: 0 0 0 1px var(--bm-normal) inset;
 }
 
 .pick__input:checked + .pick__card--loose {
-  background-color: rgba(13, 110, 253, 0.1);
+  background-color: var(--bm-accent-soft);
   border-color: var(--bm-loose);
   box-shadow: 0 0 0 1px var(--bm-loose) inset;
 }
@@ -1050,27 +1050,27 @@ input[type="date"]::-webkit-inner-spin-button {
 }
 
 .pick__card--spicy {
-  border-color: rgba(255, 193, 7, 0.55);
-  color: #b8860b;
+  border-color: var(--bm-warn-edge);
+  color: var(--bm-warn);
 }
 
 .pick__card--urgent {
-  border-color: rgba(220, 53, 69, 0.5);
+  border-color: var(--bm-danger-edge);
   color: var(--bs-danger);
 }
 
-.pick__card--strain-1 { border-color: rgba(25, 135, 84, 0.4); }
-.pick__card--strain-2 { border-color: rgba(255, 193, 7, 0.5); }
-.pick__card--strain-3 { border-color: rgba(220, 53, 69, 0.4); }
+.pick__card--strain-1 { border-color: var(--bm-normal-edge); }
+.pick__card--strain-2 { border-color: var(--bm-warn-edge); }
+.pick__card--strain-3 { border-color: var(--bm-danger-edge); }
 
 .pick__input:checked + .pick__card--spicy {
-  background-color: rgba(255, 193, 7, 0.16);
-  border-color: #ffc107;
-  box-shadow: 0 0 0 1px #ffc107 inset;
+  background-color: var(--bm-warn-soft);
+  border-color: var(--bm-warn);
+  box-shadow: 0 0 0 1px var(--bm-warn) inset;
 }
 
 .pick__input:checked + .pick__card--urgent {
-  background-color: rgba(220, 53, 69, 0.14);
+  background-color: var(--bm-danger-soft);
   border-color: var(--bs-danger);
   box-shadow: 0 0 0 1px var(--bs-danger) inset;
 }
@@ -1148,14 +1148,14 @@ input[type="date"]::-webkit-inner-spin-button {
 }
 
 .tag--spicy {
-  background-color: rgba(255, 193, 7, 0.18);
-  border-color: rgba(255, 193, 7, 0.5);
-  color: #997404;
+  background-color: var(--bm-warn-soft);
+  border-color: var(--bm-warn-edge);
+  color: var(--bm-warn);
 }
 
 .tag--urgent {
-  background-color: rgba(220, 53, 69, 0.12);
-  border-color: rgba(220, 53, 69, 0.45);
+  background-color: var(--bm-danger-soft);
+  border-color: var(--bm-danger-edge);
   color: var(--bs-danger);
 }
 
@@ -1163,13 +1163,13 @@ input[type="date"]::-webkit-inner-spin-button {
   background-color: var(--bs-secondary-bg);
 }
 
-.tag--strain-1 { border-color: rgba(25, 135, 84, 0.45); }
-.tag--strain-2 { border-color: rgba(255, 193, 7, 0.5); }
-.tag--strain-3 { border-color: rgba(220, 53, 69, 0.45); }
+.tag--strain-1 { border-color: var(--bm-normal-edge); }
+.tag--strain-2 { border-color: var(--bm-warn-edge); }
+.tag--strain-3 { border-color: var(--bm-danger-edge); }
 
 @media (prefers-color-scheme: dark) {
-  .pick__card--spicy { color: #e0b100; }
-  .tag--spicy { color: #e0b100; }
+  .pick__card--spicy { color: var(--bm-warn); }
+  .tag--spicy { color: var(--bm-warn); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1261,7 +1261,7 @@ input[type="date"]::-webkit-inner-spin-button {
 }
 
 .board__row.is-you {
-  background-color: rgba(13, 110, 253, 0.06);
+  background-color: var(--bm-accent-soft);
   border-color: var(--bs-primary);
 }
 
@@ -1281,8 +1281,8 @@ input[type="date"]::-webkit-inner-spin-button {
 }
 
 .board__row--podium .board__rank {
-  background-color: var(--bs-warning-bg-subtle, rgba(255, 193, 7, 0.18));
-  color: #997404;
+  background-color: var(--bs-warning-bg-subtle, var(--bm-warn-soft));
+  color: var(--bm-warn);
 }
 
 .board__who {
@@ -1312,7 +1312,7 @@ input[type="date"]::-webkit-inner-spin-button {
 
 .board__chip--you {
   background-color: var(--bs-primary);
-  color: #fff;
+  color: var(--bm-on-accent);
 }
 
 .board__points {
@@ -1369,4 +1369,139 @@ input[type="date"]::-webkit-inner-spin-button {
 .board__footnote {
   font-size: 0.82rem;
   margin-top: 1rem;
+}
+
+/* --- appearance ----------------------------------------------------------- */
+
+/*
+ * Colour tokens.
+ *
+ * Every accent the app uses is a token rather than a literal, for two reasons.
+ * One is the obvious one: a colour named in one place can be changed in one
+ * place. The other is reader-mode extensions — Dark Reader and its relatives
+ * parse a page's colours and rewrite them, and a page carrying a couple of
+ * dozen inline rgba() values is a page the parser gets wrong. Everything below
+ * resolves through a variable, and a variable is the easiest thing there is for
+ * it to classify and override.
+ *
+ * They are defined on :root rather than on a dark selector so that *any* of
+ * light, dark, or a reader-mode inversion lands on a palette that is already
+ * coherent, rather than on a light palette with dark patches in it.
+ */
+:root {
+  --bm-accent: #0d6efd;
+  --bm-accent-soft: var(--bm-accent-soft);
+  --bm-normal: #198754;
+  --bm-hard: #dc3545;
+  --bm-loose: #0d6efd;
+  --bm-flame: #fd7e14;
+  --bm-warn: var(--bm-warn);
+  --bm-warn-soft: var(--bm-warn-soft);
+  --bm-danger-soft: var(--bm-danger-soft);
+  --bm-normal-soft: var(--bm-normal-soft);
+}
+
+[data-bs-theme="dark"] {
+  --bm-accent: #6ea8fe;
+  --bm-accent-soft: rgba(110, 168, 254, 0.16);
+  --bm-normal: #4ade80;
+  --bm-hard: #ff6b6b;
+  --bm-loose: #6ea8fe;
+  --bm-flame: #ffa94d;
+  --bm-warn: #ffd43b;
+  --bm-warn-soft: rgba(255, 212, 59, 0.18);
+  --bm-danger-soft: rgba(255, 107, 107, 0.16);
+  --bm-normal-soft: rgba(74, 222, 128, 0.16);
+  --bm-normal-edge: rgba(74, 222, 128, 0.45);
+  --bm-warn-edge: rgba(255, 212, 59, 0.45);
+  --bm-danger-edge: rgba(255, 107, 107, 0.45);
+  --bm-scrim: rgba(0, 0, 0, 0.6);
+  --bm-rare: #a78bfa;
+  --bm-legendary: #ffd43b;
+  --bm-on-accent: #212529;
+}
+
+.settings-section {
+  border-top: 1px solid var(--bs-border-color);
+  margin-top: 1.5rem;
+  padding-top: 1.1rem;
+}
+
+.settings-section:first-of-type {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.settings-section__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.settings-section__submit {
+  margin-top: 0.9rem;
+  min-height: 44px;
+  padding: 0.4rem 1.2rem;
+}
+
+.picks__grid--theme {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.pick__card--theme {
+  gap: 0.35rem;
+  padding: 0.7rem 0.6rem;
+}
+
+/* A two-tone swatch, drawn in the tokens rather than in literals, so each
+ * preview is the theme it names rather than a picture of it. */
+.theme-swatch {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-sm);
+  display: block;
+  height: 2.2rem;
+  margin-bottom: 0.3rem;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.theme-swatch--light { background-color: #f8f9fa; }
+.theme-swatch--dark { background-color: #212529; }
+.theme-swatch--auto {
+  background: linear-gradient(105deg, #f8f9fa 0 50%, #212529 50% 100%);
+}
+
+.theme-swatch__pane {
+  background-color: #0d6efd; /* literal: a picture of the theme */
+  border-radius: 2px;
+  bottom: 0.4rem;
+  left: 0.4rem;
+  position: absolute;
+  width: 1.4rem;
+  height: 0.3rem;
+}
+
+.settings-list {
+  display: grid;
+  gap: 0.3rem 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin: 0;
+}
+
+.settings-list > div {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: space-between;
+}
+
+.settings-list dt {
+  color: var(--bs-secondary-color);
+  font-weight: 400;
+}
+
+.settings-list dd {
+  font-weight: 600;
+  margin: 0;
 }

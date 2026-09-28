@@ -7,10 +7,11 @@ The home page lived here while the feed was being built and has moved to
 from __future__ import annotations
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from bm_tracker.dependencies import AuthenticatedUser, csrf_token
+from bm_tracker import forms, theme
+from bm_tracker.dependencies import AuthenticatedUser, DbSession, csrf_token
 
 router = APIRouter(tags=["home"])
 
@@ -84,5 +85,44 @@ async def settings_page(request: Request, user: AuthenticatedUser) -> HTMLRespon
     return _templates(request).TemplateResponse(
         request,
         "settings.html",
-        {"user": user, "nav": "", "csrf_token": csrf_token(request)},
+        {
+            "user": user,
+            "nav": "",
+            "csrf_token": csrf_token(request),
+            "theme_options": theme.THEME_OPTIONS,
+            "saved": request.query_params.get("saved") == "theme",
+        },
     )
+
+
+@router.post("/settings/theme", response_class=HTMLResponse, response_model=None)
+async def save_theme(
+    request: Request,
+    session: DbSession,
+    user: AuthenticatedUser,
+) -> RedirectResponse:
+    """Record the colour scheme this person wants to see.
+
+    Stored twice on purpose. The database carries the choice to another device;
+    the cookie carries it to the sign-in screen, which is painted before anyone
+    is signed in and has no user record to read.
+
+    The cookie is set with `samesite=lax` and an explicit expiry rather than a
+    session cookie, so the sign-in page is already the right colour after a
+    restart, and a link from elsewhere cannot change somebody's setting.
+    """
+    form = await request.form()
+    forms.guard_csrf(request, form)
+    choice = theme.parse_theme(forms.form_text(form, "theme"))
+    user.theme = choice
+    await session.commit()
+
+    response = RedirectResponse("/settings?saved=theme", status_code=303)
+    response.set_cookie(
+        theme.COOKIE_NAME,
+        choice,
+        max_age=theme.COOKIE_MAX_AGE,
+        samesite="lax",
+        path="/",
+    )
+    return response

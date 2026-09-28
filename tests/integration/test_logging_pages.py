@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import pytest
-from bm_tracker import auth
+from bm_tracker import auth, theme
 from bm_tracker.dependencies import CSRF_FIELD_NAME, CSRF_HEADER_NAME
 from bm_tracker.models import BmEntry, DailyLog, User
 from bm_tracker.services import bm_service
@@ -1125,3 +1125,79 @@ async def test_the_leaderboard_year_control_shares_the_heading(
     # It is a list of people now, not a seven-column table.
     assert 'class="board"' in page.text
     assert "<table" not in page.text
+
+
+async def test_settings_offers_light_dark_and_auto(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """All three, as cards, with the current one already chosen."""
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/settings")
+
+    for value in ("light", "dark", "auto"):
+        assert f'value="{value}"' in page.text
+    # Jinja puts the attributes on their own line, so match across whitespace.
+    assert re.search(r'value="light"\s+checked', page.text), (
+        "light is the default and should be preselected"
+    )
+
+
+async def test_saving_a_theme_stores_it_and_sets_the_cookie(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Stored twice: in the account, and in a cookie the sign-in page can read."""
+    user = await _user(session)
+    await _sign_in(client)
+    token = csrf_of((await client.get("/settings")).text)
+
+    response = await client.post(
+        "/settings/theme",
+        data={CSRF_FIELD_NAME: token, "theme": "dark"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/settings?saved=theme"
+    assert theme.COOKIE_NAME in response.cookies or "bm_theme" in response.cookies
+    await session.refresh(user)
+    assert user.theme == "dark"
+
+
+async def test_a_nonsense_theme_is_rejected_rather_than_stored(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A hand-crafted post cannot put a value in the column that is not a theme."""
+    user = await _user(session)
+    await _sign_in(client)
+    token = csrf_of((await client.get("/settings")).text)
+
+    response = await client.post(
+        "/settings/theme",
+        data={CSRF_FIELD_NAME: token, "theme": "sepia"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    await session.refresh(user)
+    assert user.theme == theme.DEFAULT_THEME
+
+
+async def test_the_theme_is_applied_before_the_stylesheet(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The script that sets the scheme has to run before the first paint.
+
+    A theme applied in the body, or after the stylesheet, is a flash of the
+    wrong colour on a phone at night — which is the exact moment anybody notices.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/settings")
+
+    script_at = page.text.index("data-bs-theme")
+    css_at = page.text.index("custom.css")
+    assert script_at < css_at, "the theme script runs after the stylesheet"
+    assert "prefers-color-scheme" in page.text

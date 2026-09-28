@@ -4,11 +4,56 @@
 {% block content %}
 <main class="container py-3" role="main">
   <h1>Settings</h1>
-  <p>Timezone: <strong>{{ user.timezone }}</strong></p>
-  <p class="text-body-secondary">Editing these lands in Phase 5.</p>
-  <form method="post" action="/logout">
+
+  {% if saved %}
+  <div class="alert alert-success" role="status">Saved.</div>
+  {% endif %}
+
+  <form method="post" action="/settings/theme" class="settings-section">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-    <button type="submit" class="btn btn-outline-secondary">Sign out</button>
+
+    <h2 class="settings-section__title">Appearance</h2>
+    {#
+      Cards rather than a select, for the same reason the log form uses them:
+      there are three choices with real differences between them, and a select
+      hides the second one behind a tap. Each card explains what it does rather
+      than naming itself, because "auto" means nothing until you know it is the
+      system talking.
+    #}
+    <div class="picks__grid picks__grid--theme">
+      {% for option in theme_options %}
+      <label class="pick">
+        <input class="pick__input" type="radio" name="theme" value="{{ option.value }}"
+               {% if option.value == user.theme %}checked{% endif %} />
+        <span class="pick__card pick__card--theme">
+          <span class="theme-swatch theme-swatch--{{ option.value }}" aria-hidden="true">
+            <span class="theme-swatch__pane"></span>
+          </span>
+          <span class="pick__title">{{ option.label }}</span>
+          <span class="pick__hint">{{ option.hint }}</span>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-primary settings-section__submit">Save</button>
   </form>
+
+  <section class="settings-section">
+    <h2 class="settings-section__title">Your details</h2>
+    <dl class="settings-list">
+      <div><dt>Name</dt><dd>{{ user.display_name }}</dd></div>
+      <div><dt>Sign-in name</dt><dd>{{ user.username }}</dd></div>
+      <div><dt>Timezone</dt><dd>{{ user.timezone }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="settings-section">
+    <h2 class="settings-section__title">Signing out</h2>
+    <form method="post" action="/logout">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+      <button type="submit" class="btn btn-outline-secondary">Sign out</button>
+    </form>
+  </section>
 </main>
 {% endblock %}

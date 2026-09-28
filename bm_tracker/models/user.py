@@ -5,10 +5,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from bm_tracker.models.base import Base, utcnow
+from bm_tracker.theme import DEFAULT_THEME, THEMES
 
 if TYPE_CHECKING:
     from bm_tracker.models.daily_log import DailyLog
@@ -29,6 +30,13 @@ class User(Base):
 
     __tablename__ = "users"
 
+    __table_args__ = (
+        CheckConstraint(
+            f"theme IN ({', '.join(repr(t) for t in sorted(THEMES))})",
+            name="ck_users_theme",
+        ),
+    )
+
     id: Mapped[int] = mapped_column(primary_key=True)
 
     # A slug, shown to other users in place of a real name. Unique so that
@@ -43,6 +51,14 @@ class User(Base):
 
     # argon2id, or NULL until the setup link is redeemed.
     password_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Which colour scheme this person wants: light, dark, or auto. Light is the
+    # default rather than following the system, for the reasons in
+    # `bm_tracker.theme`. A CHECK rather than a plain string so a value written
+    # by anything other than the picker is still constrained.
+    theme: Mapped[str] = mapped_column(
+        String(16), nullable=False, default=DEFAULT_THEME, server_default=DEFAULT_THEME
+    )
 
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
