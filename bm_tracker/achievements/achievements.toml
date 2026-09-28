@@ -22,7 +22,6 @@ common = 2
 uncommon = 5
 rare = 10
 legendary = 20
-joke = 25
 
 [[achievement]]
 key = "first_blood"
@@ -108,7 +107,7 @@ rule.all = [{ bm_count_day = { gte = 5 } }]
 key = "blatherer"
 name = "Blatherer"
 description = "Ten in a single day. Nobody is having a good time."
-tier = "joke"
+tier = "rare"
 icon = "blatherer"
 rule.all = [{ bm_count_day = { gte = 10 } }]
 
@@ -188,6 +187,6 @@ rule.all = [{ spicy_count = { gte = 1 } }]
 key = "fiery_streak"
 name = "The Inferno"
 description = "Five spicy entries in five consecutive logged days."
-tier = "joke"
+tier = "rare"
 icon = "fiery_streak"
 rule = { custom = "fiery_streak" }

@@ -370,7 +370,6 @@ body {
 .badge-icon--uncommon { border-color: var(--bs-info); }
 .badge-icon--rare { border-color: var(--bm-rare); }
 .badge-icon--legendary { border-color: var(--bm-legendary); }
-.badge-icon--joke { border-color: var(--bm-hard); }
 
 /* Shown on hover *and* on focus, so it is not mouse-only. */
 .badge-icon__tip {
@@ -423,7 +422,6 @@ body {
 .badge-tile--uncommon { border-left: 3px solid var(--bs-info); }
 .badge-tile--rare { border-left: 3px solid var(--bm-rare); }
 .badge-tile--legendary { border-left: 3px solid var(--bm-legendary); }
-.badge-tile--joke { border-left: 3px solid var(--bm-hard); }
 
 .badge-tile__glyph {
   display: block;

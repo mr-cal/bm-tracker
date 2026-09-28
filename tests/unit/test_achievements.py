@@ -114,9 +114,30 @@ def test_the_shipped_registry_loads() -> None:
     loaded = registry.load()
 
     assert len(loaded) >= 20
-    assert set(loaded.tiers) >= {"common", "uncommon", "rare", "legendary", "joke"}
-    # Points come from the tier, and are bounded by it.
-    assert max(loaded.tiers.values()) <= 25
+    assert set(loaded.tiers) >= {"common", "uncommon", "rare", "legendary"}
+    # Points come from the tier, and are bounded by it. The ceiling used to be a
+    # "joke" tier at 25 — a category that existed to mark two achievements as
+    # funny rather than to describe how hard they are, and which was quietly the
+    # most valuable tier in the game.
+    assert max(loaded.tiers.values()) <= 20
+
+
+def test_nothing_is_categorised_as_a_joke() -> None:
+    """Achievements are entertainment, not a punchline.
+
+    Two of them were filed under a tier called "joke" because their wording is
+    funny. The wording stays — it is the good part — but a tier is a claim about
+    difficulty, and a fifth rung that outranked legendary made that claim
+    nonsense.
+    """
+    loaded = registry.load()
+
+    assert "joke" not in loaded.tiers
+    assert all(a.tier != "joke" for a in loaded.achievements)
+    # The two that moved, by name, so a re-triage cannot quietly undo this.
+    by_key = {a.key: a for a in loaded.achievements}
+    assert by_key["blatherer"].tier == "rare"
+    assert by_key["fiery_streak"].tier == "rare"
 
 
 def test_every_definition_is_well_formed() -> None:
