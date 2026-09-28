@@ -29,14 +29,14 @@
                "21 Jan" and "19 Sep" on adjacent cards give no clue which is
                which — and the year is the one thing a reader needs when the
                thing they are reading is history. #}
-            {{ item.at.strftime("%-d %b %Y, %H:%M") }}
+            {{ item.at.strftime("%-d %b %Y") }}, {{ clock(item.at) }}
           </time>
         </header>
 
         {% if item.kind == kinds.bm %}
           <p class="feed__verb">logged a BM</p>
           <p class="feed__bm">
-            <strong>{{ item.entry.occurred_local.strftime('%H:%M') }}</strong>
+            <strong>{{ clock(item.entry.occurred_local) }}</strong>
             <span class="bristol-dot bristol-{{ bristol_by_value[item.entry.bristol_type].band }}">
               {{ item.entry.bristol_type }}
             </span>

@@ -666,9 +666,10 @@ async def test_the_feed_shows_your_own_bms_in_full_and_nobody_elses(
     assert "logged a BM" in page.text
     # Their note is there.
     assert "their note, which is public" in page.text
-    # Their BM detail is not, anywhere in the response.
-    assert "07:15" in page.text, "my own time should be shown"
-    assert "06:05" not in page.text, "another person's BM time leaked"
+    # Their BM detail is not, anywhere in the response. Times are written the
+    # way a person says them, so the marker is 12-hour too.
+    assert "7:15 am" in page.text, "my own time should be shown"
+    assert "6:05 am" not in page.text, "another person's BM time leaked"
     assert "Urgent" not in page.text, "another person's flags leaked"
 
 
@@ -1370,3 +1371,53 @@ async def test_the_entries_page_has_one_header_line(
     assert "Show</button>" in page.text
     assert 'class="tile"' not in page.text, "the summary tiles should be gone"
     assert "<h1>All entries</h1>" not in page.text, "the title moved into the bar"
+
+
+async def test_removing_an_entry_asks_first(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Destructive and not undoable, so it says so before it does it."""
+    user = await _user(session)
+    day = _yesterday()
+    await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+        bristol_type=4,
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get("/dashboard/entries")
+
+    assert "onsubmit" in page.text
+    assert "confirm(" in page.text
+    assert "cannot be undone" in page.text
+
+
+async def test_times_are_written_the_way_a_person_says_them(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """No 24-hour clock anywhere in the rendered text.
+
+    The one exception is the value of the time input on the log form, which has
+    to be 24-hour because that is what the element expects — the browser shows
+    it in whatever format the reader's locale asks for.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 19, 30),
+        bristol_type=4,
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    for path in ("/dashboard/entries", "/dashboard"):
+        page = await client.get(path)
+        assert "7:30 pm" in page.text, f"{path} is not using a 12-hour clock"
+        assert "19:30" not in page.text, f"{path} is rendering a 24-hour clock"

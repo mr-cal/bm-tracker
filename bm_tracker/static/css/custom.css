@@ -536,17 +536,27 @@ body {
     display: none;
   }
 
-  /* These cards were six labelled lines each, so thirty entries ran to about
-   * forty screens. They are now a single line: the date, the type dot, and
-   * whatever is worth saying, with the rest of the fields available on the row
-   * rather than stacked above it. */
+  /* One line per entry: the date, the type, the labels, and Remove pinned to
+   * the right. A note takes a line of its own, always, so where the text
+   * lands does not depend on which optional fields that particular entry
+   * happened to have.
+   *
+   * The row is a flex box rather than a stack, which is what makes the pinning
+   * possible: `margin-left: auto` on the action pushes it to the end of the
+   * first line whatever else is in the row. `order` moves the action ahead of
+   * the note visually, and leaves it last in the DOM, so a screen reader still
+   * reads the entry and then the button that removes it. */
   .entries tr {
+    align-items: center;
     background-color: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-left: 3px solid var(--bs-secondary);
     border-radius: var(--bs-border-radius);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
     margin-bottom: 0.3rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.3rem 0.5rem;
   }
 
   .entries td {
@@ -554,7 +564,6 @@ body {
     display: inline-flex;
     font-size: 0.82rem;
     line-height: 1.35;
-    margin-right: 0.45rem;
     padding: 0;
     vertical-align: middle;
   }
@@ -579,12 +588,14 @@ body {
     font-variant-numeric: tabular-nums;
   }
 
-  /* A note is the one field worth a second line, and it is the reason most
-   * people open this page. */
+  /* The note is the one field worth its own line, and it is the reason most
+   * people open this page. Full basis, so it always wraps to a second line
+   * rather than sharing one with the row above it. */
   .entries__note {
-    display: block;
+    flex: 1 1 100%;
+    margin: 0;
     max-width: none;
-    padding-top: 0.15rem;
+    order: 2;
   }
 
   /* An empty cell is not said out loud either: `display: none` removes it from
@@ -599,11 +610,14 @@ body {
 
   .entries__action {
     margin-left: auto;
+    order: 1;
   }
 
+  /* Short enough to sit in a 32px row rather than making the row one. */
   .entries__action .btn {
-    font-size: 0.7rem;
-    padding: 0.1rem 0.4rem;
+    font-size: 0.68rem;
+    line-height: 1.1;
+    padding: 0.2rem 0.45rem;
   }
 }
 

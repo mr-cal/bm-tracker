@@ -16,7 +16,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
-from bm_tracker import icons
+from bm_tracker import icons, times
 from bm_tracker import theme as themes
 from bm_tracker.database import check_database, get_engine, get_session_factory
 from bm_tracker.dependencies import LoginRequiredError, login_required_handler
@@ -167,6 +167,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # stylesheet loads. The cookie name has to be in the document for that, and
     # duplicating the literal in a template is how the two drift apart.
     cast(dict[str, object], templates.env.globals)["theme"] = themes
+    # Times are written through one helper rather than a strftime in each
+    # template, so the app cannot end up rendering one page at 07:30 and the
+    # next at 7:30 am.
+    cast(dict[str, object], templates.env.globals)["clock"] = times.clock
+    cast(dict[str, object], templates.env.globals)["stamp"] = times.stamp
+    cast(dict[str, object], templates.env.globals)["day_only"] = times.day_only
     app.state.templates = templates
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 

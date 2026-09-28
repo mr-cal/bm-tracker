@@ -64,7 +64,7 @@
   <ul class="bm-entries">
     {% for entry in recent %}
     <li>
-      <strong>{{ entry.occurred_local.strftime("%d %b %H:%M") }}</strong>
+      <strong>{{ stamp(entry.occurred_local) }}</strong>
       — type
       <span class="bristol-dot bristol-{{ bristol_by_value[entry.bristol_type].band }}">{{ entry.bristol_type }}</span>
       {% if entry.spicy %}<span class="badge text-bg-warning">spicy</span>{% endif %}
