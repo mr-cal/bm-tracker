@@ -2,7 +2,7 @@
 {% block title %}Dashboard — bm-tracker{% endblock %}
 {% block nav %}{% include "partials/nav.html" %}{% endblock %}
 {% block content %}
-<main class="container py-3" role="main">
+<main class="container py-3" role="main" id="main" tabindex="-1">
   <h1>{{ user.display_name }}</h1>
 
   <form method="get" action="/dashboard" class="d-flex flex-wrap align-items-end gap-2 mb-3">

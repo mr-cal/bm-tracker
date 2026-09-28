@@ -283,3 +283,30 @@ async def test_the_names_you_tap_are_big_enough(
     )
     assert rule, "no rule sizing the name links"
     assert "min-height: 44px" in rule.group(1)
+
+
+async def test_the_open_drawer_locks_and_hides_the_page_behind_it(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Opening the drawer stops the page moving and takes it out of reach.
+
+    `:target` alone gave the panel, and nothing else. A touch on the scrim
+    scrolled the list behind it, so the drawer looked frozen while the page
+    moved under the scrim; and a screen reader tabbing out of the drawer walked
+    back into content that was invisible behind it.
+
+    `inert` is the one attribute that removes a whole subtree from the tab
+    order and the accessibility tree at once, rather than reaching in and
+    adjusting tabindex on a dozen elements.
+    """
+    await _sign_in(client, session)
+    script = (await client.get("/static/js/nav.js")).text
+
+    assert "inert" in script, "the content behind the drawer is still reachable"
+    assert "overflow" in script
+    assert 'position = "fixed"' in script, (
+        "the page can still scroll behind an open drawer"
+    )
+    # And every page has the element the drawer makes inert.
+    page = await client.get("/")
+    assert 'id="main"' in page.text
