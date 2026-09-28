@@ -53,7 +53,18 @@
       <div>
         <label class="form-label" for="time">Time</label>
         <input class="form-control" type="time" id="time" name="time" required
-               value="{{ now.strftime('%H:%M') }}" />
+               value="{{ now.strftime('%H:%M') }}"
+               data-quick-window="{{ quick_window_minutes }}"
+               data-quick-at="{{ now.isoformat() }}" />
+        {#
+          The ten-minute quick-entry bonus is the thing the whole scoring design
+          is pushing you towards, and nothing said so. The time field defaulted
+          to now and you filled in the rest of the form in silence, with no way
+          of knowing the window was closing. `quickentry.js` counts it down
+          against the same threshold the scorer uses, passed in rather than
+          hard-coded, so the two cannot disagree.
+        #}
+        <p class="quick-entry" data-quick-state aria-live="polite"></p>
       </div>
     </div>
 

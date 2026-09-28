@@ -101,6 +101,7 @@ async def _render_log(
             "flash": flash,
             "today": local_today,
             "now": now,
+            "quick_window_minutes": request.app.state.settings.quick_entry_window_minutes,
             "bristol_scale": bristol.BRISTOL_SCALE,
             "strain_scale": strain.STRAIN_SCALE,
             "csrf_token": csrf_token(request),

@@ -1445,3 +1445,29 @@ async def test_achievement_tiers_are_ordered_by_what_they_are_worth(
     assert [name for name, _ in headings] == [
         name.capitalize() for name, _ in headings
     ], "every tier should appear"
+
+
+async def test_the_log_form_says_the_quick_entry_window_is_open(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The bonus the whole design is pushing you towards is now visible.
+
+    The time field defaulted to now and nothing said there was a ten-minute
+    window, so you filled in the rest of the form with no idea the bonus was
+    closing. The threshold comes from the same setting the scorer reads, so the
+    countdown and the score cannot disagree.
+    """
+    from bm_tracker.settings import Settings  # noqa: PLC0415
+
+    window = Settings(app_env="development").quick_entry_window_minutes
+
+    await _user(session)
+    await _sign_in(client)
+    page = await client.get("/log")
+
+    # The window on the form is the setting the bonus is judged against, read
+    # from the configuration rather than written into the template.
+    assert f'data-quick-window="{window}"' in page.text
+    assert "data-quick-at=" in page.text, "no deadline for the countdown"
+    assert "data-quick-state" in page.text, "nowhere to show the countdown"
+    assert "/static/js/quickentry.js" in page.text

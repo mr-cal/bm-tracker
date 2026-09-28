@@ -1652,3 +1652,54 @@ input[type="date"]::-webkit-inner-spin-button {
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
   outline: none;
 }
+
+/* --- tap targets --------------------------------------------------------- */
+
+/*
+ * 44px is the smallest target a thumb can be expected to hit, and the names on
+ * the feed, the leaderboard and the people list are the main tap target on all
+ * three. They were 19-24px tall, because they were laid out as inline text and
+ * never given a height.
+ *
+ * `inline-flex` rather than `block`: a name sitting on its own line should not
+ * become a 44px band of empty space, but it does need to be a box to put the
+ * height on.
+ */
+.feed__who,
+.board__who,
+.people-row__name {
+  align-items: center;
+  display: inline-flex;
+  min-height: 44px;
+}
+
+/* On the people list the name and its badges are the only way into a person,
+ * so the link fills the row it sits in rather than being a 30px island. */
+.people-row__name {
+  margin: -0.5rem 0;
+  padding: 0.5rem 0;
+}
+
+/* Inside a feed card the name is a header, but it is still the only way into
+ * that person from the card, so it keeps the full 44. The card grows to suit
+ * it rather than the other way round: a 44px row is a 44px row. */
+.feed__head {
+  min-height: 44px;
+}
+
+/* --- the quick-entry countdown ------------------------------------------- */
+
+/*
+ * Green while there is time, amber for the last minute, and grey once it has
+ * gone. The state is a data attribute rather than a class so the script writes
+ * text and this decides what it looks like.
+ */
+.quick-entry {
+  font-size: 0.8rem;
+  margin: 0.25rem 0 0;
+  min-height: 1.2em;
+}
+
+.quick-entry[data-quick-state="open"] { color: var(--bm-normal); }
+.quick-entry[data-quick-state="soon"] { color: var(--bm-warn); }
+.quick-entry[data-quick-state="expired"] { color: var(--bs-secondary-color); }

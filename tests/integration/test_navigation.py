@@ -257,3 +257,29 @@ async def test_focus_is_drawn_in_the_app_accent(
     assert "var(--bs-primary)" in ring.group(1), (
         "the ring should be the app's accent, not the user agent's default"
     )
+
+
+async def test_the_names_you_tap_are_big_enough(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Names are the main tap target on three pages, so they get 44px.
+
+    The feed, the leaderboard and the people list each lead with a person's
+    name, and each of those was 19-24px tall — laid out as inline text and
+    never given a height. Apple's minimum is 44 and Material's is 48dp; below
+    about 30 the miss rate climbs sharply.
+
+    This is a stylesheet assertion rather than a layout one because the test
+    client has no viewport to measure against; the rule is what the size comes
+    from.
+    """
+    await _sign_in(client, session)
+    css = (await client.get("/static/css/custom.css")).text
+
+    rule = re.search(
+        r"(?m)^\.feed__who,\s*\n\.board__who,\s*\n\.people-row__name\s*\{(.*?)^\}",
+        css,
+        re.S,
+    )
+    assert rule, "no rule sizing the name links"
+    assert "min-height: 44px" in rule.group(1)
