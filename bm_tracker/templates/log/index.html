@@ -4,23 +4,7 @@
 {% block nav %}{% include "partials/nav.html" %}{% endblock %}
 {% block content %}
 <main class="container py-3" role="main">
-  <h1>{{ day_of_week }} {{ day }}</h1>
-
-  <form method="get" action="/log" class="d-flex flex-wrap align-items-end gap-2 mb-3">
-    <label for="date">Jump to a day</label>
-    <div class="date-field">
-      <input class="form-control" type="date" id="date" name="date" value="{{ day.isoformat() }}" />
-      <button type="button" class="date-field__button" data-date-picker-toggle
-              aria-label="Open the calendar" aria-controls="date" title="Open the calendar">
-        {{ icon_svg("calendar", "date-field__icon") }}
-      </button>
-    </div>
-    <button type="submit" class="btn btn-outline-secondary">Go</button>
-  </form>
-
-  {% if error %}
-  <div class="alert alert-danger" role="alert">{{ error }}</div>
-  {% endif %}
+  <h1>Log</h1>
 
   {% if flash and flash.said %}
   <div class="celebrate" role="status">
@@ -35,39 +19,17 @@
   </div>
   {% endif %}
 
-  {% if is_future %}
-  <div class="alert alert-warning">You cannot log a day that has not happened yet.</div>
-  {% elif log and log.n_bms > 0 %}
-  <h2>{{ log.n_bms }} logged{% if log.n_bms == 1 %} BM{% else %} BMs{% endif %}</h2>
-  <ul class="bm-cards">
-    {% for entry in entries %}
-    <li class="bm-card">
-      <div class="bm-card__head">
-        <span class="bristol-dot bristol-{{ entry.bristol.band }}">{{ entry.bristol_type }}</span>
-        <strong>{{ entry.occurred_local.strftime("%H:%M") }}</strong>
-        <span class="bm-card__type">{{ entry.bristol.plain }}</span>
-      </div>
-      {% if entry.spicy %}<span class="tag tag--spicy">Spicy</span>{% endif %}
-      {% if entry.urgent %}<span class="tag tag--urgent">Urgent</span>{% endif %}
-      {% if entry.strain %}<span class="tag tag--effort tag--strain-{{ entry.strain }}">{{ entry.strain_level.label }}</span>{% endif %}
-      {% if entry.has_note %}
-      <p class="bm-card__note">“{{ entry.notes }}”</p>
-      {% endif %}
-      <form method="post" action="/log/entry/{{ entry.id }}/delete">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
-      </form>
-    </li>
-    {% endfor %}
-  </ul>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
   {% endif %}
 
-  {% if not is_future %}
   {#
-    One form, one submit, one endpoint. "Nothing today" is a card beside the
-    seven Bristol types rather than a second form in a collapsed section: it is
-    the same kind of answer to the same question, it is scored the same way, and
-    making it a different shape is what made it easy to forget.
+    This page is a statement about a moment, not a view of a day. It used to
+    also be the way to look at a day: a date to jump to, a header naming the
+    day, the BMs already on it and the day's note. All of that now lives on
+    /dashboard, which is a summary, and /dashboard/entries, which is the full
+    list with a delete on each row. What is left here is one question — what
+    happened — and when.
 
     Every input is a real input inside a label, so the cards are keyboard-
     operable and announced properly; the card is the styling of the control, not
@@ -75,7 +37,25 @@
   #}
   <form method="post" action="/log" class="log-form" data-log-form>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-    <input type="hidden" name="day" value="{{ day.isoformat() }}" />
+
+    <div class="log-form__when">
+      <div>
+        <label class="form-label" for="date">Date</label>
+        <div class="date-field">
+          <input class="form-control" type="date" id="date" name="date" required
+                 value="{{ today.isoformat() }}" />
+          <button type="button" class="date-field__button" data-date-picker-toggle
+                  aria-label="Open the calendar" aria-controls="date" title="Open the calendar">
+            {{ icon_svg("calendar", "date-field__icon") }}
+          </button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label" for="time">Time</label>
+        <input class="form-control" type="time" id="time" name="time" required
+               value="{{ now.strftime('%H:%M') }}" />
+      </div>
+    </div>
 
     <fieldset class="picks">
       <legend class="picks__legend">What happened?</legend>
@@ -143,15 +123,6 @@
       </div>
     </fieldset>
 
-    <fieldset class="log-form__detail" data-bm-only>
-      <legend class="picks__legend">When?</legend>
-      <div class="log-form__time">
-        <label class="visually-hidden" for="time">Time</label>
-        <input class="form-control" type="time" id="time" name="time" required
-               value="{% if now and is_today %}{{ now.strftime('%H:%M') }}{% endif %}" />
-      </div>
-    </fieldset>
-
     <div class="mb-3">
       <label for="notes">Note <span class="picks__optional">(optional)</span></label>
       <textarea class="form-control" id="notes" name="notes" rows="2"
@@ -160,26 +131,5 @@
 
     <button type="submit" class="btn btn-primary log-form__submit">Log it</button>
   </form>
-  {% endif %}
-
-  {% if log %}
-  <h2 class="mt-4">The day</h2>
-  {% if log.is_note_live %}
-  <p>{{ log.notes }}</p>
-  {% elif log.is_superseded %}
-  <p class="bm-note bm-note--superseded">
-    “{{ log.notes }}”
-    <span class="badge text-bg-info">superseded — you logged a BM that day</span>
-  </p>
-  {% else %}
-  <p class="text-body-secondary">No note for this day.</p>
-  {% endif %}
-
-  <form method="post" action="/log/day/{{ log.id }}/delete"
-        onsubmit="return confirm('Delete {{ day.isoformat() }} and everything on it?')">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-    <button type="submit" class="btn btn-outline-danger btn-sm">Delete this day</button>
-  </form>
-  {% endif %}
 </main>
 {% endblock %}

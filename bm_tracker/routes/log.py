@@ -9,21 +9,18 @@ large share of days actually are.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
+from starlette.datastructures import FormData
 
 from bm_tracker import bristol, celebrate, forms, strain
 from bm_tracker.achievements import engine as achievements
 from bm_tracker.dependencies import (
-    CSRF_HEADER_NAME,
     AuthenticatedUser,
     DbSession,
     csrf_token,
-    verify_csrf,
 )
 from bm_tracker.models import BmEntry, DailyLog, User
 from bm_tracker.services import audit_service, bm_service
@@ -67,20 +64,22 @@ def _templates(request: Request) -> Jinja2Templates:
 
 async def _render_log(
     request: Request,
-    session: DbSession,
-    user: AuthenticatedUser,
-    day: date,
+    user: User,
     *,
     error: str | None = None,
     status_code: int = 200,
 ) -> HTMLResponse:
-    """Render the log page for a day.
+    """Render the logging form, pre-filled with now.
+
+    There is no day in the URL and nothing on the page describes a day. The
+    form is a statement about a moment, not a view of a day, so it does not
+    load the day's rows to show alongside it: that is what `/dashboard` and
+    `/dashboard/entries` are for, and duplicating them here meant the logging
+    form was carrying a query it did not need.
 
     Args:
         request: The incoming request.
-        session: The database session.
         user: The signed-in user.
-        day: The occurrence date being viewed.
         error: An error message, if any.
         status_code: The status to return, so a rejected submission is a 400
             rather than a 200 that looks like it worked.
@@ -89,40 +88,21 @@ async def _render_log(
         The rendered page.
 
     """
-    row = await bm_service.get_day(session, user, day)
-    entries: list[BmEntry] = []
-    if row is not None:
-        entries = list(
-            (
-                await session.scalars(
-                    select(BmEntry)
-                    .where(BmEntry.daily_log_id == row.id)
-                    .order_by(BmEntry.occurred_local)
-                )
-            ).all()
-        )
-
     local_today, now = now_in(user.timezone)
     # Popped, not read: a refresh after logging must not replay the
     # celebration or the unlock, only the log.
     flash = request.session.pop(FLASH_KEY, None)
+
     return _templates(request).TemplateResponse(
         request,
         "log/index.html",
         {
             "user": user,
             "flash": flash,
-            "day": day,
-            "day_of_week": day.strftime("%A"),
             "today": local_today,
             "now": now,
-            "is_today": day == local_today,
-            "is_future": day > local_today,
-            "log": row,
-            "entries": [bm_service.entry_payload(entry) for entry in entries],
             "bristol_scale": bristol.BRISTOL_SCALE,
             "strain_scale": strain.STRAIN_SCALE,
-            "strain_by_value": {s.value: s for s in strain.STRAIN_SCALE},
             "csrf_token": csrf_token(request),
             "nav": "log",
             "error": error,
@@ -153,18 +133,15 @@ async def _reload(session: DbSession, user_id: int) -> User:
     )
 
 
-def _back_to_log(
-    request: Request, day: date, celebration: Celebration
-) -> RedirectResponse:
-    """Redirect back to the day, carrying any celebration in the session.
+def _back_to_log(request: Request, celebration: Celebration) -> RedirectResponse:
+    """Redirect back to the form, carrying any celebration in the session.
 
     A session flash rather than query parameters: the message is not something to
     bookmark, share, or refresh into a duplicate, and the URL stays the plain
-    address of the day.
+    address of the form, which takes no arguments.
 
     Args:
         request: The incoming request.
-        day: The day being viewed afterwards.
         celebration: What to say, and what was unlocked.
 
     Returns:
@@ -176,7 +153,27 @@ def _back_to_log(
             "said": celebration.said,
             "unlocked": list(celebration.unlocked),
         }
-    return RedirectResponse(f"/log?date={day.isoformat()}", status_code=303)
+    return RedirectResponse("/log", status_code=303)
+
+
+def _return_to(form: FormData) -> str:
+    """Return where a delete should send the user afterwards.
+
+    Only a path on this site is honoured. A redirect target from a form is
+    attacker-controlled, and an open redirect off a page that just deleted
+    something is a good way to lose the last of somebody's trust.
+
+    Args:
+        form: The submitted form.
+
+    Returns:
+        The path to redirect to, or the entries list.
+
+    """
+    raw = form.get("return_to")
+    if not isinstance(raw, str) or not raw.startswith("/") or raw.startswith("//"):
+        return "/dashboard/entries"
+    return raw
 
 
 def _event_flags(entry: BmEntry, day: DailyLog) -> dict[str, bool]:
@@ -262,37 +259,19 @@ async def _celebrate_after(
 @router.get("/log", response_class=HTMLResponse, response_model=None)
 async def log_page(
     request: Request,
-    session: DbSession,
     user: AuthenticatedUser,
 ) -> HTMLResponse:
-    """Show the log form for a day, defaulting to today.
+    """Show the logging form, pre-filled with the current date and time.
 
     Args:
         request: The incoming request.
-        session: The database session.
         user: The authenticated user.
 
     Returns:
         The rendered page.
 
     """
-    return await _render_log(request, session, user, _requested_day(request, user))
-
-
-def _requested_day(request: Request, user: AuthenticatedUser) -> date:
-    """Return the day the request is asking about.
-
-    Args:
-        request: The incoming request.
-        user: The authenticated user, for the default.
-
-    Returns:
-        The requested day, or today.
-
-    """
-    requested = parse_date(request.query_params.get("date", ""))
-    local_today, _ = now_in(user.timezone)
-    return requested if requested is not None else local_today
+    return await _render_log(request, user)
 
 
 CHOICE_NOTHING = "nothing"
@@ -319,7 +298,7 @@ async def submit_log(
     """
     form = await request.form()
     forms.guard_csrf(request, form)
-    day = parse_date(forms.guard_field(form, "day"))
+    day = parse_date(forms.guard_field(form, "date"))
     if day is None:
         return RedirectResponse("/log", status_code=303)
     user_id = user.id  # captured before a rollback can expire the instance
@@ -381,14 +360,12 @@ async def submit_log(
         await session.rollback()
         return await _render_log(
             request,
-            session,
             await _reload(session, user_id),
-            day,
             error=str(exc),
             status_code=400,
         )
 
-    return _back_to_log(request, day, celebration)
+    return _back_to_log(request, celebration)
 
 
 @router.post("/log/entry/{entry_id}/delete")
@@ -398,12 +375,16 @@ async def delete_entry(
     session: DbSession,
     user: AuthenticatedUser,
 ) -> RedirectResponse:
-    """Delete one bowel movement."""
-    verify_csrf(request, request.headers.get(CSRF_HEADER_NAME))
+    """Delete one bowel movement.
+
+    The token is read from the form field rather than a header: this is posted
+    by an ordinary button on a page, and reading only the header meant the
+    button rejected its own submission with a 403.
+    """
+    form = await request.form()
+    forms.guard_csrf(request, form)
     entry = await session.get(BmEntry, entry_id)
-    day = None
     if entry is not None:
-        day = await session.get(DailyLog, entry.daily_log_id)
         await bm_service.delete_entry(session, entry, acting_user=user)
         await audit_service.record(
             session,
@@ -413,31 +394,4 @@ async def delete_entry(
             entity_id=str(entry_id),
         )
         await session.commit()
-    if day is not None:
-        return RedirectResponse(f"/log?date={day.day.isoformat()}", status_code=303)
-    return RedirectResponse("/log", status_code=303)
-
-
-@router.post("/log/day/{day_id}/delete")
-async def delete_day(
-    day_id: int,
-    request: Request,
-    session: DbSession,
-    user: AuthenticatedUser,
-) -> RedirectResponse:
-    """Delete a whole day and everything on it."""
-    verify_csrf(request, request.headers.get(CSRF_HEADER_NAME))
-    row = await session.get(DailyLog, day_id)
-    if row is not None:
-        target = row.day
-        await bm_service.delete_day(session, row, acting_user=user)
-        await audit_service.record(
-            session,
-            action="day.delete",
-            user_id=user.id,
-            entity_type="daily_log",
-            entity_id=str(day_id),
-        )
-        await session.commit()
-        return RedirectResponse(f"/log?date={target.isoformat()}", status_code=303)
-    return RedirectResponse("/log", status_code=303)
+    return RedirectResponse(_return_to(form), status_code=303)

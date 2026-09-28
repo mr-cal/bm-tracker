@@ -83,6 +83,19 @@
           {% else %}<span class="text-body-secondary">—</span>{% endif %}
         </td>
         <td data-label="Notes" class="entries__note">{{ entry.notes if entry.has_note else "—" }}</td>
+        <td data-label="" class="entries__action">
+          {#
+            Correction lives here rather than on the logging form. The log page
+            became a statement about a moment, so it no longer shows a day's
+            contents — and a thing you cannot take back is not something to
+            delete by re-visiting the page you typed it on.
+          #}
+          <form method="post" action="/log/entry/{{ entry.id }}/delete">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <input type="hidden" name="return_to" value="/dashboard/entries?year={{ year }}&page={{ page }}" />
+            <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+          </form>
+        </td>
       </tr>
       {% endfor %}
     </tbody>

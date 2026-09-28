@@ -161,7 +161,7 @@ async def test_submitting_a_bm_creates_the_day(
         data={
             "choice": "bm:4",
             CSRF_FIELD_NAME: token,
-            "day": day.isoformat(),
+            "date": day.isoformat(),
             "time": "07:30",
             "notes": "first of the day",
         },
@@ -173,9 +173,11 @@ async def test_submitting_a_bm_creates_the_day(
     assert row is not None
     assert row.n_bms == 1
 
-    shown = await client.get(f"/log?date={day.isoformat()}")
+    # The logging form no longer shows the day it just wrote. That view moved
+    # to the entries list, which is where a correction is made too.
+    shown = await client.get(f"/dashboard/entries?year={day.year}")
     assert "first of the day" in shown.text
-    assert "1 logged" in shown.text
+    assert 'action="/log/entry/' in shown.text, "entries should be removable"
 
 
 async def test_submitting_nothing_today_creates_an_empty_day(
@@ -193,7 +195,7 @@ async def test_submitting_nothing_today_creates_an_empty_day(
         data={
             "choice": "nothing",
             CSRF_FIELD_NAME: token,
-            "day": day.isoformat(),
+            "date": day.isoformat(),
             "notes": "all quiet",
         },
         headers={CSRF_HEADER_NAME: token},
@@ -221,7 +223,7 @@ async def test_a_bad_bristol_type_re_renders_the_form(
         data={
             "choice": "bm:9",
             CSRF_FIELD_NAME: token,
-            "day": day.isoformat(),
+            "date": day.isoformat(),
             "time": "07:30",
         },
         headers={CSRF_HEADER_NAME: token},
@@ -244,7 +246,11 @@ async def test_a_future_day_is_refused(
     token = csrf_of(page.text)
     response = await client.post(
         "/log",
-        data={"choice": "nothing", CSRF_FIELD_NAME: token, "day": tomorrow.isoformat()},
+        data={
+            "choice": "nothing",
+            CSRF_FIELD_NAME: token,
+            "date": tomorrow.isoformat(),
+        },
         headers={CSRF_HEADER_NAME: token},
     )
 
@@ -284,7 +290,7 @@ async def test_the_note_is_shown_as_superseded_after_a_bm(
         data={
             "choice": "nothing",
             CSRF_FIELD_NAME: token,
-            "day": day.isoformat(),
+            "date": day.isoformat(),
             "notes": "empty day",
         },
         headers={CSRF_HEADER_NAME: token},
@@ -294,16 +300,17 @@ async def test_the_note_is_shown_as_superseded_after_a_bm(
         data={
             "choice": "bm:4",
             CSRF_FIELD_NAME: token,
-            "day": day.isoformat(),
+            "date": day.isoformat(),
             "time": "08:00",
         },
         headers={CSRF_HEADER_NAME: token},
     )
 
-    shown = await client.get(f"/log?date={day.isoformat()}")
+    # A superseded day-note is not published, so the feed does not show it.
+    # That is the point of supersession: the day is described by its BMs.
+    shown = await client.get("/")
 
-    assert "empty day" in shown.text
-    assert "superseded" in shown.text
+    assert "empty day" not in shown.text
 
 
 # --- dashboard ------------------------------------------------------------
@@ -380,7 +387,7 @@ async def test_logging_a_bm_records_strain_or_leaves_it_blank(
             data={
                 "choice": "bm:4",
                 CSRF_FIELD_NAME: token,
-                "day": day.isoformat(),
+                "date": day.isoformat(),
                 "time": f"0{7 + index}:30",
                 "strain": strain_value,
             },
@@ -416,7 +423,7 @@ async def test_urgent_is_stored_as_a_flag_not_derived_from_the_delay(
             data={
                 "choice": "bm:4",
                 CSRF_FIELD_NAME: token,
-                "day": day.isoformat(),
+                "date": day.isoformat(),
                 "time": f"{hour}:00",
                 "urgent": "on" if ticked else "",
             },
@@ -915,7 +922,7 @@ async def test_nothing_today_ignores_the_per_bm_fields(
         "/log",
         data={
             CSRF_FIELD_NAME: token,
-            "day": day.isoformat(),
+            "date": day.isoformat(),
             "choice": "nothing",
             "spicy": "on",
             "urgent": "on",
@@ -941,8 +948,8 @@ async def test_the_log_form_offers_one_grid_for_both_answers(
 
     page = await client.get("/log")
 
-    assert page.text.count('action="/log"') == 2, (
-        "expected one GET form and one POST form"
+    assert page.text.count('action="/log"') == 1, (
+        "there should be exactly one form on the page"
     )
     assert 'method="post" action="/log"' in page.text
     # The old shapes are gone.
@@ -966,3 +973,116 @@ async def test_the_form_script_is_loaded(
     script = await client.get("/static/js/logform.js")
     assert script.status_code == 200
     assert "data-bm-only" in script.text
+
+
+async def test_the_log_form_is_only_a_form(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The page is a statement about a moment, not a view of a day.
+
+    It used to carry a date to jump to, a header naming the day, the BMs
+    already on it and the day's note — a second copy of what the dashboard and
+    the entries list already say, on the one page opened in a hurry.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+        bristol_type=4,
+        notes="already logged",
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get("/log")
+
+    assert page.status_code == 200
+    # Date and time are fields, at the top, defaulting to now.
+    assert 'type="date"' in page.text
+    assert 'name="date"' in page.text
+    assert 'type="time"' in page.text
+    assert 'name="time"' in page.text
+    assert f'value="{now_in(user.timezone)[0].isoformat()}"' in page.text
+    # None of the day view.
+    assert "Jump to a day" not in page.text
+    assert day.strftime("%A") not in page.text
+    assert "already logged" not in page.text
+    assert "1 logged" not in page.text
+    assert "Delete this day" not in page.text
+    assert "bm-card" not in page.text
+
+
+async def test_an_entry_can_be_removed_from_the_entries_list(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Correction moved to where the entry is listed.
+
+    Removing a thing you typed is not something to do by re-visiting the page
+    you typed it on, so the Remove control lives on the entries list — and it
+    had to be fixed on the way, because both delete handlers read the CSRF token
+    from a header while these are ordinary form posts, so the button was
+    rejecting its own submission with a 403.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+        bristol_type=4,
+        notes="a mistake",
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    listing = await client.get(f"/dashboard/entries?year={day.year}")
+    assert "a mistake" in listing.text
+    token = csrf_of(listing.text)
+
+    response = await client.post(
+        f"/log/entry/{(await session.scalars(select(BmEntry))).one().id}/delete",
+        data={
+            CSRF_FIELD_NAME: token,
+            "return_to": f"/dashboard/entries?year={day.year}",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303, response.text
+    assert response.headers["location"] == f"/dashboard/entries?year={day.year}"
+    assert (await session.scalars(select(BmEntry))).all() == []
+
+
+async def test_a_delete_cannot_redirect_off_site(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """`return_to` is a redirect target from a form, so it is checked.
+
+    Only a path on this site is honoured; `//evil.example` is protocol-relative
+    and would otherwise leave the site entirely.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    entry = await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+        bristol_type=4,
+    )
+    await session.commit()
+    await _sign_in(client)
+    token = csrf_of((await client.get("/log")).text)
+
+    response = await client.post(
+        f"/log/entry/{entry.id}/delete",
+        data={CSRF_FIELD_NAME: token, "return_to": "//evil.example/"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/dashboard/entries"
