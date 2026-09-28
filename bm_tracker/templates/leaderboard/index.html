@@ -3,44 +3,56 @@
 {% block nav %}{% include "partials/nav.html" %}{% endblock %}
 {% block content %}
 <main class="container py-3" role="main">
-  <h1>Leaderboard {{ year }}</h1>
+  {#
+    Title and year control on one line. They are one decision — "whose board am
+    I looking at" — and a title stacked above a separate control block makes
+    them look like two.
 
-  <form method="get" action="/leaderboard" class="d-flex flex-wrap align-items-end gap-2 mb-3">
-    <label for="year">Year</label>
-    <input class="form-control" type="number" id="year" name="year" value="{{ year }}" min="2020" max="2100" />
-    <button type="submit" class="btn btn-outline-secondary">Show</button>
-  </form>
+    This was a seven-column table. On a phone every column became its own card,
+    so one person occupied the height of a small screen, and the number the
+    page exists to show was the same size as the four beside it. It is now a
+    ranked list: the rank, who, and the points large, with the rest of the
+    figures as a labelled strip underneath.
+  #}
+  <header class="board__head">
+    <h1 class="board__title">Leaderboard</h1>
+    <form method="get" action="/leaderboard" class="board__year">
+      <label class="visually-hidden" for="year">Year</label>
+      <input class="form-control form-control-sm" type="number" id="year" name="year"
+             value="{{ year }}" min="2020" max="2100" />
+      <button type="submit" class="btn btn-sm btn-outline-secondary">Show</button>
+    </form>
+  </header>
 
-  <table class="table table-sm align-middle board">
-    <thead>
-      <tr>
-        <th>#</th><th>Person</th><th>Points</th><th>Streak</th>
-        <th>Longest</th><th>Days</th><th>BMs</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in rows %}
-      <tr {% if row.is_you %}class="is-you"{% endif %}>
-        <td data-label="#">{{ row.rank }}</td>
-        <td data-label="Person">
-          <strong>{{ row.person.display_name }}</strong>
-          {% if row.is_you %}<span class="badge text-bg-success">you</span>{% endif %}
-        </td>
-        <td data-label="Points"><strong>{{ row.score.logging_points }}</strong></td>
-        <td data-label="Streak">{{ row.score.current_streak }}</td>
-        <td data-label="Longest">{{ row.score.longest_streak }}</td>
-        <td data-label="Days">{{ row.score.days_logged }}</td>
-        <td data-label="BMs">{{ row.score.bms }}</td>
-      </tr>
-      {% else %}
-      <tr><td colspan="7" class="text-body-secondary">Nobody has logged anything yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <ol class="board">
+    {% for row in rows %}
+    <li class="board__row{% if row.is_you %} is-you{% endif %}{% if row.rank <= 3 %} board__row--podium{% endif %}">
+      <span class="board__rank" aria-hidden="true">{{ row.rank }}</span>
+      <a class="board__who" href="/people/{{ row.person.username }}">
+        {{ row.person.display_name }}
+        {% if row.person.is_admin %}<span class="board__chip">admin</span>{% endif %}
+        {% if row.is_you %}<span class="board__chip board__chip--you">you</span>{% endif %}
+      </a>
+      <span class="board__points">
+        <strong>{{ row.score.logging_points }}</strong>
+        <span class="board__points-label">points</span>
+      </span>
+      <dl class="board__stats">
+        <div><dt>Current streak</dt><dd>{{ row.score.current_streak }}</dd></div>
+        <div><dt>Longest streak</dt><dd>{{ row.score.longest_streak }}</dd></div>
+        <div><dt>Days logged</dt><dd>{{ row.score.days_logged }}</dd></div>
+        <div><dt>BMs</dt><dd>{{ row.score.bms }}</dd></div>
+      </dl>
+    </li>
+    {% else %}
+    <li class="board__empty text-body-secondary">Nobody has logged anything in {{ year }} yet.</li>
+    {% endfor %}
+  </ol>
 
-  <p class="text-body-secondary">
-    Ranked on logging points. Achievement points are tracked separately so a
-    badge cannot reorder this table.
+  <p class="text-body-secondary board__footnote">
+    Ranked on logging points for {{ year }}.
+    Achievement points are tracked separately so a badge cannot reorder this
+    list.
   </p>
 </main>
 {% endblock %}

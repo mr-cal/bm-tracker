@@ -1086,3 +1086,42 @@ async def test_a_delete_cannot_redirect_off_site(
 
     assert response.status_code == 303
     assert response.headers["location"] == "/dashboard/entries"
+
+
+async def test_the_leaderboard_names_its_columns_in_full(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """ "Streak" and "Longest" were ambiguous next to each other.
+
+    A reader looking at a row cannot tell which of the two numbers is the
+    current run and which was the best ever, and the shorter label was what
+    caused it.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/leaderboard")
+
+    for label in ("Current streak", "Longest streak", "Days logged", "BMs"):
+        assert f"<dt>{label}</dt>" in page.text, f"{label} is not labelled"
+    assert ">Streak<" not in page.text
+    assert ">Longest<" not in page.text
+
+
+async def test_the_leaderboard_year_control_shares_the_heading(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The title and the year control are one decision, so they are one line."""
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/leaderboard")
+
+    assert 'class="board__head"' in page.text
+    assert 'class="board__title"' in page.text
+    assert 'class="board__year"' in page.text
+    assert 'name="year"' in page.text
+    assert "Show</button>" in page.text
+    # It is a list of people now, not a seven-column table.
+    assert 'class="board"' in page.text
+    assert "<table" not in page.text

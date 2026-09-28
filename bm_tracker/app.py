@@ -24,6 +24,10 @@ from bm_tracker.settings import Settings
 
 SESSION_COOKIE = "bm_session"
 
+# Anything at or above this is worth a log line even for a static file.
+HTTP_BAD_REQUEST = 400
+STATIC_PREFIX = "/static/"
+
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Awaitable, Callable
 
@@ -166,9 +170,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         request: Request,
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
-        """Log method, path, status, duration and client for every request."""
+        """Log method, path, status, duration and client for every request.
+
+        Static files are skipped unless something went wrong with one. A page
+        pulls down two stylesheets and twenty-odd icons, most of them answered
+        with a 304, and logging those buries the two lines anyone actually
+        reads. A 404 on a static file is still logged: that is a broken
+        reference, and it is exactly what this is for.
+        """
         started = time.monotonic()
         response = await call_next(request)
+        if response.status_code < HTTP_BAD_REQUEST and request.url.path.startswith(
+            STATIC_PREFIX
+        ):
+            return response
         duration_ms = (time.monotonic() - started) * 1000
         client_host = request.client.host if request.client else "-"
         logger.info(

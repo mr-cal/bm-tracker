@@ -150,48 +150,6 @@
 
 /* --- leaderboard ------------------------------------------------------- */
 
-/* Seven columns do not fit on a phone. Below the small breakpoint each row
- * becomes a stacked card with its own labels, rather than a table that
- * scrolls sideways. */
-@media (max-width: 575.98px) {
-  .board thead {
-    display: none;
-  }
-
-  .board,
-  .board tbody,
-  .board tr,
-  .board td {
-    display: block;
-    width: 100%;
-  }
-
-  .board tr {
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    margin-bottom: 0.75rem;
-    padding: 0.5rem 0.75rem;
-  }
-
-  .board td {
-    border: 0;
-    display: flex;
-    gap: 0.75rem;
-    justify-content: space-between;
-    padding: 0.15rem 0;
-  }
-
-  .board td::before {
-    color: var(--bs-secondary-color);
-    content: attr(data-label);
-    font-size: 0.85rem;
-  }
-}
-
-.board tr.is-you {
-  border-color: var(--bs-primary);
-}
-
 /* --- navigation --------------------------------------------------------- */
 
 .app-topbar {
@@ -1245,4 +1203,170 @@ input[type="date"]::-webkit-inner-spin-button {
 
 .log-form__when input[type="time"] {
   max-width: none;
+}
+
+/* --- the leaderboard ------------------------------------------------------ */
+
+.board__head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.board__title {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.board__year {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.board__year .form-control {
+  width: 6rem;
+}
+
+.board {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * One row per person, two lines tall. The rank, the name and the points are the
+ * row; everything else is a labelled strip under it, so the number the page
+ * exists to show is the largest thing on the page rather than the same size as
+ * the four beside it.
+ */
+.board__row {
+  align-items: baseline;
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  column-gap: 0.7rem;
+  display: grid;
+  grid-template-areas:
+    "rank who points"
+    "stats stats stats";
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0.55rem 0.85rem;
+  row-gap: 0.4rem;
+}
+
+.board__row.is-you {
+  background-color: rgba(13, 110, 253, 0.06);
+  border-color: var(--bs-primary);
+}
+
+.board__rank {
+  align-items: center;
+  background-color: var(--bs-secondary-bg);
+  border-radius: 50%;
+  color: var(--bs-secondary-color);
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  grid-area: rank;
+  height: 1.65rem;
+  justify-content: center;
+  width: 1.65rem;
+}
+
+.board__row--podium .board__rank {
+  background-color: var(--bs-warning-bg-subtle, rgba(255, 193, 7, 0.18));
+  color: #997404;
+}
+
+.board__who {
+  align-items: center;
+  color: var(--bs-body-color);
+  display: flex;
+  flex-wrap: wrap;
+  font-weight: 600;
+  gap: 0.35rem;
+  grid-area: who;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.board__who:hover {
+  text-decoration: underline;
+}
+
+.board__chip {
+  background-color: var(--bs-secondary-bg);
+  border-radius: 999px;
+  color: var(--bs-secondary-color);
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.05rem 0.45rem;
+}
+
+.board__chip--you {
+  background-color: var(--bs-primary);
+  color: #fff;
+}
+
+.board__points {
+  align-items: baseline;
+  display: flex;
+  font-variant-numeric: tabular-nums;
+  gap: 0.3rem;
+  grid-area: points;
+}
+
+.board__points strong {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.board__points-label {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+}
+
+.board__stats {
+  border-top: 1px solid var(--bs-border-color);
+  display: grid;
+  gap: 0.3rem 1rem;
+  grid-area: stats;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  margin: 0;
+  padding-top: 0.4rem;
+}
+
+.board__stats > div {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: space-between;
+}
+
+.board__stats dt {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+.board__stats dd {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  margin: 0;
+}
+
+.board__empty {
+  padding: 1rem 0;
+}
+
+.board__footnote {
+  font-size: 0.82rem;
+  margin-top: 1rem;
 }
