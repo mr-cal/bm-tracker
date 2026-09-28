@@ -207,7 +207,7 @@ async def feed_items(
     # one.
     depth = offset + limit
     # The group, limited to what other people are allowed to see.
-    items = await _notes(session, users, limit=depth)
+    items = await _notes(session, users, limit=depth, exclude_entries_of=viewer.id)
     items.extend(await _achievements(session, users, limit=depth))
 
     # The viewer, in full. The viewer's own notes and achievements are already
@@ -336,6 +336,8 @@ async def _notes(
     session: AsyncSession,
     users: dict[int, User],
     limit: int,
+    *,
+    exclude_entries_of: int | None = None,
 ) -> list[FeedItem]:
     """Return note items, using only notes that are live.
 
@@ -343,10 +345,19 @@ async def _notes(
     described by its entries, and re-publishing an overtaken note would put
     something the user has implicitly replaced back in front of everyone.
 
+    `exclude_entries_of` drops notes carried on one user's BM *entries*. The
+    viewer's own entries are already published by `_own_entries`, which shows
+    the note in place, so counting them here as well printed every one of them
+    twice — once as a note card and once inside the BM card that owns it.
+
+    Day-notes are not excluded. A "nothing today" note has no entry to be shown
+    on, so it has nothing else to appear in.
+
     Args:
         session: The session to read through.
         users: Users keyed by id.
         limit: The most to return, across every user.
+        exclude_entries_of: A user whose entry-notes to leave out.
 
     Returns:
         The note `FeedItem`s.
@@ -395,6 +406,8 @@ async def _notes(
     ).all()
     for entry, day in entry_notes:
         if not entry.notes or not entry.notes.strip():
+            continue
+        if exclude_entries_of is not None and day.user_id == exclude_entries_of:
             continue
         user = users.get(day.user_id)
         if user is None:

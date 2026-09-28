@@ -197,12 +197,18 @@ async def test_the_feed_returns_notes_and_unlocks(
 async def test_every_note_on_a_day_gets_its_own_item(
     session: AsyncSession,
 ) -> None:
-    """Three notes on one day are three items, not one merged row."""
-    user = await _user(session, "cal")
+    """Three notes on one day are three items, not one merged row.
+
+    The viewer is somebody else on purpose. Somebody's own notes appear on the
+    BM cards that carry them rather than as separate cards, and this is about
+    the group stream.
+    """
+    author = await _user(session, "cal")
+    viewer = await _user(session, "bee")
     day = date(2026, 1, 9)
     await bm_service.log_bm(
         session,
-        user,
+        author,
         day,
         occurred_local=datetime(2026, 1, 9, 7, 0),
         bristol_type=4,
@@ -212,7 +218,7 @@ async def test_every_note_on_a_day_gets_its_own_item(
     for hour, text in ((9, "the second one"), (14, "the third one")):
         await bm_service.log_bm(
             session,
-            user,
+            author,
             day,
             occurred_local=datetime(2026, 1, 9, hour, 0),
             bristol_type=4,
@@ -221,7 +227,7 @@ async def test_every_note_on_a_day_gets_its_own_item(
         )
     await session.commit()
 
-    items = await feed_service.feed_items(session, viewer=user)
+    items = await feed_service.feed_items(session, viewer=viewer)
     notes = [i.text for i in items if i.kind == feed_service.KIND_NOTE]
 
     assert set(notes) == {"the first one", "the second one", "the third one"}
@@ -491,3 +497,87 @@ async def test_feed_pages_are_strictly_newest_first(
 
     assert len(seen) == 80, "every seeded BM should be reachable across four pages"
     assert seen == sorted(seen, reverse=True), "paging back moved forwards in time"
+
+
+async def test_a_note_on_your_own_bm_is_not_printed_twice(
+    session: AsyncSession,
+) -> None:
+    """Your own note appears once, on the BM that carries it.
+
+    It used to appear twice: once as a standalone note card and once inside the
+    BM card that owns it, because the group stream published every entry-note in
+    the year — including yours — and the viewer stream published the same entries
+    again with their notes in place.
+    """
+    user = await _user(session, "cal")
+    await bm_service.log_bm(
+        session,
+        user,
+        date(2026, 5, 4),
+        occurred_local=datetime(2026, 5, 4, 7, 15),
+        bristol_type=4,
+        notes="only once please",
+    )
+    await session.commit()
+
+    items = await feed_service.feed_items(session, viewer=user)
+    # The note can surface two ways: as a standalone note card, or in place on
+    # the BM that carries it. Both count, because either is a place a reader
+    # would see it twice.
+    carriers = [
+        i
+        for i in items
+        if i.text == "only once please"
+        or (i.entry is not None and i.entry.notes == "only once please")
+    ]
+
+    assert len(carriers) == 1, f"the note is on the feed {len(carriers)} times"
+    assert carriers[0].kind == feed_service.KIND_BM, (
+        "it should appear on the BM that carries it, not as a second card"
+    )
+
+
+async def test_someone_elses_note_on_a_bm_is_still_published(
+    session: AsyncSession,
+) -> None:
+    """Excluding the viewer's own entries must not silence anyone else's."""
+    mine = await _user(session, "cal")
+    theirs = await _user(session, "bee")
+    await bm_service.log_bm(
+        session,
+        theirs,
+        date(2026, 5, 4),
+        occurred_local=datetime(2026, 5, 4, 7, 15),
+        bristol_type=4,
+        notes="their note, still public",
+    )
+    await session.commit()
+
+    items = await feed_service.feed_items(session, viewer=mine)
+    texts = [i.text for i in items]
+
+    assert "their note, still public" in texts
+
+
+async def test_a_day_note_is_not_dropped_with_the_entries(
+    session: AsyncSession,
+) -> None:
+    """A "nothing today" note has no entry to appear on, so it is kept.
+
+    The exclusion is on entry-notes specifically. A day-note would otherwise
+    lose its only appearance in the feed the moment the person who wrote it
+    looked at the page.
+    """
+    user = await _user(session, "cal")
+    await bm_service.log_nothing_today(
+        session,
+        user,
+        date(2026, 5, 4),
+        notes="nothing happened, and I said so",
+        logged_at=datetime(2026, 5, 4, 20, 0),
+    )
+    await session.commit()
+
+    items = await feed_service.feed_items(session, viewer=user)
+
+    assert any(i.text == "nothing happened, and I said so" for i in items)
