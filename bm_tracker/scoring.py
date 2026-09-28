@@ -312,19 +312,78 @@ async def score_year(
     if not rows:
         return UserScore(user_id=user.id, year=year, days=())
 
+    entries_by_day = await _entries_by_day(session, [row.id for row in rows])
+    return _derive(
+        user=user,
+        year=year,
+        rows=rows,
+        entries_by_day=entries_by_day,
+        window_minutes=window_minutes,
+    )
+
+
+async def _entries_by_day(
+    session: AsyncSession, daily_log_ids: list[int]
+) -> dict[int, list[BmEntry]]:
+    """Return every entry on the given days, grouped by its day.
+
+    One query for all of them. It used to be one per day, which on a two-year
+    history is hundreds of round trips to produce the same answer.
+
+    Args:
+        session: The session to read through.
+        daily_log_ids: The days to load entries for.
+
+    Returns:
+        Entries keyed by `daily_log_id`; a day with no entries is absent.
+
+    """
+    if not daily_log_ids:
+        return {}
+    rows = (
+        await session.scalars(
+            select(BmEntry).where(BmEntry.daily_log_id.in_(daily_log_ids))
+        )
+    ).all()
+    grouped: dict[int, list[BmEntry]] = {}
+    for entry in rows:
+        grouped.setdefault(entry.daily_log_id, []).append(entry)
+    return grouped
+
+
+def _derive(
+    *,
+    user: User,
+    year: int,
+    rows: list[DailyLog],
+    entries_by_day: dict[int, list[BmEntry]],
+    window_minutes: int,
+) -> UserScore:
+    """Build a `UserScore` from rows already in hand.
+
+    The arithmetic half of `score_year`, with no database in it. Split out so
+    the leaderboard can load every user's year once and derive from memory
+    rather than re-querying per person.
+
+    Args:
+        user: The user to score.
+        year: The calendar year.
+        rows: Their days in the year, in order.
+        entries_by_day: Their entries, keyed by `daily_log_id`.
+        window_minutes: The ten-minute bonus window.
+
+    Returns:
+        A `UserScore` with one `DayScore` per recorded day.
+
+    """
+    start, _ = year_bounds(year)
     by_day = {row.day: row for row in rows}
     entry_ids_by_day: dict[date, set[int]] = {}
     noted_by_day: dict[date, set[int]] = {}
     quick_by_day: dict[date, set[int]] = {}
 
     for row in rows:
-        entries = list(
-            (
-                await session.scalars(
-                    select(BmEntry).where(BmEntry.daily_log_id == row.id)
-                )
-            ).all()
-        )
+        entries = entries_by_day.get(row.id, [])
         entry_ids_by_day[row.day] = {entry.id for entry in entries}
         noted_by_day[row.day] = {entry.id for entry in entries if entry.has_note}
         quick_by_day[row.day] = {
@@ -389,6 +448,12 @@ async def score_all_users(
 ) -> list[UserScore]:
     """Derive several users' standings for a leaderboard.
 
+    Three queries for everybody, not three per person. It used to await
+    `score_year` for each user in turn, and `score_year` itself issued a query
+    per day, so eight people with two years of history came to roughly four
+    thousand round trips — about 400ms of the leaderboard's time, against 5ms
+    for the log form.
+
     Args:
         session: The session to read through.
         users: The users to score.
@@ -399,8 +464,34 @@ async def score_all_users(
         One `UserScore` per user, in the order given.
 
     """
+    start, end = year_bounds(year)
+    day_rows = list(
+        (
+            await session.scalars(
+                select(DailyLog).where(
+                    DailyLog.user_id.in_([u.id for u in users]),
+                    DailyLog.day >= start,
+                    DailyLog.day <= end,
+                )
+            )
+        ).all()
+    )
+    entries_by_day = await _entries_by_day(session, [day.id for day in day_rows])
+
+    rows_by_user: dict[int, list[DailyLog]] = {}
+    for day in day_rows:
+        rows_by_user.setdefault(day.user_id, []).append(day)
+    for rows in rows_by_user.values():
+        rows.sort(key=lambda r: r.day)
+
     return [
-        await score_year(session, user, year, window_minutes=window_minutes)
+        _derive(
+            user=user,
+            year=year,
+            rows=rows_by_user.get(user.id, []),
+            entries_by_day=entries_by_day,
+            window_minutes=window_minutes,
+        )
         for user in users
     ]
 

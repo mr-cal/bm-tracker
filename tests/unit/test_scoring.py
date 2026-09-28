@@ -14,6 +14,8 @@ from datetime import date, datetime, timedelta
 import pytest
 from bm_tracker import scoring
 from bm_tracker.models import BmEntry, DailyLog, User
+from bm_tracker.services import bm_service
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
 YEAR = 2026
@@ -494,3 +496,84 @@ async def test_ranking_breaks_ties_deterministically(
     ]
 
     assert forwards == backwards == ["bee", "cal"]
+
+
+async def test_scoring_a_group_costs_the_same_queries_as_scoring_one_person(
+    session: AsyncSession,
+) -> None:
+    """`score_all_users` loads everybody's year once, not once per person.
+
+    It used to await `score_year` for each user in turn, and `score_year` issued
+    a query per *day*, so a leaderboard of eight people with two years of history
+    was thousands of round trips. This counts the statements, which is the thing
+    that was actually wrong: the numbers came out the same either way, so only
+    the cost said anything.
+    """
+    people = []
+    for name in ("cal", "bee", "sam", "jay"):
+        user = await _user(session, name)
+        for offset in range(6):
+            await bm_service.log_nothing_today(
+                session, user, date(2026, 3, 1) + timedelta(days=offset)
+            )
+        people.append(user)
+    await session.commit()
+
+    counted: list[str] = []
+
+    def record(*args: object) -> None:
+        cursor = args[1]
+        counted.append(str(getattr(cursor, "statement", "")))
+
+    engine = session.get_bind()
+    sync_engine = getattr(engine, "sync_engine", engine)
+    event.listen(sync_engine, "before_cursor_execute", record)
+    try:
+        everyone = await scoring.score_all_users(session, people, 2026)
+        everyone_statements = len(counted)
+        counted.clear()
+        await scoring.score_year(session, people[0], 2026)
+        one_person_statements = len(counted)
+    finally:
+        event.remove(sync_engine, "before_cursor_execute", record)
+
+    assert len(everyone) == 4
+    # Four people, four times the work, but the queries do not scale with the
+    # number of people: three for the group against three for one.
+    assert everyone_statements <= one_person_statements + 1, (
+        f"group scoring took {everyone_statements} queries for 4 people; "
+        f"one person took {one_person_statements}"
+    )
+
+
+async def test_scoring_a_group_agrees_with_scoring_each_person(
+    session: AsyncSession,
+) -> None:
+    """Batching is an optimisation, so it must not change a single number."""
+    people = []
+    for name in ("cal", "bee"):
+        user = await _user(session, name)
+        for offset in range(4):
+            day = date(2026, 4, 1) + timedelta(days=offset)
+            await bm_service.log_bm(
+                session,
+                user,
+                day,
+                occurred_local=datetime(2026, 4, 1, 8 + offset, 0),
+                bristol_type=4,
+                notes="a note",
+            )
+        people.append(user)
+    await session.commit()
+
+    batched = await scoring.score_all_users(session, people, 2026)
+    one_at_a_time = [await scoring.score_year(session, user, 2026) for user in people]
+
+    assert [s.logging_points for s in batched] == [
+        s.logging_points for s in one_at_a_time
+    ]
+    assert [s.current_streak for s in batched] == [
+        s.current_streak for s in one_at_a_time
+    ]
+    assert batched[0].days == one_at_a_time[0].days
+    assert batched[1].days == one_at_a_time[1].days
