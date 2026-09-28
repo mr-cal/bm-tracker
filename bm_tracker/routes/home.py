@@ -16,6 +16,11 @@ from bm_tracker.services import audit_service, bm_service
 
 router = APIRouter(tags=["home"])
 
+# The confirmation, held in the session rather than the URL. A query parameter
+# survives a refresh, a bookmark and a shared link, so "Saved." was on the page
+# for good rather than for a moment.
+SAVED_KEY = "settings-saved"
+
 
 def _templates(request: Request) -> Jinja2Templates:
     """Return the app's template environment.
@@ -114,7 +119,7 @@ async def _settings_page(
             "nav": "",
             "csrf_token": csrf_token(request),
             "theme_options": theme.THEME_OPTIONS,
-            "saved": request.query_params.get("saved"),
+            "saved": request.session.pop(SAVED_KEY, None),
             "error": error,
         },
         status_code=status_code,
@@ -136,7 +141,7 @@ async def save_display_name(
     forms.guard_csrf(request, form)
     typed = forms.form_text(form, "display_name") or ""
     try:
-        stored = await bm_service.set_display_name(session, user, typed)
+        await bm_service.set_display_name(session, user, typed)
     except ValueError as exc:
         return await _settings_page(request, user, error=str(exc), status_code=400)
 
@@ -149,7 +154,8 @@ async def save_display_name(
         detail={"field": "display_name"},
     )
     await session.commit()
-    return RedirectResponse(f"/settings?saved={stored[:24]}", status_code=303)
+    request.session[SAVED_KEY] = "Name saved."
+    return RedirectResponse("/settings", status_code=303)
 
 
 @router.post("/settings/theme", response_class=HTMLResponse, response_model=None)
@@ -174,7 +180,8 @@ async def save_theme(
     user.theme = choice
     await session.commit()
 
-    response = RedirectResponse("/settings?saved=theme", status_code=303)
+    request.session[SAVED_KEY] = "Appearance saved."
+    response = RedirectResponse("/settings", status_code=303)
     response.set_cookie(
         theme.COOKIE_NAME,
         choice,

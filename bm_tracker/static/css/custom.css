@@ -1703,3 +1703,9 @@ input[type="date"]::-webkit-inner-spin-button {
 .quick-entry[data-quick-state="open"] { color: var(--bm-normal); }
 .quick-entry[data-quick-state="soon"] { color: var(--bm-warn); }
 .quick-entry[data-quick-state="expired"] { color: var(--bs-secondary-color); }
+
+/* Your own name on a feed card, not a link: see the note in the template. */
+.feed__who--plain {
+  color: var(--bs-body-color);
+  font-weight: 600;
+}

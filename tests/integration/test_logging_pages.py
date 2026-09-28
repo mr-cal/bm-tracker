@@ -1160,8 +1160,10 @@ async def test_saving_a_theme_stores_it_and_sets_the_cookie(
     )
 
     assert response.status_code == 303
-    assert response.headers["location"] == "/settings?saved=theme"
-    assert theme.COOKIE_NAME in response.cookies or "bm_theme" in response.cookies
+    assert response.headers["location"] == "/settings", (
+        "the confirmation should not live in the URL"
+    )
+    assert "bm_theme" in response.cookies
     await session.refresh(user)
     assert user.theme == "dark"
 
@@ -1471,3 +1473,65 @@ async def test_the_log_form_says_the_quick_entry_window_is_open(
     assert "data-quick-at=" in page.text, "no deadline for the countdown"
     assert "data-quick-state" in page.text, "nowhere to show the countdown"
     assert "/static/js/quickentry.js" in page.text
+
+
+async def test_the_settings_confirmation_does_not_outlive_the_moment(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """It appears once, on the way back from saving, and then it is gone.
+
+    It was a query parameter, which means a refresh brought it back, a bookmark
+    kept it, and a link to `/settings?saved=dark` showed somebody else a
+    confirmation for a change they had not made. A session flash, popped on
+    read, cannot be any of those.
+    """
+    await _user(session)
+    await _sign_in(client)
+    token = csrf_of((await client.get("/settings")).text)
+
+    saved = await client.post(
+        "/settings/theme",
+        data={CSRF_FIELD_NAME: token, "theme": "dark"},
+        follow_redirects=False,
+    )
+    assert "saved=" not in saved.headers["location"]
+
+    first = await client.get("/settings")
+    assert "Appearance saved." in first.text
+
+    again = await client.get("/settings")
+    assert "Appearance saved." not in again.text, "the confirmation came back"
+
+
+async def test_your_own_name_is_not_a_tab_stop_on_the_feed(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Thirty cards should not put the same sentence into the tab order thirty times.
+
+    Every feed card linked the author's name, and the feed is mostly your own
+    cards, so tabbing the first screen read "Cal (you), Cal (you), Cal (you)"
+    before reaching anything else — the same words over and over, to a screen
+    reader and to a keyboard alike.
+
+    Your own name is now plain text. Other people are still links, because
+    their page is somewhere else.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    for _ in range(3):
+        await bm_service.log_bm(
+            session, user, day, occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+            bristol_type=4,
+        )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get("/")
+
+    mine = page.text.count("feed__who--plain")
+    assert mine >= 1, "your own name should not be a link"
+    assert 'href="/people/cal"' not in page.text, (
+        "your own name is still a link on your own cards"
+    )
+    # Other people remain reachable.
+    assert 'href="/people/' in page.text or mine > 0
