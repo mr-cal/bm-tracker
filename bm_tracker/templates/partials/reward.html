@@ -38,12 +38,26 @@
     <p class="reward__said">{{ flash.said }}</p>
     {% endif %}
 
+    {#
+      Name *and* description. "The Marathon" on its own does not say five in a
+      single day, so a reader who has just earned it learns nothing about what
+      they did — and the whole point of showing it is that they did something
+      worth repeating.
+    #}
     {% if flash.unlocked %}
-    <p class="reward__unlocked">
-      {% for name in flash.unlocked %}
-      <span class="badge text-bg-warning">{{ icon("trophy") }} {{ name }}</span>
+    <ul class="reward__unlocked">
+      {% for item in flash.unlocked %}
+      <li class="reward__award">
+        <img class="reward__award-icon" src="/static/img/badges/{{ item.icon }}.svg"
+             alt="" width="34" height="34" />
+        <span class="reward__award-body">
+          <strong class="reward__award-name">{{ item.name }}</strong>
+          <span class="reward__award-desc">{{ item.description }}</span>
+        </span>
+        <span class="reward__award-points">+{{ item.points }}</span>
+      </li>
       {% endfor %}
-    </p>
+    </ul>
     {% endif %}
 
     <a class="btn btn-primary reward__dismiss" href="/dashboard">Done</a>

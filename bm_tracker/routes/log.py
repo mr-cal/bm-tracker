@@ -8,8 +8,7 @@ large share of days actually are.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
-from dataclasses import field as dataclasses_field
+from dataclasses import dataclass, field, replace
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -43,10 +42,12 @@ class Celebration:
     """
 
     said: str | None = None
-    unlocked: tuple[str, ...] = ()
+    # Mappings rather than names: the reward screen has to say what you *did* to
+    # earn something, and "The Marathon" on its own does not say five in a day.
+    unlocked: list[dict[str, object]] = field(default_factory=list)
     # The itemised breakdown of what the last write earned, so the reward
     # screen can show the rules one at a time rather than a single number.
-    reward: list[dict[str, object]] = dataclasses_field(default_factory=list)
+    reward: list[dict[str, object]] = field(default_factory=list)
     reward_total: int = 0
 
 
@@ -275,7 +276,19 @@ async def _celebrate_after(
         if said is not None:
             break
 
-    return Celebration(said=said, unlocked=tuple(u.achievement.name for u in unlocks))
+    return Celebration(
+        said=said,
+        unlocked=[
+            {
+                "key": u.achievement.key,
+                "name": u.achievement.name,
+                "description": u.achievement.description,
+                "icon": u.achievement.icon,
+                "points": u.achievement.points,
+            }
+            for u in unlocks
+        ],
+    )
 
 
 @router.get("/log", response_class=HTMLResponse, response_model=None)

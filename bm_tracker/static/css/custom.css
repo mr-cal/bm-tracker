@@ -1793,8 +1793,58 @@ input[type="date"]::-webkit-inner-spin-button {
   margin: 0 0 0.7rem;
 }
 
+/* An unlock, as a card rather than a badge. It has a name, a sentence saying
+ * what earns it, and a value, and a badge cannot hold any of that. */
 .reward__unlocked {
+  list-style: none;
   margin: 0 0 0.7rem;
+  padding: 0;
+  text-align: left;
+}
+
+.reward__award {
+  align-items: center;
+  background-color: var(--bm-warn-soft);
+  border: 1px solid var(--bm-warn-edge);
+  border-radius: var(--bs-border-radius);
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.reward__award:last-child {
+  margin-bottom: 0;
+}
+
+.reward__award-icon {
+  flex: 0 0 auto;
+  height: 34px;
+  width: 34px;
+}
+
+.reward__award-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.reward__award-name {
+  font-size: 0.9rem;
+}
+
+.reward__award-desc {
+  color: var(--bs-secondary-color);
+  font-size: 0.76rem;
+  line-height: 1.25;
+}
+
+.reward__award-points {
+  color: var(--bm-warn);
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 .reward__dismiss {

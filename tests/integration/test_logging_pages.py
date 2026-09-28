@@ -1731,3 +1731,45 @@ async def test_the_reveal_thresholds_track_real_usage(
     assert values[-1] < scoring.total_for_run(365), (
         "the last tier should open within a year, not never"
     )
+
+
+async def test_an_unlock_says_what_you_did_to_earn_it(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The reward screen names the achievement *and* says what earns it.
+
+    "The Marathon" on its own does not say five entries in a single day, so a
+    reader who has just earned it learns nothing about what they did — and
+    showing the unlock at all is only worth it if they can take the lesson.
+    """
+    await _user(session)
+    await _sign_in(client)
+    day = now_in("Europe/London")[0]
+    token = csrf_of((await client.get("/log")).text)
+
+    # Five entries today is The Marathon; the fifth is the one that earns it.
+    #
+    # The flash is popped on read, so the page that carries the reward is the
+    # *first* GET after the final POST. Fetching another one to refresh the
+    # token would spend it, and this test asserted on nothing.
+    for index, hour in enumerate((8, 9, 10, 11, 12)):
+        response = await client.post(
+            "/log",
+            data={
+                CSRF_FIELD_NAME: token,
+                "date": day.isoformat(),
+                "time": f"{hour:02d}:00",
+                "choice": "bm:3",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303, response.text
+        page = await client.get("/log")
+        if index < 4:
+            token = csrf_of(page.text)
+
+    assert "reward__award" in page.text, "no unlock on the reward screen"
+    assert "The Marathon" in page.text
+    assert "five in a single day" in page.text.lower(), (
+        "the unlock must say what earns it, not only what it is called"
+    )
