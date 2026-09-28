@@ -1288,3 +1288,85 @@ async def test_the_settings_sections_are_divided(
     assert (
         ".settings-section--first" in (await client.get("/static/css/custom.css")).text
     )
+
+
+async def test_the_drawer_and_the_tab_bar_agree(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The same destinations, in the same order, in both navigation surfaces.
+
+    They were two hand-written lists that had drifted: the tab bar led with
+    Log, the drawer started at Feed, and the only thing they agreed on was the
+    middle. A person who learned the tab bar had to re-learn the drawer.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/")
+
+    tabs = re.findall(r'class="app-tab[^"]*"[^>]*href="([^"]+)"', page.text)
+    drawer = re.findall(r'class="app-drawer__list".*?</ul>', page.text, re.S)
+    assert drawer, "no drawer list"
+    links = re.findall(r'href="([^"]+)"', drawer[0])
+
+    assert tabs, "no tab bar"
+    assert links[: len(tabs)] == tabs, (
+        f"the drawer should open with the tab bar, in order: {links[: len(tabs)]} vs {tabs}"
+    )
+
+
+async def test_the_drawer_marks_the_page_you_are_on(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The active item is the same comparison in both surfaces."""
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/people")
+
+    assert 'aria-current="page"' in page.text
+    assert page.text.count("aria-current") == 2, "one in the tabs, one in the drawer"
+
+
+async def test_the_dashboard_has_no_log_button(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Logging is a tap away in the tab bar; the dashboard does not repeat it."""
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/dashboard")
+
+    assert "Log a BM" not in page.text
+    assert 'class="app-tab' in page.text
+    assert 'href="/log"' in page.text
+
+
+async def test_the_entries_page_has_one_header_line(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Title, count, year and button on one line, and no summary tiles.
+
+    The three tiles repeated what that line and the pager at the bottom already
+    said, and on a phone they were three screens of scrolling before the first
+    entry.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+        bristol_type=4,
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get("/dashboard/entries")
+
+    assert 'class="entries-bar"' in page.text
+    assert page.text.count('name="year"') == 1
+    assert "Show</button>" in page.text
+    assert 'class="tile"' not in page.text, "the summary tiles should be gone"
+    assert "<h1>All entries</h1>" not in page.text, "the title moved into the bar"

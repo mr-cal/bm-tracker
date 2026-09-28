@@ -536,44 +536,74 @@ body {
     display: none;
   }
 
+  /* These cards were six labelled lines each, so thirty entries ran to about
+   * forty screens. They are now a single line: the date, the type dot, and
+   * whatever is worth saying, with the rest of the fields available on the row
+   * rather than stacked above it. */
   .entries tr {
     background-color: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-left: 3px solid var(--bs-secondary);
     border-radius: var(--bs-border-radius);
-    margin-bottom: 0.6rem;
-    padding: 0.4rem 0.6rem;
+    margin-bottom: 0.3rem;
+    padding: 0.25rem 0.5rem;
   }
 
   .entries td {
     border: 0;
-    display: flex;
-    gap: 0.5rem;
-    justify-content: space-between;
-    padding: 0.15rem 0;
+    display: inline-flex;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    margin-right: 0.45rem;
+    padding: 0;
+    vertical-align: middle;
   }
 
   /* The field name comes from the data-label the template already carries, so
-   * the label and the value can never drift apart. */
+   * the label and the value can never drift apart. It is a title attribute
+   * here rather than visible text: a phone-width row has room for the value,
+   * and the label is what the dot and the tag already say. */
   .entries td::before {
-    color: var(--bs-secondary-color);
     content: attr(data-label);
-    flex: 0 0 5.5rem;
-    font-size: 0.78rem;
-    text-transform: uppercase;
+    flex: 0 0 auto;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
   }
 
   .entries td:first-child {
     font-weight: 600;
-    margin-bottom: 0.15rem;
+    font-variant-numeric: tabular-nums;
   }
 
-  .entries td:first-child::before {
+  /* A note is the one field worth a second line, and it is the reason most
+   * people open this page. */
+  .entries__note {
+    display: block;
+    max-width: none;
+    padding-top: 0.15rem;
+  }
+
+  /* An empty cell is not said out loud either: `display: none` removes it from
+   * the accessibility tree as well as from the screen. */
+  .entries td:empty {
     display: none;
   }
 
-  .entries__note {
-    max-width: none;
+  .entries .tag {
+    font-size: 0.68rem;
+  }
+
+  .entries__action {
+    margin-left: auto;
+  }
+
+  .entries__action .btn {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
   }
 }
 
@@ -1519,4 +1549,47 @@ input[type="date"]::-webkit-inner-spin-button {
 .settings-list dd {
   font-weight: 600;
   margin: 0;
+}
+
+/* --- the entries page header --------------------------------------------- */
+
+/* Title, count, year and button on one line: the year is a control on this
+ * page, not a section heading, and a block of its own pushed the rows a screen
+ * down. */
+.entries-bar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.entries-bar__title {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.entries-bar__count {
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+/* The year control is one unbreakable span: a 390px phone will move the whole
+ * thing to a second line, but never split the select away from its button. */
+.entries-bar__year {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.entries-bar__year-label {
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+}
+
+.entries-bar__year .form-select {
+  width: auto;
 }

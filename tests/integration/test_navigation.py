@@ -110,8 +110,12 @@ async def test_the_drawer_holds_every_destination(
 
     page = await client.get("/")
 
+    drawer = re.search(r'class="app-drawer__list".*?</ul>', page.text, re.S)
+    assert drawer, "no drawer"
+    links = re.findall(r'href="([^"]+)"', drawer.group(0))
     for href in (
         "/",
+        "/log",
         "/dashboard",
         "/people",
         "/leaderboard",
@@ -119,7 +123,10 @@ async def test_the_drawer_holds_every_destination(
         "/settings",
         "/help",
     ):
-        assert f'<a href="{href}">' in page.text, f"{href} is not reachable"
+        # Match the href, not the whole tag: the current page's link carries
+        # aria-current and a class, and asserting on the closing bracket meant
+        # the feed was "unreachable" precisely because you were on it.
+        assert href in links, f"{href} is not reachable; the drawer has {links}"
     assert 'id="nav"' in page.text, "no drawer"
     assert 'href="#nav"' in page.text, "nothing opens the drawer"
 

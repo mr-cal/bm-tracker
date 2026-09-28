@@ -15,7 +15,30 @@
 
   Icons are SVG, not emoji. Emoji need a colour-emoji font installed; where one
   is missing they render as a tofu box, which is what the date picker was doing.
+
+  The drawer and the tab bar are rendered from one list. They were two
+  hand-written lists that had drifted: the tab bar led with Log, the drawer
+  started at Feed, and the only thing they agreed on was the middle. Declaring
+  the destinations once means the drawer cannot end up in a different order
+  from the tabs again, and the highlighted item is the same comparison in both.
 #}
+{#
+  The four places you go, in the order they appear in both surfaces. The tab bar
+  renders exactly these; the drawer renders these and then the rest.
+#}
+{% set primary_nav = [
+  {"key": "log",    "href": "/log",         "icon": "log",  "label": "Log"},
+  {"key": "feed",   "href": "/",            "icon": "feed", "label": "Feed"},
+  {"key": "people", "href": "/people",      "icon": "people", "label": "People"},
+  {"key": "board",  "href": "/leaderboard", "icon": "trophy", "label": "Board"},
+] %}
+{% set secondary_nav = [
+  {"key": "you",      "href": "/dashboard",   "icon": "user",     "label": "You"},
+  {"key": "badges",   "href": "/achievements", "icon": "trophy", "label": "Badges"},
+  {"key": "settings", "href": "/settings",   "icon": "settings", "label": "Settings"},
+  {"key": "admin",    "href": "/admin",      "icon": "shield",   "label": "Admin", "admin_only": true},
+  {"key": "help",     "href": "/help",       "icon": "help",     "label": "Help"},
+] %}
 <a class="skip-link" href="#main">Skip to content</a>
 
 <nav class="navbar bg-body-tertiary border-bottom app-topbar">
@@ -45,31 +68,27 @@
     </div>
 
     <ul class="app-drawer__list">
-      <li><a href="/">Feed</a></li>
-      <li><a href="/dashboard">You</a></li>
-      <li><a href="/people">People</a></li>
-      <li><a href="/leaderboard">Board</a></li>
-      <li><a href="/achievements">Badges</a></li>
-      <li><a href="/settings">Settings</a></li>
-      {% if user is defined and user.is_admin %}
-      <li><a href="/admin">Admin</a></li>
+      {% for item in primary_nav + secondary_nav %}
+      {% if not item.get("admin_only") or (user is defined and user.is_admin) %}
+      <li>
+        <a href="{{ item.href }}"{% if nav is defined and nav == item.key %}
+           class="app-drawer__link--on" aria-current="page"{% endif %}>
+          {{ icon_svg(item.icon, "app-drawer__glyph") }}
+          <span>{{ item.label }}</span>
+        </a>
+      </li>
       {% endif %}
-      <li><a href="/help">Help</a></li>
+      {% endfor %}
     </ul>
   </div>
 </div>
 
 <nav class="app-tabs" aria-label="Main">
-  <a class="app-tab{% if nav == 'log' %} app-tab--on{% endif %}" href="/log">
-    {{ icon_svg("log", "app-tab__glyph") }}<span>Log</span>
+  {% for item in primary_nav %}
+  <a class="app-tab{% if nav is defined and nav == item.key %} app-tab--on{% endif %}"
+     href="{{ item.href }}"{% if nav is defined and nav == item.key %}
+     aria-current="page"{% endif %}>
+    {{ icon_svg(item.icon, "app-tab__glyph") }}<span>{{ item.label }}</span>
   </a>
-  <a class="app-tab{% if nav == 'feed' %} app-tab--on{% endif %}" href="/">
-    {{ icon_svg("feed", "app-tab__glyph") }}<span>Feed</span>
-  </a>
-  <a class="app-tab{% if nav == 'people' %} app-tab--on{% endif %}" href="/people">
-    {{ icon_svg("people", "app-tab__glyph") }}<span>People</span>
-  </a>
-  <a class="app-tab{% if nav == 'board' %} app-tab--on{% endif %}" href="/leaderboard">
-    {{ icon_svg("trophy", "app-tab__glyph") }}<span>Board</span>
-  </a>
+  {% endfor %}
 </nav>
