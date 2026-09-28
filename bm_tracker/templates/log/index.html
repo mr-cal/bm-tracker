@@ -78,7 +78,7 @@
           <span class="pick__card pick__card--nothing">
             {{ icon_svg("minus", "pick__icon") }}
             <span class="pick__title">Nothing today</span>
-            <span class="pick__hint">You still turned up and said so.</span>
+            <span class="pick__hint">{{ hints.nothing_today }}</span>
           </span>
         </label>
       </div>
@@ -90,7 +90,7 @@
       correct with the script blocked.
     #}
     <fieldset class="picks" data-bm-only>
-      <legend class="picks__legend">Anything worth noting? <span class="picks__optional">(optional)</span></legend>
+      <legend class="picks__legend">{{ hints.noting }} <span class="picks__optional">(optional)</span></legend>
       <div class="picks__grid picks__grid--flags">
         <label class="pick">
           <input class="pick__input" type="checkbox" name="spicy" />
@@ -117,7 +117,7 @@
           <input class="pick__input" type="radio" name="strain" value="{{ level.value }}" />
           <span class="pick__card pick__card--flag pick__card--strain-{{ level.value }}">
             <span class="pick__title">{{ level.label }}</span>
-            <span class="pick__hint">{{ level.plain }}</span>
+            <span class="pick__hint">{{ hints['strain_' ~ level.value] }}</span>
           </span>
         </label>
         {% endfor %}

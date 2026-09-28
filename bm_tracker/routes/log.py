@@ -70,6 +70,7 @@ def _templates(request: Request) -> Jinja2Templates:
 
 async def _render_log(
     request: Request,
+    session: DbSession,
     user: User,
     *,
     error: str | None = None,
@@ -85,6 +86,7 @@ async def _render_log(
 
     Args:
         request: The incoming request.
+        session: The database session, for the rotating form hints.
         user: The signed-in user.
         error: An error message, if any.
         status_code: The status to return, so a rejected submission is a 400
@@ -107,6 +109,7 @@ async def _render_log(
             "flash": flash,
             "today": local_today,
             "now": now,
+            "hints": await _form_hints(session, user),
             "bristol_scale": bristol.BRISTOL_SCALE,
             "strain_scale": strain.STRAIN_SCALE,
             "csrf_token": csrf_token(request),
@@ -137,6 +140,27 @@ async def _reload(session: DbSession, user_id: int) -> User:
     return (
         fresh if fresh is not None else User(id=user_id, username="", display_name="")
     )
+
+
+async def _form_hints(session: DbSession, user: User) -> dict[str, str]:
+    """Return the rotating hints for the log form.
+
+    Args:
+        session: The session to record what was shown in.
+        user: Who the hints are for; the rotation is per person.
+
+    Returns:
+        A mapping of slot to the chosen line.
+
+    """
+    slots = ("noting", "nothing_today", "strain_1", "strain_2", "strain_3")
+    chosen = {slot: await celebrate.variant(session, user.id, slot) for slot in slots}
+    # Committed, because the rotation is stored: without this the count never
+    # moves, every render picks the same line, and the hints sit there looking
+    # random while being perfectly fixed. This is the one write the log page
+    # makes, and it is what makes the next one different.
+    await session.commit()
+    return chosen
 
 
 def _reward_row(line: rewards.RewardLine) -> dict[str, object]:
@@ -294,19 +318,21 @@ async def _celebrate_after(
 @router.get("/log", response_class=HTMLResponse, response_model=None)
 async def log_page(
     request: Request,
+    session: DbSession,
     user: AuthenticatedUser,
 ) -> HTMLResponse:
     """Show the logging form, pre-filled with the current date and time.
 
     Args:
         request: The incoming request.
+        session: The database session, for the rotating form hints.
         user: The authenticated user.
 
     Returns:
         The rendered page.
 
     """
-    return await _render_log(request, user)
+    return await _render_log(request, session, user)
 
 
 CHOICE_NOTHING = "nothing"
@@ -406,6 +432,7 @@ async def submit_log(
         await session.rollback()
         return await _render_log(
             request,
+            session,
             await _reload(session, user_id),
             error=str(exc),
             status_code=400,

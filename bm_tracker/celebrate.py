@@ -47,10 +47,12 @@ class MessageError(ValueError):
     """Raised when the message catalogue is malformed."""
 
 
-@dataclass(frozen=True, slots=True)
-class Message:
-    """One line of celebration copy."""
+#: Form hints, grouped by slot. Filled in by `load`.
+_VARIANTS_BY_SLOT: dict[str, tuple[Message, ...]] = {}
 
+
+@dataclass(frozen=True, slots=True)
+class Message:  # noqa: D101
     id: str
     pool: str
     text: str
@@ -99,6 +101,19 @@ def load(path: Path | None = None) -> dict[str, tuple[Message, ...]]:
         msg = f"Catalogue must define a {DEFAULT_POOL!r} pool as the fallback"
         raise MessageError(msg)
 
+    variants: dict[str, list[Message]] = defaultdict(list)
+    for entry in data.get("variant", []):
+        if not isinstance(entry, dict) or not {"id", "slot", "text"} <= set(entry):
+            msg = f"Malformed variant entry: {entry}"
+            raise MessageError(msg)
+        variants[str(entry["slot"])].append(
+            Message(
+                id=str(entry["id"]), pool=str(entry["slot"]), text=str(entry["text"])
+            )
+        )
+
+    global _VARIANTS_BY_SLOT  # noqa: PLW0603 - the catalogue is loaded once
+    _VARIANTS_BY_SLOT = {name: tuple(ms) for name, ms in variants.items()}
     return {name: tuple(messages) for name, messages in pools.items()}
 
 
@@ -107,6 +122,62 @@ if TYPE_CHECKING:
 
 #: Loaded once at import, alongside the achievement registry.
 POOLS: Final[dict[str, tuple[Message, ...]]] = load()
+
+
+async def variant(session: AsyncSession, user_id: int, slot: str) -> str:
+    """Return a form hint for a slot, rotating fairly per person.
+
+    The same rule as `pick`, for the same reason: a fixed string on a form you
+    open several times a day stops being a hint. It borrows the celebration
+    table rather than adding a second one, so there is one rotation to reason
+    about.
+
+    Args:
+        session: The session to read and write through.
+        user_id: Who the hint is for. The rotation is per user.
+        slot: Which set of hints, e.g. "nothing_today".
+
+    Returns:
+        The chosen hint, or the slot name if the catalogue has none for it, so
+        a missing entry shows something rather than nothing.
+
+    """
+    candidates = list(_VARIANTS_BY_SLOT.get(slot, ()))
+    if not candidates:
+        return slot.replace("_", " ")
+
+    seen = {
+        row.message_id: row
+        for row in (
+            await session.scalars(
+                select(CelebrationSeen).where(
+                    CelebrationSeen.user_id == user_id,
+                    CelebrationSeen.message_id.in_([m.id for m in candidates]),
+                )
+            )
+        ).all()
+    }
+    now = utcnow()
+    chosen = min(
+        candidates,
+        key=lambda message: (
+            seen[message.id].shown_count if message.id in seen else 0,
+            seen[message.id].last_shown_at if message.id in seen else now,
+            message.id,
+        ),
+    )
+
+    row = seen.get(chosen.id)
+    if row is None:
+        session.add(
+            CelebrationSeen(
+                user_id=user_id, message_id=chosen.id, shown_count=1, last_shown_at=now
+            )
+        )
+    else:
+        row.shown_count += 1
+        row.last_shown_at = now
+    return chosen.text
 
 
 async def pick(

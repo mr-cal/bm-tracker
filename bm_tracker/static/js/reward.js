@@ -24,9 +24,12 @@
     var total = panel.querySelector(".reward__total");
     var said = panel.querySelector(".reward__said");
     var unlocked = panel.querySelector(".reward__unlocked");
+    var unlockedTitle = panel.querySelector(".reward__unlocked-title");
     var dismiss = panel.querySelector(".reward__dismiss");
 
-    var everything = lines.concat([total, said, unlocked, dismiss].filter(Boolean));
+    var everything = lines
+      .concat([total, unlockedTitle, unlocked, said, dismiss])
+      .filter(Boolean);
     everything.forEach(function (el) {
       el.classList.add("reward__pending");
     });
@@ -49,19 +52,22 @@
       }, delay);
       delay += 420;
     }
+    // The achievements come after the total, not after the line about you: the
+    // numbers are what earned them, and showing the name first spoils it.
+    [unlockedTitle, unlocked].forEach(function (el) {
+      if (!el) return;
+      window.setTimeout(function () {
+        el.classList.remove("reward__pending");
+        el.classList.add("reward__arrive");
+      }, delay);
+      delay += 260;
+    });
     if (said) {
       window.setTimeout(function () {
         said.classList.remove("reward__pending");
         said.classList.add("reward__arrive");
       }, delay);
       delay += 300;
-    }
-    if (unlocked) {
-      window.setTimeout(function () {
-        unlocked.classList.remove("reward__pending");
-        unlocked.classList.add("reward__arrive");
-      }, delay);
-      delay += 260;
     }
     if (dismiss) {
       window.setTimeout(function () {

@@ -108,3 +108,100 @@ text = "Consider it logged and out of your head."
 id = "bouncy_20"
 pool = "bouncy"
 text = "The Bristol scale is satisfied."
+
+# ---------------------------------------------------------------------------
+# Interface hints.
+#
+# Same idea and the same rotation as the celebration lines, for the three places
+# the log form says something dry: what the optional flags are, how each level of
+# effort felt, and what "nothing today" means. Fixed wording on a form you open a
+# few times a day stops being a hint and starts being furniture; these rotate
+# through the same fair-by-construction rule, so nobody sees the same joke twice
+# in a row and everybody eventually sees all of them.
+#
+# `slot` groups them. A slot is picked from on every render of the log form.
+
+[[variant]]
+id = "hint_noting_01"
+slot = "noting"
+text = "Anything worth noting?"
+
+[[variant]]
+id = "hint_noting_02"
+slot = "noting"
+text = "Anything else worth remembering?"
+
+[[variant]]
+id = "hint_noting_03"
+slot = "noting"
+text = "The interesting part, if there is one"
+
+[[variant]]
+id = "hint_noting_04"
+slot = "noting"
+text = "Anything the log should know about this one?"
+
+[[variant]]
+id = "hint_nothing_01"
+slot = "nothing_today"
+text = "You still turned up and said so."
+
+[[variant]]
+id = "hint_nothing_02"
+slot = "nothing_today"
+text = "That still counts. Turning up is the whole game."
+
+[[variant]]
+id = "hint_nothing_03"
+slot = "nothing_today"
+text = "An empty day is a logged day."
+
+[[variant]]
+id = "hint_nothing_04"
+slot = "nothing_today"
+text = "Nothing happened, and you noticed."
+
+[[variant]]
+id = "hint_strain_1_01"
+slot = "strain_1"
+text = "Came out on its own."
+
+[[variant]]
+id = "hint_strain_1_02"
+slot = "strain_1"
+text = "Barely had to think about it."
+
+[[variant]]
+id = "hint_strain_1_03"
+slot = "strain_1"
+text = "Straight out, no ceremony."
+
+[[variant]]
+id = "hint_strain_2_01"
+slot = "strain_2"
+text = "Needed a bit of pushing."
+
+[[variant]]
+id = "hint_strain_2_02"
+slot = "strain_2"
+text = "Some negotiation involved."
+
+[[variant]]
+id = "hint_strain_2_03"
+slot = "strain_2"
+text = "A moderate amount of persuasion."
+
+[[variant]]
+id = "hint_strain_3_01"
+slot = "strain_3"
+text = "Took real effort."
+
+[[variant]]
+id = "hint_strain_3_02"
+slot = "strain_3"
+text = "A genuine production."
+
+[[variant]]
+id = "hint_strain_3_03"
+slot = "strain_3"
+text = "Considerable commitment was required."
