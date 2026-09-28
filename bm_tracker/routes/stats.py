@@ -186,6 +186,10 @@ async def achievements_page(
         window_minutes=request.app.state.settings.quick_entry_window_minutes,
     )
 
+    # Ordered by what the tier is worth, not by whatever order the TOML file
+    # happened to define them in. Insertion order put the page out as Common,
+    # Rare, Uncommon, Legendary — 2, 10, 5, 20 — which reads as nonsense for a
+    # collection laid out to be skimmed.
     grouped: dict[str, list] = {}
     for status in statuses:
         grouped.setdefault(status.achievement.tier, []).append(status)
@@ -197,7 +201,11 @@ async def achievements_page(
             "user": user,
             "year": year,
             "statuses": statuses,
-            "grouped": grouped,
+            "grouped": dict(
+                sorted(
+                    grouped.items(), key=lambda kv: engine.REGISTRY.tiers.get(kv[0], 0)
+                )
+            ),
             "earned_count": sum(1 for s in statuses if s.unlocked),
             "earned_points": sum(s.points for s in statuses if s.unlocked),
             "tier_points": engine.REGISTRY.tiers,

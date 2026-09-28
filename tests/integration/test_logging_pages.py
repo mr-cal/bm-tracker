@@ -1421,3 +1421,27 @@ async def test_times_are_written_the_way_a_person_says_them(
         page = await client.get(path)
         assert "7:30 pm" in page.text, f"{path} is not using a 12-hour clock"
         assert "19:30" not in page.text, f"{path} is rendering a 24-hour clock"
+
+
+async def test_achievement_tiers_are_ordered_by_what_they_are_worth(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The collection reads cheapest first, hardest last.
+
+    It was rendering in the order the TOML file defined the tiers — Common,
+    Rare, Uncommon, Legendary, which is 2, 10, 5, 20 points. A page of
+    achievements laid out to be skimmed cannot present them in an order that
+    means nothing.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/achievements")
+
+    headings = re.findall(r"<h2>([A-Za-z]+)<span[^>]*> · (\d+) pts", page.text)
+    assert headings, "no tier headings found"
+    points = [int(value) for _, value in headings]
+    assert points == sorted(points), f"tiers are out of order: {headings}"
+    assert [name for name, _ in headings] == [
+        name.capitalize() for name, _ in headings
+    ], "every tier should appear"
