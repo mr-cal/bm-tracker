@@ -57,7 +57,7 @@
   }
 
   function init() {
-    var icons = document.querySelectorAll(".badge-icon");
+    var icons = document.querySelectorAll(".achievement-icon");
     for (var i = 0; i < icons.length; i++) {
       wire(icons[i]);
     }

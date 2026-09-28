@@ -519,27 +519,41 @@ async def score_all_users(
 
 
 def rank(
-    scores: list[UserScore], users_by_id: dict[int, User]
+    scores: list[UserScore],
+    users_by_id: dict[int, User],
+    achievement_points: dict[int, int] | None = None,
 ) -> list[tuple[User, UserScore]]:
     """Order standings for a leaderboard.
 
-    Sorted by logging points, so achievement points cannot reorder the board.
+    Sorted by logging points plus achievement points. It used to sort on logging
+    points alone, on the argument that a growing catalogue could not silently
+    rebalance the board. That was defensible and it is not what a reader of the
+    page expects: somebody who did everything this year and unlocked a pile of
+    achievements was being ranked below somebody who only logged. One number,
+    and the achievement points are on the row beside it rather than hidden.
+
+    The trade is real and worth naming. Adding achievement #201 to the catalogue
+    moves the board for everybody who had it, which is what "one number" means.
     Ties break on the longest streak, then on the username, so the order is
     stable between renders rather than depending on dict ordering.
 
     Args:
         scores: The standings to order.
         users_by_id: A lookup from user id to `User`, for tie-breaking.
+        achievement_points: Points earned per user in the same year. Absent or
+            missing an entry counts as zero.
 
     Returns:
         `(user, score)` pairs, best first.
 
     """
+    earned = achievement_points or {}
 
-    def _key(pair: tuple[int, UserScore]) -> tuple[int, int, str]:
+    def _key(pair: tuple[int, UserScore]) -> tuple[int, int, int, str]:
         user_id, score = pair
         username = users_by_id[user_id].username if user_id in users_by_id else ""
-        return (-score.logging_points, -score.longest_streak, username)
+        total = score.logging_points + earned.get(user_id, 0)
+        return (-total, -score.logging_points, -score.longest_streak, username)
 
     pairs = [(score.user_id, score) for score in scores]
     pairs.sort(key=_key)

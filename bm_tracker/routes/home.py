@@ -64,7 +64,8 @@ async def help_page(request: Request, user: AuthenticatedUser) -> HTMLResponse:
                 "quick_points": scoring.POINTS_QUICK_ENTRY,
                 "backfill_points": scoring.POINTS_BACKFILLED_DAY,
                 "quick_window": request.app.state.settings.quick_entry_window_minutes,
-                "tier_points": min(engine.REGISTRY.tiers.values()),
+                "tier_min": min(engine.REGISTRY.tiers.values()),
+                "tier_max": max(engine.REGISTRY.tiers.values()),
                 "achievement_count": len(engine.REGISTRY),
             },
             # From `scoring`, not hand-rolled: the worked example cannot

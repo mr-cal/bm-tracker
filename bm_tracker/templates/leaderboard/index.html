@@ -34,7 +34,7 @@
         {% if row.is_you %}<span class="board__chip board__chip--you">you</span>{% endif %}
       </a>
       <span class="board__points">
-        <strong>{{ row.score.logging_points }}</strong>
+        <strong>{{ row.total }}</strong>
         <span class="board__points-label">points</span>
       </span>
       <dl class="board__stats">
@@ -42,6 +42,10 @@
         <div><dt>Longest streak</dt><dd>{{ row.score.longest_streak }}</dd></div>
         <div><dt>Days logged</dt><dd>{{ row.score.days_logged }}</dd></div>
         <div><dt>BMs</dt><dd>{{ row.score.bms }}</dd></div>
+        <div>
+          <dt>Of which achievements</dt>
+          <dd>{{ row.achievement_points }}</dd>
+        </div>
       </dl>
     </li>
     {% else %}
@@ -50,9 +54,10 @@
   </ol>
 
   <p class="text-body-secondary board__footnote">
-    Ranked on logging points for {{ year }}.
-    Achievement points are tracked separately so a badge cannot reorder this
-    list.
+    Ranked on everything you earned in {{ year }}: points for logging, plus
+    points for the achievements you unlocked. The split is shown on each row, so
+    you can see how much of a total came from turning up and how much came from
+    the collection.
   </p>
 </main>
 {% endblock %}

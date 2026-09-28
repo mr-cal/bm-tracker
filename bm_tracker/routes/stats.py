@@ -16,7 +16,7 @@ from bm_tracker import strain as strain_lib
 from bm_tracker.achievements import engine
 from bm_tracker.dependencies import AuthenticatedUser, DbSession, csrf_token
 from bm_tracker.forms import int_arg as _int_arg
-from bm_tracker.models import BmEntry, DailyLog, User
+from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
 from bm_tracker.timezones import now_in, year_bounds
 
 router = APIRouter(tags=["stats"])
@@ -244,8 +244,18 @@ async def leaderboard(
     )
     window = request.app.state.settings.quick_entry_window_minutes
     scores = await scoring.score_all_users(session, users, year, window_minutes=window)
+    # One query for everybody's achievement points in the year, so the rank can
+    # be a single number rather than two standings that never quite add up.
+    earned_rows = (
+        await session.execute(
+            select(AchievementUnlock.user_id, func.sum(AchievementUnlock.points))
+            .where(AchievementUnlock.year == year)
+            .group_by(AchievementUnlock.user_id)
+        )
+    ).all()
+    earned = {uid: int(total or 0) for uid, total in earned_rows}
     # `rank` yields (User, UserScore) pairs, already ordered best-first.
-    ordered = scoring.rank(scores, {u.id: u for u in users})
+    ordered = scoring.rank(scores, {u.id: u for u in users}, achievement_points=earned)
 
     return _templates(request).TemplateResponse(
         request,
@@ -260,6 +270,8 @@ async def leaderboard(
                     "rank": index + 1,
                     "person": person,
                     "score": score,
+                    "achievement_points": earned.get(person.id, 0),
+                    "total": score.logging_points + earned.get(person.id, 0),
                     "is_you": person.id == user.id,
                 }
                 for index, (person, score) in enumerate(ordered)

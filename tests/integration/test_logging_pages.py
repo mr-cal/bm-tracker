@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 import pytest
 from bm_tracker import auth, theme
 from bm_tracker.dependencies import CSRF_FIELD_NAME, CSRF_HEADER_NAME
-from bm_tracker.models import BmEntry, DailyLog, User
+from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
 from bm_tracker.services import bm_service
 from bm_tracker.timezones import now_in
 from httpx import ASGITransport, AsyncClient
@@ -722,7 +722,7 @@ async def test_the_feed_does_not_show_per_note_points(
 # --- leaderboard ----------------------------------------------------------
 
 
-async def test_leaderboard_ranks_by_points(
+async def test_leaderboard_ranks_by_logging_plus_achievements(
     client: AsyncClient, session: AsyncSession
 ) -> None:
     """Best first, with each person's real total."""
@@ -747,7 +747,7 @@ async def test_leaderboard_ranks_by_points(
     assert page.status_code == 200
     body = page.text
     assert body.index("Cal") < body.index("Bee"), "higher score should rank first"
-    assert "Achievement points are tracked separately" in body
+    assert "Ranked on everything you earned" in body
 
 
 async def test_leaderboard_excludes_suspended_users(
@@ -1600,3 +1600,44 @@ async def test_the_log_form_no_longer_counts_down_the_quick_window(
     assert "quick-entry" not in page.text
     assert "data-quick-window" not in page.text
     assert "/static/js/quickentry.js" not in page.text
+
+
+async def test_achievement_points_reach_the_leaderboard(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A pile of unlocks can lift someone above a better logger.
+
+    It used to be impossible: the board sorted on logging points alone, so doing
+    everything — logging every day and filling the collection — still lost to
+    somebody who only logged. The plan argued that a growing catalogue must not
+    silently rebalance the board; the cost was that the board lied about who had
+    done more, which is worse. One number now, with the split shown per row so
+    you can still see where it came from.
+    """
+    grinder = await _user(session, "cal")
+    collector = await _user(session, "bee")
+    for offset in range(4):
+        await bm_service.log_nothing_today(
+            session, grinder, _yesterday() - timedelta(days=offset)
+        )
+    await bm_service.log_nothing_today(session, collector, _yesterday())
+    session.add(
+        AchievementUnlock(
+            user_id=collector.id,
+            achievement_key="ghost_writer",
+            year=now_in("UTC")[0].year,
+            points=20,
+        )
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get(f"/leaderboard?year={now_in('UTC')[0].year}")
+    body = page.text
+    rows = re.findall(r"class=\"board__row.*?</li>", body, re.S)
+    assert len(rows) == 2
+    first = rows[0]
+    assert "bee" in first.lower(), (
+        "the achievement points should have lifted Bee above Cal"
+    )
+    assert "Of which achievements" in first, "the row should say where it came from"

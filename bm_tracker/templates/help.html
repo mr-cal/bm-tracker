@@ -88,8 +88,10 @@
   <p>
     {{ constants.achievement_count }} of them so far, all listed from the start
     whether you have earned them or not — most are unlikely and the absurdity is
-    the point. The {{ constants.tier_points }} is a flat daily total, and the
-    leaderboard ranks on logging points, so a badge can never reorder the board.
+    the point. Each one is worth {{ constants.tier_min }} to
+    {{ constants.tier_max }} points depending on how hard it is, and they count
+    toward your leaderboard total like anything else you earn. Achievements
+    reset every January, so last year's are last year's.
   </p>
 </main>
 {% endblock %}

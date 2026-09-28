@@ -22,9 +22,9 @@
       <div class="text-end">
         <div class="text-body-secondary small">{{ row.score.days_logged }} days</div>
         <div class="text-body-secondary small">
-          {{ row.badges | length }} badge{{ '' if row.badges | length == 1 else 's' }}
+          {{ row.badges | length }} achievement{{ "" if row.badges | length == 1 else "s" }}
         </div>
-        {% if row.badges %}{% include "partials/badges.html" %}{% endif %}
+        {% if row.badges %}{% include "partials/achievements.html" %}{% endif %}
       </div>
     </li>
     {% else %}

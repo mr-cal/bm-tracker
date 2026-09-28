@@ -7,12 +7,12 @@
   or screen reader user gets it on focus, and a screen reader announces it
   without the tooltip at all.
 #}
-<span class="badge-icons">
+<span class="achievement-icons">
   {% for badge in badges %}
-  <span class="badge-icon badge-icon--{{ badge.tier }}" tabindex="0"
+  <span class="achievement-icon achievement-icon--{{ badge.tier }}" tabindex="0"
         aria-label="{{ badge.name }}. {{ badge.description }}">
     <img src="/static/img/badges/{{ badge.icon }}.svg" alt="" width="30" height="30" loading="lazy" />
-    <span class="badge-icon__tip" role="tooltip">
+    <span class="achievement-icon__tip" role="tooltip">
       <strong>{{ badge.name }}</strong>
       <span>{{ badge.description }}</span>
     </span>

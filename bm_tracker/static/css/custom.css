@@ -257,7 +257,7 @@ body {
   padding: 0;
 }
 
-.badge-tile {
+.achievement-tile {
   border: 1px solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);
   display: flex;
@@ -266,21 +266,21 @@ body {
   padding: 0.75rem;
 }
 
-.badge-tile--on {
+.achievement-tile--on {
   background-color: var(--bm-warn-soft);
   border-color: var(--bm-warn-edge);
 }
 
-.badge-tile__glyph {
+.achievement-tile__glyph {
   font-size: 1.5rem;
   line-height: 1;
 }
 
-.badge-tile__name {
+.achievement-tile__name {
   font-weight: 600;
 }
 
-.badge-tile__desc {
+.achievement-tile__desc {
   color: var(--bs-secondary-color);
   font-size: 0.82rem;
 }
@@ -360,13 +360,13 @@ body {
 
 /* --- badges, and the tooltip that explains them ------------------------ */
 
-.badge-icons {
+.achievement-icons {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 0.3rem;
 }
 
-.badge-icon {
+.achievement-icon {
   background-color: var(--bs-body-bg);
   border: 1px solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);
@@ -377,19 +377,19 @@ body {
   position: relative;
 }
 
-.badge-icon img {
+.achievement-icon img {
   display: block;
   height: 30px;
   width: 30px;
 }
 
-.badge-icon--common { border-color: var(--bs-secondary); }
-.badge-icon--uncommon { border-color: var(--bs-info); }
-.badge-icon--rare { border-color: var(--bm-rare); }
-.badge-icon--legendary { border-color: var(--bm-legendary); }
+.achievement-icon--common { border-color: var(--bs-secondary); }
+.achievement-icon--uncommon { border-color: var(--bs-info); }
+.achievement-icon--rare { border-color: var(--bm-rare); }
+.achievement-icon--legendary { border-color: var(--bm-legendary); }
 
 /* Shown on hover *and* on focus, so it is not mouse-only. */
-.badge-icon__tip {
+.achievement-icon__tip {
   /* An inverse pair, not one variable twice: the text has to be the other
      colour from the background, and it has to stay that way when the theme
      flips. The text once read from the same variable as the background, which
@@ -413,17 +413,17 @@ body {
   z-index: 20;
 }
 
-.badge-icon__tip strong {
+.achievement-icon__tip strong {
   display: block;
 }
 
-.badge-icon:hover .badge-icon__tip,
-.badge-icon:focus .badge-icon__tip,
-.badge-icon:focus-within .badge-icon__tip {
+.achievement-icon:hover .achievement-icon__tip,
+.achievement-icon:focus .achievement-icon__tip,
+.achievement-icon:focus-within .achievement-icon__tip {
   display: block;
 }
 
-.badge-icon:focus {
+.achievement-icon:focus {
   outline: 2px solid var(--bs-primary);
   outline-offset: 1px;
 }
@@ -439,23 +439,23 @@ body {
 
 /* --- achievements page --------------------------------------------------- */
 
-.badge-tile--common { border-left: 3px solid var(--bs-secondary); }
-.badge-tile--uncommon { border-left: 3px solid var(--bs-info); }
-.badge-tile--rare { border-left: 3px solid var(--bm-rare); }
-.badge-tile--legendary { border-left: 3px solid var(--bm-legendary); }
+.achievement-tile--common { border-left: 3px solid var(--bs-secondary); }
+.achievement-tile--uncommon { border-left: 3px solid var(--bs-info); }
+.achievement-tile--rare { border-left: 3px solid var(--bm-rare); }
+.achievement-tile--legendary { border-left: 3px solid var(--bm-legendary); }
 
-.badge-tile__glyph {
+.achievement-tile__glyph {
   display: block;
   height: 40px;
   margin-bottom: 0.25rem;
   width: 40px;
 }
 
-.badge-tile--on {
+.achievement-tile--on {
   background-color: var(--bm-warn-soft);
 }
 
-.badge-tile .progress {
+.achievement-tile .progress {
   height: 0.3rem;
   margin-top: 0.3rem;
 }
@@ -686,7 +686,7 @@ body {
 /* Badge tooltips are positioned in CSS and corrected by js/badges.js; this caps
  * the width on very narrow screens so it still fits if the script has not run
  * yet — it would otherwise flash wide on first paint. */
-.badge-icon__tip {
+.achievement-icon__tip {
   max-width: min(15rem, calc(100vw - 2rem));
 }
 
