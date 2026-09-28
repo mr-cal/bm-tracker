@@ -236,3 +236,24 @@ async def test_the_skip_link_reaches_the_top_of_the_viewport_when_scrolled(
     assert "position: fixed" in block.group(1), (
         "an absolutely positioned skip link is unreachable on a scrolled page"
     )
+
+
+async def test_focus_is_drawn_in_the_app_accent(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Every focusable control gets one visible ring, in our colour.
+
+    Without this, every control fell back to the user agent's default: a 1px
+    auto outline in near-black, which is invisible against the dark theme and
+    disagrees with the cards' own focus treatment.
+    """
+    await _sign_in(client, session)
+    css = (await client.get("/static/css/custom.css")).text
+
+    assert ":focus-visible" in css, "no focus-visible styling at all"
+    ring = re.search(r":where\([^)]*\):focus-visible\s*\{(.*?)\}", css, re.S)
+    assert ring, "no rule covering focusable controls"
+    assert "outline:" in ring.group(1), "the ring is not an outline"
+    assert "var(--bs-primary)" in ring.group(1), (
+        "the ring should be the app's accent, not the user agent's default"
+    )
