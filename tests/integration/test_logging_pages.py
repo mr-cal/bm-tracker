@@ -1520,7 +1520,10 @@ async def test_your_own_name_is_not_a_tab_stop_on_the_feed(
     day = _yesterday()
     for _ in range(3):
         await bm_service.log_bm(
-            session, user, day, occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+            session,
+            user,
+            day,
+            occurred_local=datetime(day.year, day.month, day.day, 9, 0),
             bristol_type=4,
         )
     await session.commit()
