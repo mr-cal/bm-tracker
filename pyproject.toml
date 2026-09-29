@@ -6,6 +6,11 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.34",
     "gunicorn>=23.0",
+    # Imported directly by bm_tracker.notes.embeddings for the embedding calls.
+    # It was working locally only because `uvicorn[standard]` happens to pull it
+    # in; the container installs the resolved set and got a ModuleNotFoundError
+    # on the first request, three deploys after the code that needed it landed.
+    "httpx>=0.27",
     "sqlalchemy[asyncio]>=2.0,<2.1",
     "aiosqlite>=0.21",
     "alembic>=1.14",
