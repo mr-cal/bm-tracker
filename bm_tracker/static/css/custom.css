@@ -487,6 +487,14 @@ body {
   margin-bottom: 0.35rem;
 }
 
+.feed__head--solo {
+  margin-bottom: 0.15rem;
+}
+
+.feed__head--solo .feed__when {
+  margin-left: 0;
+}
+
 .feed__who {
   font-weight: 600;
   text-decoration: none;

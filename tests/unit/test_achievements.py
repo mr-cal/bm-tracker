@@ -23,6 +23,7 @@ from bm_tracker.achievements import engine, facts, registry, rules
 from bm_tracker.models import AchievementUnlock, CelebrationSeen, User
 from bm_tracker.routes.people import Badge
 from bm_tracker.routes.people import _by_tier as group_by_tier
+from bm_tracker.routes.stats import _interleave
 from bm_tracker.services import bm_service
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -655,3 +656,36 @@ def test_tier_groups_run_least_rare_first() -> None:
     # Uncommon has nothing in it and is left out entirely, rather than
     # rendering an empty heading between the two that are populated.
     assert [tier for tier, _ in grouped] == ["common", "rare", "legendary"]
+
+
+def test_note_achievements_are_intermixed_with_the_others() -> None:
+    """A tier is one spread of achievements, not two lists run together.
+
+    They were appended, which put every note achievement in a block at the end
+    of its tier. This asserts the spread, and — the part that actually bit —
+    that it comes from being told which list a status came from rather than from
+    sniffing the key, because a note achievement on the page carries its bare
+    key and `is_note_key` looks for a `note:` prefix that is only in the unlock
+    table.
+    """
+    registry = [f"reg{i}" for i in range(12)]
+    notes = ["love_poem", "poem", "dream"]
+    items = [(k, False) for k in registry] + [(k, True) for k in notes]
+
+    # It takes (status, is_note) and hands back the statuses.
+    out = list(_interleave(items))
+
+    assert sorted(out) == sorted(registry + notes), "nothing lost or invented"
+    assert len(out) == len(set(out)), "nothing repeated"
+    # Every note achievement is separated from the next by at least one other.
+    positions = [out.index(n) for n in notes]
+    assert all(b - a > 1 for a, b in zip(positions, positions[1:], strict=False)), (
+        f"two note achievements are adjacent: {out}"
+    )
+    # And they start before the end, which is the whole point.
+    assert min(positions) < len(registry), "they are all still bunched at the end"
+
+
+def test_a_tier_with_no_note_achievements_is_untouched() -> None:
+    items = [(f"reg{i}", False) for i in range(4)]
+    assert _interleave(items) == items

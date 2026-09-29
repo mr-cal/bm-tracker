@@ -12,7 +12,7 @@ from pathlib import Path
 
 from tools.icons import sheet as sheet_module
 from tools.icons import source
-from tools.icons.icons import ICONS
+from tools.icons.icons import ICONS, NOTE_ICONS
 
 BADGES = Path(__file__).resolve().parents[2] / "bm_tracker/static/img/badges"
 
@@ -28,10 +28,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    written = source.write(BADGES, ICONS)
+    written = source.write(BADGES, {**ICONS, **NOTE_ICONS})
     print(f"{len(written)} icons written to {BADGES}")
     if args.sheet:
-        path = sheet_module.sheet(sorted(ICONS), Path(args.out))
+        everything = {**ICONS, **NOTE_ICONS}
+        path = sheet_module.sheet(sorted(everything), Path(args.out), note=len(ICONS))
         print(path)
 
 

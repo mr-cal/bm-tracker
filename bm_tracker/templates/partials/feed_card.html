@@ -12,7 +12,15 @@
 #}
 <article class="card feed__card feed__card--{{ item.kind }}{{ ' feed__card--mine' if item.user.id == user.id }}">
   <div class="card-body">
-    <header class="feed__head">
+    {#
+      On somebody else's page the name is suppressed, and that left the header
+      as a flex row holding nothing but a right-aligned timestamp — a band of
+      empty space the width of a name above every card, which read as a layout
+      bug rather than as a deliberate omission. `feed__head--solo` puts the time
+      on the left where the name was and tightens the margin, so the card is a
+      card and not a title bar.
+    #}
+    <header class="feed__head{% if not show_who | default(true) %} feed__head--solo{% endif %}">
       {#
         Your own name is not a link. It is on every card in the feed, so making
         each one a link put "Cal (you)" into the tab order thirty times before

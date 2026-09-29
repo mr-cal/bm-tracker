@@ -20,6 +20,7 @@ from bm_tracker.achievements.registry import Achievement
 from bm_tracker.dependencies import AuthenticatedUser, DbSession, csrf_token
 from bm_tracker.forms import int_arg as _int_arg
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
+from bm_tracker.notes import service as note_service
 from bm_tracker.notes.achievements import NoteAchievement
 from bm_tracker.timezones import now_in, year_bounds
 
@@ -205,11 +206,20 @@ async def achievements_page(
     # trigger — reading a note rather than counting a day — but a reader does not
     # care why, and a second list of "things you have earned" would be a worse
     # page than one list of them.
-    statuses = [*statuses, *(await _note_statuses(session, user, year))]
+    registry_statuses = statuses
+    note_statuses = await _note_statuses(session, user, year)
 
     grouped: dict[str, list] = {}
-    for status in statuses:
-        grouped.setdefault(status.achievement.tier, []).append(status)
+    for status in registry_statuses:
+        grouped.setdefault(status.achievement.tier, []).append((status, False))
+    for status in note_statuses:
+        grouped.setdefault(status.achievement.tier, []).append((status, True))
+
+    # Intermix the two kinds within a tier. Appending them put all of a tier's
+    # note achievements in one block at the end of it — twenty-odd consecutive
+    # entries from a different subsystem, which reads as a separate list that
+    # somebody forgot to label rather than as one collection.
+    grouped = {tier: list(_interleave(items)) for tier, items in grouped.items()}
 
     return _templates(request).TemplateResponse(
         request,
@@ -256,7 +266,6 @@ async def _note_statuses(session: AsyncSession, user: User, year: int) -> list[S
 
     from bm_tracker.models import AchievementUnlock  # noqa: PLC0415
     from bm_tracker.notes import achievements as note_defs  # noqa: PLC0415
-    from bm_tracker.notes import service as note_service  # noqa: PLC0415
 
     earned = {
         row.achievement_key.removeprefix(note_service.PREFIX): row
@@ -289,6 +298,48 @@ async def _note_statuses(session: AsyncSession, user: User, year: int) -> list[S
     return out
 
 
+def _interleave(items: list[tuple]) -> list[tuple]:
+    """Spread the note achievements evenly through a tier's other entries.
+
+    The two lists are passed separately rather than being told apart by key: a
+    note achievement on this page carries its bare key, and the only thing that
+    marks it as a note is that it came from the note catalogue. `is_note_key`
+    asks a different question — it looks for the `note:` prefix the *unlock
+    table* stores — and used here it matched nothing, so the function returned
+    its input unchanged and the page looked exactly as it had before.
+
+    The two kinds alternate with the note ones spaced out rather than paired, so
+    no two note achievements ever land next to each other and the reading of a
+    tier stays "a spread of achievements" rather than "a spread with a seam in
+    it". Order within each kind is left alone, so the page is stable between
+    loads and an achievement does not move because somebody else unlocked
+    something.
+
+    Args:
+        items: One tier's `(status, is_note)` pairs, registry first.
+
+    Returns:
+        The same pairs, mixed.
+
+    """
+    registry = [s for s, is_note in items if not is_note]
+    notes = [s for s, is_note in items if is_note]
+    if not notes or not registry:
+        return items
+
+    # How often a note achievement appears. One in four, so they are present
+    # without dominating; a tier of two entries gets one of each.
+    step = max(len(registry) // len(notes), 1)
+    out: list = []
+    remaining = list(notes)
+    for index, status in enumerate(registry):
+        out.append(status)
+        if (index + 1) % step == 0 and remaining:
+            out.append(remaining.pop(0))
+    out.extend(remaining)
+    return out
+
+
 def _as_achievement(definition: NoteAchievement) -> Achievement:
     """Return a note definition shaped like a registry achievement.
 
@@ -308,7 +359,7 @@ def _as_achievement(definition: NoteAchievement) -> Achievement:
         name=definition.name,
         description=definition.description,
         tier=definition.tier,
-        icon="default",
+        icon=definition.key,
         rule=None,
         custom=None,
         points=definition.points,

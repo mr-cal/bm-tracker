@@ -318,3 +318,98 @@ ICONS: dict[str, str] = {
     "quick_fifty": '<path d="M3 17.5a9 9 0 0 1 18 0"/><path d="M12 17.5 16.5 8h-3.2l2.2-4.8-5.4 6.4h3.2Z"/>',
     "empty_and_full": '<path d="M6 4.5h12l-1.6 16h-8.8Z"/><path d="M6.7 12.5h10.6"/><circle cx="9" cy="8.5" r="1.15"/><circle cx="15" cy="15.5" r="1.15"/><circle cx="12" cy="17" r="1.15"/>',
 }
+
+#: Icons for the note achievements — the ones found by reading a note rather
+#: than counting a day.
+#:
+#: Kept apart from `ICONS` because the two sets are checked against different
+#: things: these must not collide with the registry's hundred and twenty, and
+#: neither set may collide with itself. Before these existed every note
+#: achievement rendered `default.svg`, so a page of thirty-eight identical
+#: squares sat underneath a hundred and twenty drawings.
+#:
+#: The same house rules, and the same discipline about not reusing a silhouette
+#: the registry has already spent — no book, no heart, no moon, no megaphone, no
+#: sun, so a note achievement never looks like a logging one.
+NOTE_ICONS: dict[str, str] = {
+    "love_poem": '<path d="M12 20.5S4 15.4 4 10.2A4.4 4.4 0 0 1 12 8a4.4 4.4 0 0 1 8 2.2c0 5.2-8 10.3-8 10.3Z"/>'
+    '<path d="M3.5 3.5 6 6M2.5 8h3M6 2.5 4 4.5"/>',
+    "poem": '<path d="M4 20.5 15.5 9"/><path d="M13 6.5 17.5 3l3.5 3.5L16.5 10Z"/>'
+    '<path d="M4 20.5h4M6.5 14.5 9.5 17.5"/>',
+    "nightmare": '<path d="M2.5 18.5h19"/><circle cx="8" cy="10" r="3.4"/>'
+    '<path d="M16 6.5c2.5 0 4.5 2 4.5 4.5S18.5 15.5 16 15.5"/>'
+    '<path d="M8 7.4c.8-.9 1.6-1.3 2.4-1.3M6 10.6a2.6 2.6 0 0 0 3.6 2.2"/>'
+    '<path d="M4 15.5 2.5 18M20 15.5 21.5 18"/>',
+    "dream": '<path d="M6 16.5a4 4 0 0 1 .6-8 5 5 0 0 1 9.4 1.4 3.4 3.4 0 0 1-.5 6.6Z"/>'
+    '<path d="M10 5.5h3M13 3h3"/>',
+    "gratitude": '<path d="M4 13.5a3.5 3.5 0 0 1 3.5-3.5h9A3.5 3.5 0 0 1 20 13.5v1A3.5 3.5 0 0 1 16.5 18h-9A3.5 3.5 0 0 1 4 14.5Z"/>'
+    '<path d="M12 12.5s-3-1.8-3-3.6a1.6 1.6 0 0 1 3-.8 1.6 1.6 0 0 1 3 .8c0 1.8-3 3.6-3 3.6Z"/>',
+    "anger": '<path d="M12 3.5 13.8 9l5.7-.3-4.4 3.6 1.6 5.5L12 15l-4.7 2.8 1.6-5.5L4.5 8.7 10.2 9Z"/>'
+    '<path d="M4 3.5 6 5.5M20 3.5 18 5.5M12 21v-3"/>',
+    "grief": '<path d="M6.5 15a4.2 4.2 0 0 1 .6-8.2 5.2 5.2 0 0 1 9.8 1.4 3.6 3.6 0 0 1-.5 6.8Z"/>'
+    '<path d="M9 18v2.5M12 18.5v3M15 18v2.5"/>',
+    "joy": '<circle cx="12" cy="12" r="5.4"/><path d="M9 10.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5"/>'
+    '<path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M18 6l-1.6 1.6M7.6 16.4 6 18"/>',
+    "anxiety": '<path d="M5 17.5c2-6 4-6 6 0s4 6 6 0"/><path d="M5 11.5c2-6 4-6 6 0s4 6 6 0"/>'
+    '<path d="M4 20.5h16"/>',
+    "food_review": '<path d="M6 3v7a2.5 2.5 0 0 0 5 0V3"/><path d="M8.5 10v11"/>'
+    '<path d="M16 3c-1.5 2-2 4-2 6.5 0 1.8.8 3 2 3.5V21"/>',
+    "poop_review": '<path d="M4 5.5h16v15H4Z"/><path d="M4 9.5h16"/>'
+    '<path d="M7 20.5v-7a5 5 0 0 1 10 0v7"/><path d="M10 20.5v-5.5M14 20.5v-5.5"/>',
+    "travel": '<path d="M2.5 13.5 21 8l-3 5 3 3-18.5 2.5Z"/><path d="M9 12.5 7 8M15 10.5l-1-3.5"/>',
+    "work_rant": '<rect x="3" y="7.5" width="18" height="12" rx="2"/>'
+    '<path d="M9 7.5v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 12.5h18"/>'
+    '<path d="M15 4.5c1.5 1 1.5 2.5 0 3.5M18 4c2.5 1.5 2.5 4.5 0 6"/>',
+    "exams": '<path d="M5 3.5h9l5 5v12H5Z"/><path d="M14 3.5v5h5"/>'
+    '<path d="m8.5 14 2 2 4.5-4.5"/>',
+    "illness": '<path d="M14 14.8V6a2.5 2.5 0 0 0-5 0v8.8a4 4 0 1 0 5 0Z"/>'
+    '<path d="M11.5 8.5v5"/>',
+    "weather": '<path d="M6 15a4 4 0 0 1 .6-8 5 5 0 0 1 9.4 1.4 3.4 3.4 0 0 1-.5 6.6Z"/>'
+    '<path d="M18 3.5v-1M21 6.5h1M16 3 15 2"/>',
+    "sport": '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5 15.5 8 12 12 8.5 8Z"/>'
+    '<path d="M12 12v8.5M3.5 12h5"/>',
+    "family": '<circle cx="8" cy="7" r="2.6"/><circle cx="16" cy="7" r="2.6"/>'
+    '<circle cx="12" cy="16" r="2.4"/><path d="M4.5 15c0-2.2 1.6-3.5 3.5-3.5s3.5 1.3 3.5 3.5"/>'
+    '<path d="M12.5 15c0-2.2 1.6-3.5 3.5-3.5s3.5 1.3 3.5 3.5"/>',
+    "relationship": '<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>',
+    "breakup": '<circle cx="9" cy="12" r="5.5"/><path d="M15.5 7 9 17"/>'
+    '<path d="M4 3.5 6 5M20 3.5 18 5"/>',
+    "new_baby": '<path d="M6 9.5a6 6 0 0 1 12 0v4a6 6 0 0 1-12 0Z"/>'
+    '<path d="M9 9.5h.01M15 9.5h.01"/><path d="M9.5 16h5"/>'
+    '<path d="M12 3.5c1-1.5 2.5-2 3.5-1.5"/>',
+    "wedding": '<circle cx="8.5" cy="14.5" r="5"/><circle cx="15.5" cy="14.5" r="5"/>'
+    '<path d="m11 5.5 1-3 1 3 3 1-3 1-1 3-1-3-3-1Z"/>',
+    "pet": '<ellipse cx="6" cy="9" rx="2" ry="2.6"/><ellipse cx="10.5" cy="6.5" rx="2" ry="2.8"/>'
+    '<ellipse cx="15.5" cy="6.5" rx="2" ry="2.8"/><ellipse cx="19.5" cy="9.5" rx="2" ry="2.6"/>'
+    '<path d="M12.5 12.5c3 0 5 2.2 5 4.5 0 2-1.6 3.5-3.5 3.5-1 0-1.5-.4-1.5-.4s-.5.4-1.5.4c-1.9 0-3.5-1.5-3.5-3.5 0-2.3 2-4.5 5-4.5Z"/>',
+    "garden": '<path d="M12 21v-8"/><path d="M12 13c-3 0-4.5-1.8-4.5-4 2.8 0 4.5 1.5 4.5 4Z"/>'
+    '<path d="M12 13c3 0 4.5-1.8 4.5-4-2.8 0-4.5 1.5-4.5 4Z"/><path d="M4 21h16"/>',
+    "cooking": '<path d="M3.5 11.5h13v3a4.5 4.5 0 0 1-4.5 4.5H8a4.5 4.5 0 0 1-4.5-4.5Z"/>'
+    '<path d="M16.5 13H19a2 2 0 0 1 2 2v3h-4"/><path d="M8 8c0-1.5 1-2 1-3.5M11.5 8c0-1.5 1-2 1-3.5"/>',
+    "drink": '<path d="M6 6h12l-1.4 13.5a1.5 1.5 0 0 1-1.5 1.4H8.9a1.5 1.5 0 0 1-1.5-1.4Z"/>'
+    '<path d="M6.8 11h10.4"/><path d="M13 2.5 11.5 6M17 2.5 15.5 6"/>',
+    "music": '<circle cx="7" cy="17.5" r="3"/><circle cx="18" cy="15.5" r="3"/>'
+    '<path d="M10 17.5V6l11-2.5v12"/><path d="M10 9.5 21 7"/>',
+    "film": '<path d="M3 7h18v11H3Z"/><path d="M3 7l1.5-3.5h15L21 7"/>'
+    '<path d="m7 7 3 2.5L7 12M12 7l3 2.5L12 12M17 7l2.5 2.5L17 12"/>',
+    "reading": '<circle cx="6.5" cy="13.5" r="4"/><circle cx="17.5" cy="13.5" r="4"/>'
+    '<path d="M10.5 13.5h3M6.5 9.5V7M17.5 9.5V7"/>',
+    "money": '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v10"/>'
+    '<path d="M14.5 9.5c0-1-1.1-1.8-2.5-1.8s-2.5.8-2.5 1.8c0 2.6 5 1.4 5 4 0 1-1.1 1.8-2.5 1.8S9.5 14.5 9.5 13.5"/>',
+    "commute": '<rect x="5" y="3.5" width="14" height="14" rx="3"/>'
+    '<path d="M5 11.5h14"/><circle cx="9" cy="20.5" r="1.5"/><circle cx="15" cy="20.5" r="1.5"/>'
+    '<path d="M9 7.5h6"/>',
+    "nature": '<path d="M12 21v-7"/><path d="M12 14a5 5 0 0 0 0-10 5 5 0 0 0 0 10Z"/>'
+    '<path d="M12 17.5 8 20M12 17.5l4 2.5"/>',
+    "night": '<path d="M3 6.5h5M3 11h3M3 15.5h5"/><circle cx="16" cy="15.5" r="1.2"/>'
+    '<circle cx="19.5" cy="19" r="1.2"/><circle cx="19" cy="11.5" r="1.2"/>',
+    "first_word": '<path d="M3 5.5h18v11H13l-4 4v-4H3Z"/>'
+    '<path d="M8 11h8"/>',
+    "one_word": '<path d="M3 5.5h18v11H13l-4 4v-4H3Z"/><circle cx="12" cy="11" r="1.4"/>',
+    "all_caps": '<path d="M3 5.5h18v11H13l-4 4v-4H3Z"/>'
+    '<path d="M8 13V8.5h2.5M8 10.7h2.2M13 13V8.5h2.2"/>',
+    "question": '<path d="M3 5.5h18v11H13l-4 4v-4H3Z"/>'
+    '<path d="M10 9.5a2 2 0 0 1 3.9.6c0 1.3-2 1.4-2 2.9"/><path d="M11.9 14.6h.01"/>',
+    "exclamation": '<path d="M3 5.5h18v11H13l-4 4v-4H3Z"/><path d="M12 8v3.4"/>'
+    '<path d="M12 13.2h.01"/>',
+}
