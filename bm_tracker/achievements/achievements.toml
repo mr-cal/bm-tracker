@@ -777,14 +777,6 @@ icon = "thousand"
 rule = { all = [{ bm_count_total = { gte = 1000 } }] }
 
 
-[[achievement]]
-key = "month_of_days"
-name = "Every Day of a Month"
-description = "Thirty consecutive days logged without a gap."
-tier = "uncommon"
-icon = "month_of_days"
-rule = { all = [{ streak_longest = { gte = 30 } }] }
-
 
 [[achievement]]
 key = "fifty_days"
@@ -821,14 +813,6 @@ tier = "uncommon"
 icon = "twenty_five_notes"
 rule = { all = [{ note_count = { gte = 25 } }] }
 
-
-[[achievement]]
-key = "fifty_notes_b"
-name = "Fifty Notes"
-description = "Fifty notes."
-tier = "rare"
-icon = "fifty_notes_b"
-rule = { all = [{ note_count = { gte = 50 } }] }
 
 
 [[achievement]]

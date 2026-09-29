@@ -572,39 +572,41 @@ def test_every_known_fact_is_actually_produced() -> None:
 
 
 def test_the_catalogue_is_the_size_we_intend() -> None:
-    """One hundred and nineteen, by agreement, and not three hundred by inertia.
+    """One hundred and seventeen, by agreement, and not three hundred by inertia.
 
     Variety by volume is the opposite of variety by idea: the first twenty-one
     were twenty-one ways of saying "your number is at least N", and the answer
     was a bigger vocabulary and a smaller catalogue, not a bigger catalogue.
 
-    It was 120 until `no_notes_no_streak` went. It had a rule identical to
-    `silent_streak` — seven days logged with no note — so the two unlocked at
-    the same moment, every time. The one that survived is the first rung of a
-    family that escalates: 7 days uncommon, 30 rare, 50 legendary. The
-    duplicate sat outside it and had nothing to say that the family did not.
+    It was 120 until three duplicates went, all of them found by the rule
+    test below rather than by anybody reading the catalogue:
+
+      no_notes_no_streak / silent_streak   seven days, no note
+      fifty_notes_b       / lore_master    fifty notes
+      month_of_days       / unbroken       thirty consecutive days
+
+    In each pair the survivor is the one inside a family, or the one carrying
+    the better wording, or the one with the larger prize. Every pair handed
+    out two achievements for a single moment, which makes a collection meant
+    to be worth reading say less than it looks.
 
     The number is asserted because it is a decision, not an accident. A
     duplicate slipping in changes it; that is the point.
     """
     loaded = registry.load()
-    assert len(loaded) == 119, f"the catalogue is {len(loaded)}, not 119"
+    assert len(loaded) == 117, f"the catalogue is {len(loaded)}, not 117"
 
 
 #: Rules that two achievements currently share, and are known to. Asserted
 #: rather than ignored, so a *new* duplicate fails and removing one of these
 #: fails until the entry here goes too.
 #:
-#: `lore_master`/`fifty_notes_b` are the same achievement written twice, and
-#: `unbroken`/`month_of_days` hand out 5 and 20 points for the same 30 days.
-#: Both were found by the test below, both are a call for the owner of the
-#: catalogue, and neither is fixed here.
-KNOWN_DUPLICATE_RULES: Final = frozenset(
-    {
-        "{'all': [{'note_count': {'gte': 50}}]}",
-        "{'all': [{'streak_longest': {'gte': 30}}]}",
-    }
-)
+#: Empty, and that is the point. The rule test below found three pairs of
+#: achievements sharing a rule; all three duplicates have been removed, so this
+#: set is empty and any pair that appears again fails. An empty constant is a
+#: weaker statement than a non-empty one, and deliberately so: it says there
+#: are none, and the assertion keeps it that way.
+KNOWN_DUPLICATE_RULES: Final = frozenset()
 
 
 def test_no_two_achievements_have_the_same_rule() -> None:

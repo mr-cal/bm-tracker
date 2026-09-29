@@ -70,8 +70,6 @@ ICONS: dict[str, str] = {
     "twenty_five_notes": '<path d="M6 3.5h9v17l-4.5-2.4-4.5 2.4Z"/>'
     '<path d="M14 8h4.5v12.5L16 19l-2 1.5"/>'
     '<path d="M8.4 8h3.2M8.4 11.4h3.2"/>',
-    "fifty_notes_b": '<path d="M3.5 5.5h7v15l-3.5-2-3.5 2Z"/><path d="M13 5.5h7.5v15L17 18.5l-3.5 2Z"/>'
-    '<path d="M5.4 9.5h3.2M15 9.5h3.4M5.4 13h3.2M15 13h3.4"/>',
     "hundred_notes": '<path d="M3 4h5v16l-2.5-1.6L3 20Z"/><path d="M9.5 4h5v16L12 18.4 9.5 20Z"/>'
     '<path d="M16 4h5v16l-2.5-1.6L16 20Z"/>',
     "december_double": '<path d="M5 3.5h9l5 5v12H5Z"/><path d="M14 3.5v5h5"/>'
@@ -266,8 +264,6 @@ ICONS: dict[str, str] = {
     "strain_hard": '<path d="M4 9.5h16"/><path d="M12 9.5v4"/><path d="m12 13.5-3.5 4.5h7Z"/>'
     '<path d="M6 20.5 18 4" stroke-dasharray="1.5 2.5"/>',
     # --- time, counted ----------------------------------------------------
-    "month_of_days": '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18"/>'
-    '<path d="M7 4.5V2.5M17 4.5V2.5"/><path d="M6.5 13h11M6.5 16.5h11"/>',
     "fifty_days": '<path d="M2.5 19.5h19"/><circle cx="6" cy="14" r="1.6"/><circle cx="10" cy="14" r="1.6"/>'
     '<circle cx="14" cy="14" r="1.6"/><circle cx="18" cy="14" r="1.6"/><circle cx="21" cy="9" r="1.6"/>'
     '<circle cx="5" cy="9" r="1.6"/>',
