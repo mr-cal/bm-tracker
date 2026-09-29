@@ -1,0 +1,284 @@
+# The corpus `bm-tracker note-achievements calibrate` judges against.
+#
+# Positives are notes, not descriptions: matching is what is being judged, so
+# the things that must match have to be written the way notes are written. A
+# threshold tuned against invented positives is tuned against the wrong
+# distribution too.
+#
+# The negatives are what the app actually holds, and they are the important
+# half. An achievement that fires on "type 4 again" is worse than one that never
+# fires, because a false unlock is public and permanent.
+
+# The shared negatives: ordinary notes that must match nothing.
+negatives = [
+  "type 4 again",
+  "quick one before work",
+  "bad coffee",
+  "the usual",
+  "gut pain, bit better today",
+  "long day",
+  "slept badly",
+  "ate at the cafe",
+  "woke up late",
+  "traffic was awful",
+  "sorted",
+  "fine",
+  "much the same",
+  "rain",
+  "ok",
+  "felt rough last night",
+  "good session at the gym",
+  "new place for lunch was decent",
+  "the cat was on the bed again",
+  "meeting moved to thursday",
+  "ran a bit further than usual",
+  "nothing much",
+  "headache",
+  "much better by the evening",
+  "quiet day",
+  "took the bus",
+  "the thing about the thing",
+  "all fine",
+  "read a couple of pages",
+  "made pasta",
+  "went to bed early",
+  "legs still sore",
+  "it was a bit awkward",
+  "same as usual",
+]
+
+[positives.love_poem]
+values = [
+"""roses are red
+violets are blue
+i am still in love with you""",
+"""my heart is yours
+and always has been
+through every season""",
+]
+
+[positives.poem]
+values = [
+"""the rain came down all night
+and left the city clean
+morning found it washed""",
+"""she walks without looking back
+and the whole street waits for her""",
+]
+
+[positives.nightmare]
+values = [
+"""woke up shaking at four from the same dream again""",
+"""that nightmare again, the falling, and I could not get back down""",
+]
+
+[positives.dream]
+values = [
+"""I dreamed about the old house on the hill again last night""",
+"""strange dream, we were all waiting for a train that never came""",
+]
+
+[positives.gratitude]
+values = [
+"""genuinely thankful this week, not one complaint""",
+"""so grateful for the people who turned up when it mattered""",
+]
+
+[positives.anger]
+values = [
+"""absolutely furious about how that meeting went""",
+"""so angry I could have put the phone through the wall""",
+]
+
+[positives.grief]
+values = [
+"""still thinking about dad, it has been a bad month""",
+"""the house is quiet in a way it is not going to be again""",
+]
+
+[positives.joy]
+values = [
+"""what a day, honestly so happy about all of it""",
+"""cannot stop smiling, best week in months""",
+]
+
+[positives.anxiety]
+values = [
+"""lying awake worrying about the appointment tomorrow""",
+"""that knot in the stomach about the results, again""",
+]
+
+[positives.food_review]
+values = [
+"""the sandwich was dry and the bread stale, three out of ten""",
+"""best curry in the city, the little place on the corner, ten out of ten""",
+]
+
+[positives.poop_review]
+values = [
+"""solid, well formed, no notes. a good result""",
+"""the texture was, how shall I put this, enthusiastic""",
+]
+
+[positives.travel]
+values = [
+"""four hours on a train and then a bus, worth it for the view""",
+"""flew in at six, still no idea where we were going""",
+]
+
+[positives.work_rant]
+values = [
+"""another day of pretending to care about that meeting""",
+"""my manager has no idea what he is doing and it is exhausting""",
+]
+
+[positives.exams]
+values = [
+"""exam tomorrow and I have read absolutely nothing""",
+"""results came out, two of the four went my way""",
+]
+
+[positives.illness]
+values = [
+"""completely wiped out with something, slept fourteen hours""",
+"""the stomach is still going, sorry about the note""",
+]
+
+[positives.weather]
+values = [
+"""non stop rain since six this morning""",
+"""freezing today, you could feel it in the air""",
+]
+
+[positives.sport]
+values = [
+"""five k this morning, slower than I would have liked""",
+"""we lost again, the second half was dire""",
+]
+
+[positives.family]
+values = [
+"""mum rang twice, as always""",
+"""the kids were over on Sunday and it was very loud""",
+]
+
+[positives.relationship]
+values = [
+"""we talked for hours and none of it was about the thing""",
+"""seven months now and I still check my phone""",
+]
+
+[positives.breakup]
+values = [
+"""it is done, and I am not going to write about it for a while""",
+"""she ended it on a Tuesday, which somehow makes it worse""",
+]
+
+[positives.new_baby]
+values = [
+"""she arrived on Thursday, six pounds one, everyone well""",
+"""the baby came early, we are all a bit stunned""",
+]
+
+[positives.wedding]
+values = [
+"""the wedding was lovely, the speeches were not""",
+"""we are getting married in June, small, on a Tuesday""",
+]
+
+[positives.pet]
+values = [
+"""the cat has decided the radiator is hers now""",
+"""he is nine and still refuses to walk past the bin""",
+]
+
+[positives.garden]
+values = [
+"""the tomatoes have finally done something""",
+"""cleared the bed, put the bulbs in, nothing else matters""",
+]
+
+[positives.cooking]
+values = [
+"""made the thing from the recipe and it was edible""",
+"""roast on for three hours, the neighbours complained""",
+]
+
+[positives.drink]
+values = [
+"""three beers and a bad decision""",
+"""the pub was rammed, one pint and then home""",
+]
+
+[positives.music]
+values = [
+"""the new one is on repeat, which is not a recommendation""",
+"""front row, and I could not hear a word""",
+]
+
+[positives.film]
+values = [
+"""watched the whole thing and could not tell you why""",
+"""three episodes in and I am still completely lost""",
+]
+
+[positives.reading]
+values = [
+"""finished the thing, four hundred pages of it""",
+"""reading again after years, and it is good""",
+]
+
+[positives.money]
+values = [
+"""no money until the end of the month, again""",
+"""that was more expensive than the car""",
+]
+
+[positives.commute]
+values = [
+"""two hours each way, I did the maths and I am free""",
+"""the bus was late so I walked the last bit""",
+]
+
+[positives.nature]
+values = [
+"""the hill was covered in gorse, worth the climb""",
+"""deer in the garden again, at dawn""",
+]
+
+[positives.night]
+values = [
+"""awake again at three, same as every night this week""",
+"""the night shift ended and the sun was coming up""",
+]
+
+[positives.first_word]
+values = [
+"""this one is a proper paragraph rather than a grunt, worth reading back in a year""",
+"""long enough to be worth keeping and long enough to say something about the day""",
+]
+
+[positives.one_word]
+values = [
+"""grim""",
+"""no""",
+]
+
+[positives.all_caps]
+values = [
+"""THIS IS UNACCEPTABLE""",
+"""ABSOLUTELY NOT""",
+]
+
+[positives.question]
+values = [
+"""do you think anyone actually reads these""",
+"""why is it always the same three people""",
+]
+
+[positives.exclamation]
+values = [
+"""what a day!!! cannot believe any of it!!""",
+"""no more of this!!!""",
+]
+

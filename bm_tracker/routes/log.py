@@ -23,6 +23,7 @@ from bm_tracker.dependencies import (
     csrf_token,
 )
 from bm_tracker.models import BmEntry, DailyLog, User
+from bm_tracker.notes import service as note_achievements
 from bm_tracker.services import audit_service, bm_service, rewards
 from bm_tracker.timezones import now_in, parse_date
 
@@ -139,6 +140,40 @@ async def _reload(session: DbSession, user_id: int) -> User:
     fresh = await session.get(User, user_id)
     return (
         fresh if fresh is not None else User(id=user_id, username="", display_name="")
+    )
+
+
+def _with_note_matches(
+    celebration: Celebration, matches: list[note_achievements.Match]
+) -> Celebration:
+    """Fold a note's achievements into the celebration.
+
+    Args:
+        celebration: What the counted achievements said.
+        matches: What the note earned, if anything.
+
+    Returns:
+        The celebration, with the note's achievements appended.
+
+    """
+    if not matches:
+        return celebration
+    return replace(
+        celebration,
+        unlocked=[
+            *celebration.unlocked,
+            *(
+                {
+                    "key": m.key,
+                    "name": m.name,
+                    "description": m.description,
+                    "icon": "default",
+                    "points": m.points,
+                    "score": m.score,
+                }
+                for m in matches
+            ),
+        ],
     )
 
 
@@ -372,6 +407,7 @@ async def submit_log(
     # disagree with it.
     choice = forms.guard_field(form, "choice")
     try:
+        celebration: Celebration
         if choice == CHOICE_NOTHING:
             await bm_service.log_nothing_today(session, user, day, notes=notes)
             await audit_service.record(
@@ -383,12 +419,23 @@ async def submit_log(
                 detail={"day": day.isoformat(), "n_bms": 0},
             )
             row = await bm_service.get_day(session, user, day)
+            assert row is not None  # noqa: S101 - just written above
             celebration = await _celebrate_after(
                 session,
                 user,
                 "log_none",
                 extra={"note_added": bool(row and row.is_note_live)},
             )
+            # An empty day carries its note, and the note is what a note
+            # achievement reads, so this branch matches too.
+            note_matches = await note_achievements.try_match(
+                session,
+                request.app.state.settings,
+                user,
+                row.notes,
+            )
+            celebration = _with_note_matches(celebration, note_matches)
+            lines = await rewards.for_empty_day(session, row, user)
         else:
             entry = await bm_service.log_bm(
                 session,
@@ -418,6 +465,15 @@ async def submit_log(
             celebration = await _celebrate_after(
                 session, user, "log_any", extra=_event_flags(entry, row)
             )
+            # The only API call the log makes, and it can fail harmlessly: a
+            # note is saved whether or not this returns anything.
+            note_matches = await note_achievements.try_match(
+                session,
+                request.app.state.settings,
+                user,
+                entry.notes,
+            )
+            celebration = _with_note_matches(celebration, note_matches)
             lines = await rewards.for_entry(
                 session, entry, row, user, window_minutes=window
             )

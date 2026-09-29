@@ -1,0 +1,566 @@
+# Achievements found by reading a note.
+
+# The only achievements in the app that cost anything to evaluate, and the only
+# ones that can be false. Everything else is a count, which is either right or
+# not; this is a similarity score, which is a judgement call.
+
+# Three things make them trustworthy enough to ship:
+#
+#   `semantic` describes the *thing*, not the vocabulary. It is embedded once.
+#     Sharing words with the notes you want to match is what a keyword matcher
+#     does, and this is meant to be better than that.
+#   `examples` sit where a real note sits, which is the main lever on precision.
+#     A description says what something is; an example shows what one looks like.
+#   `guards` are free and exact. A poem needs lines, an all-caps note needs
+#     length and no line breaks, a one-word note needs neither. Checking these
+#     before the score is consulted removes most false positives for free.
+#
+# Thresholds live in the 0.30-0.45 band because that is where related text
+# lands on this model. craft-dashboard learned that in production and wrote it
+# down; do not read a 0.70 here as "close" and raise these.
+#
+# After editing:  uv run bm-tracker note-achievements calibrate
+
+[[note_achievement]]
+key = "love_poem"
+name = "Love Poem"
+description = "Wrote something in the notes that is a poem about love or deep affection."
+tier = "uncommon"
+points = 5
+threshold = 0.42
+semantic = "a poem expressing romantic love, adoration or longing for a person"
+examples = [
+  """roses are red
+violets are blue
+i am still in love with you""",
+  """my heart beats only for you
+through every night and day
+forever is a long time""",
+  """when i saw you i forgot
+how to breathe
+and then i remembered""",
+]
+guards = { min_words = 8, min_lines = 2 }
+
+[[note_achievement]]
+key = "poem"
+name = "Poem"
+description = "Wrote something in the notes that is a poem."
+tier = "common"
+points = 2
+threshold = 0.4
+semantic = "a short poem or piece of verse, with a rhythm or a line structure"
+examples = [
+  """the rain came down
+and washed the city clean
+morning came again""",
+  """she walks without looking
+and the whole street waits""",
+]
+guards = { min_words = 6, min_lines = 2 }
+
+[[note_achievement]]
+key = "nightmare"
+name = "Nightmare"
+description = "Wrote about a bad dream."
+tier = "common"
+points = 2
+threshold = 0.4
+semantic = "a description of a bad dream or nightmare that happened while asleep"
+examples = [
+  """woke up at three in the morning from the same dream again""",
+  """that dream again, the falling, and I could not get back down""",
+]
+guards = { min_words = 8 }
+
+[[note_achievement]]
+key = "dream"
+name = "Dream"
+description = "Wrote about a dream."
+tier = "common"
+points = 2
+threshold = 0.39
+semantic = "a description of a dream that happened while asleep"
+examples = [
+  """I dreamed about the old house again last night""",
+  """strange dream, we were all waiting for a train that never came""",
+]
+guards = { min_words = 6 }
+
+[[note_achievement]]
+key = "gratitude"
+name = "Gratitude"
+description = "Wrote about being thankful for something."
+tier = "common"
+points = 2
+threshold = 0.4
+semantic = "expressing gratitude or thankfulness for something or someone"
+examples = [
+  """genuinely thankful for a good week, no complaints at all""",
+  """so grateful for the people who turned up today""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "anger"
+name = "Rage"
+description = "Wrote about being angry."
+tier = "common"
+points = 2
+threshold = 0.39
+semantic = "expressing anger, fury or frustration about something that happened"
+examples = [
+  """furious about the meeting, absolutely furious""",
+  """so angry I could have screamed at all of them""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "grief"
+name = "Grief"
+description = "Wrote about loss or mourning."
+tier = "uncommon"
+points = 5
+threshold = 0.41
+semantic = "expressing grief, sorrow or mourning a death or a loss"
+examples = [
+  """still thinking about dad, it has been a bad month""",
+  """the house is empty in a way it will not be again""",
+]
+guards = { min_words = 6 }
+
+[[note_achievement]]
+key = "joy"
+name = "Delight"
+description = "Wrote about being genuinely happy about something."
+tier = "common"
+points = 2
+threshold = 0.4
+semantic = "expressing joy, delight or happiness about something that happened"
+examples = [
+  """what a day, genuinely so happy about all of it""",
+  """cannot stop smiling, the best week in months""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "anxiety"
+name = "Anxiety"
+description = "Wrote about feeling anxious or worried."
+tier = "uncommon"
+points = 5
+threshold = 0.4
+semantic = "expressing anxiety, worry or a nervous feeling about something"
+examples = [
+  """lying awake worrying about the appointment tomorrow""",
+  """that knot in the stomach about the results, again""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "food_review"
+name = "Food Review"
+description = "Wrote a proper verdict on the food."
+tier = "common"
+points = 2
+threshold = 0.4
+semantic = "a considered review or verdict about a meal or the quality of some food"
+examples = [
+  """the sandwich was dry and the bread was stale, three out of ten""",
+  """best curry I have had in this city, the hostel one, ten out of ten""",
+]
+guards = { min_words = 6 }
+
+[[note_achievement]]
+key = "poop_review"
+name = "Bristol Report"
+description = "Reviewed your own output with some rigour."
+tier = "uncommon"
+points = 5
+threshold = 0.41
+semantic = "a clinical or humorous assessment of the quality of one's own bowel movement"
+examples = [
+  """solid, well formed, no notes. a good result""",
+  """the texture was, how shall I put this, enthusiastic""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "travel"
+name = "Travelogue"
+description = "Wrote about a journey."
+tier = "common"
+points = 2
+threshold = 0.39
+semantic = "describing a journey, a trip or travelling somewhere"
+examples = [
+  """four hours on a train and then a bus, worth it for the view""",
+  """flew in at six, no idea where we were going""",
+]
+guards = { min_words = 7 }
+
+[[note_achievement]]
+key = "work_rant"
+name = "Work Rant"
+description = "Wrote about work, unkindly."
+tier = "uncommon"
+points = 5
+threshold = 0.4
+semantic = "complaining or venting about work, a job, a boss or a colleague"
+examples = [
+  """another day of pretending to care about that meeting""",
+  """my manager has no idea what he is doing and it is exhausting""",
+]
+guards = { min_words = 7 }
+
+[[note_achievement]]
+key = "exams"
+name = "Exams"
+description = "Wrote about exams or studying."
+tier = "common"
+points = 2
+threshold = 0.4
+semantic = "writing about exams, studying, revision or a test result"
+examples = [
+  """exam tomorrow and I have read nothing""",
+  """results came out, two of the four went my way""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "illness"
+name = "Illness"
+description = "Wrote about being unwell."
+tier = "common"
+points = 2
+threshold = 0.39
+semantic = "describing being ill, sick, unwell or in pain"
+examples = [
+  """completely wiped out with something, slept fourteen hours""",
+  """the stomach is still going, sorry""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "weather"
+name = "Weather"
+description = "Wrote about the weather."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing the weather or conditions outside"
+examples = [
+  """non stop rain since six this morning""",
+  """freezing, could feel it in the air today""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "sport"
+name = "Sport"
+description = "Wrote about sport or exercise."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing playing sport, a match, a run or going to the gym"
+examples = [
+  """five k this morning, slower than I would like""",
+  """we lost again, second half was dire""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "family"
+name = "Family"
+description = "Wrote about family."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "writing about parents, siblings, children or relatives"
+examples = [
+  """mum rang twice, as always""",
+  """the kids were over and it was very loud""",
+]
+guards = { min_words = 4 }
+
+[[note_achievement]]
+key = "relationship"
+name = "Relationship"
+description = "Wrote about a relationship."
+tier = "uncommon"
+points = 5
+threshold = 0.4
+semantic = "writing about a romantic relationship, a partner or a date"
+examples = [
+  """we talked for hours and none of it was about the thing""",
+  """seven months now, and I still check my phone""",
+]
+guards = { min_words = 6 }
+
+[[note_achievement]]
+key = "breakup"
+name = "Breakup"
+description = "Wrote about a relationship ending."
+tier = "rare"
+points = 10
+threshold = 0.42
+semantic = "describing a relationship ending, a breakup or being left"
+examples = [
+  """it is done, and I am not going to write about it for a while""",
+  """she ended it on a Tuesday, which somehow makes it worse""",
+]
+guards = { min_words = 8 }
+
+[[note_achievement]]
+key = "new_baby"
+name = "New Arrival"
+description = "Wrote about a new baby in the family."
+tier = "rare"
+points = 10
+threshold = 0.42
+semantic = "writing about a baby being born or arriving in the family"
+examples = [
+  """she arrived on Thursday, six pounds one, everyone well""",
+  """the baby came early, we are all a bit stunned""",
+]
+guards = { min_words = 6 }
+
+[[note_achievement]]
+key = "wedding"
+name = "Wedding"
+description = "Wrote about a wedding."
+tier = "uncommon"
+points = 5
+threshold = 0.41
+semantic = "describing a wedding, being at one, or planning one"
+examples = [
+  """the wedding was lovely, the speeches were not""",
+  """we are getting married in June, small, on a Tuesday""",
+]
+guards = { min_words = 6 }
+
+[[note_achievement]]
+key = "pet"
+name = "Pet"
+description = "Wrote about a pet or an animal."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing a pet, a dog, a cat or any animal you look after"
+examples = [
+  """the cat has decided the radiator is hers now""",
+  """he is nine and still refuses to walk past the bin""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "garden"
+name = "Garden"
+description = "Wrote about a garden or growing things."
+tier = "uncommon"
+points = 5
+threshold = 0.39
+semantic = "describing a garden, plants, growing things or doing garden work"
+examples = [
+  """the tomatoes have finally done something""",
+  """cleared the bed, put the bulbs in, nothing else matters""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "cooking"
+name = "Cooking"
+description = "Wrote about cooking or a meal you made."
+tier = "uncommon"
+points = 5
+threshold = 0.39
+semantic = "describing cooking, a recipe you followed, or food you prepared"
+examples = [
+  """made the thing from the recipe and it was edible""",
+  """roast on for three hours, the neighbours complained""",
+]
+guards = { min_words = 6 }
+
+[[note_achievement]]
+key = "drink"
+name = "Drinks"
+description = "Wrote about alcohol or drinking."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing drinking alcohol, a drink, a pub or a night out"
+examples = [
+  """three beers and a bad decision""",
+  """the pub was rammed, one pint and home""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "music"
+name = "Music"
+description = "Wrote about music or a concert."
+tier = "uncommon"
+points = 5
+threshold = 0.39
+semantic = "describing music, a song, an album or going to a concert"
+examples = [
+  """the new one is on repeat, which is not a recommendation""",
+  """front row, and I could hear nothing""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "film"
+name = "Film"
+description = "Wrote about a film or television."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing a film, a television show or something watched"
+examples = [
+  """watched the whole thing and could not tell you why""",
+  """three episodes in and I am still lost""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "reading"
+name = "Reading"
+description = "Wrote about a book or reading."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing a book, reading or what you have read"
+examples = [
+  """finished the thing, four hundred pages of it""",
+  """reading again after years, and it is good""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "money"
+name = "Money"
+description = "Wrote about money, cost or being broke."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing money, cost, a bill, being broke or an expense"
+examples = [
+  """no money until the end of the month, again""",
+  """that was more expensive than the car""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "commute"
+name = "Commute"
+description = "Wrote about travelling to work."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "describing a commute, the journey to work or travelling in"
+examples = [
+  """two hours each way, I have done the maths and I am free""",
+  """the bus was late so I walked the last bit""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "nature"
+name = "Nature"
+description = "Wrote about the natural world."
+tier = "uncommon"
+points = 5
+threshold = 0.39
+semantic = "describing nature, the countryside, a walk outside or wildlife"
+examples = [
+  """the hill was covered in gorse, worth the climb""",
+  """deer in the garden again, at dawn""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "night"
+name = "Night"
+description = "Wrote about the night, or not sleeping."
+tier = "uncommon"
+points = 5
+threshold = 0.38
+semantic = "describing the night, being awake at night, or failing to sleep"
+examples = [
+  """awake again at three, same as every night this week""",
+  """the night shift ended and the sun was coming up""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "first_word"
+name = "First Words"
+description = "Wrote a note long enough to count as writing."
+tier = "common"
+points = 2
+threshold = 0.38
+semantic = "a note long enough and considered enough to be worth keeping"
+examples = [
+  """long enough to be worth reading, which it was""",
+  """this one is a proper paragraph rather than a grunt""",
+]
+guards = { min_words = 15 }
+
+[[note_achievement]]
+key = "one_word"
+name = "Cryptic"
+description = "The entire note was one word."
+tier = "rare"
+points = 10
+threshold = 0.4
+semantic = "a note so short it is barely a note at all, a single terse word"
+examples = [
+  """no""",
+  """grim""",
+  """ow""",
+]
+guards = { max_chars = 9, max_lines = 1 }
+
+[[note_achievement]]
+key = "all_caps"
+name = "Shouting"
+description = "Wrote the whole note in capitals."
+tier = "uncommon"
+points = 5
+threshold = 0.4
+semantic = "a note written entirely in capital letters, as though shouted"
+examples = [
+  """THIS IS UNACCEPTABLE""",
+  """ABSOLUTELY NOT""",
+]
+guards = { min_chars = 10, max_lines = 2 }
+
+[[note_achievement]]
+key = "question"
+name = "Question"
+description = "Ended a note with a question."
+tier = "uncommon"
+points = 5
+threshold = 0.41
+semantic = "a note that asks a question, especially one left unanswered"
+examples = [
+  """do you think anyone actually reads these""",
+  """why is it always the same three people""",
+]
+guards = { min_words = 5 }
+
+[[note_achievement]]
+key = "exclamation"
+name = "Emphasis"
+description = "Wrote a note with several exclamation marks."
+tier = "common"
+points = 2
+threshold = 0.4
+semantic = "a note with a great deal of exclamation and very little restraint"
+examples = [
+  """what a day!!! cannot believe any of it!!""",
+  """no more of this!!!""",
+]
+guards = { min_words = 3 }
+

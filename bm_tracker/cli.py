@@ -297,3 +297,78 @@ def db_backup(destination: str) -> None:
 
 if __name__ == "__main__":
     main()
+
+
+@main.command("note-achievements")
+@click.option(
+    "--calibrate",
+    is_flag=True,
+    help="Score the catalogue against the labelled corpus and report thresholds.",
+)
+def note_achievements(*, calibrate: bool) -> None:
+    """Report on the note-achievement catalogue.
+
+    Without `--calibrate` this just says how many there are and whether the
+    prototypes are cached, which is the first question when a note that should
+    have matched did not.
+
+    With `--calibrate` it embeds the labelled corpus, and reports per
+    achievement whether the positives separate from the negatives at all. That
+    verdict is the useful part: a threshold cannot fix an achievement whose
+    description does not describe its own examples.
+    """
+    import asyncio
+
+    from bm_tracker.notes import achievements as note_defs
+    from bm_tracker.notes import calibration, service
+
+    definitions = note_defs.load()
+    settings = Settings()
+    click.echo(f"{len(definitions)} note achievements in the catalogue.")
+
+    if not calibrate:
+        matcher = service.matcher_from(settings)
+        if matcher is None:
+            click.echo(
+                "No EMBEDDING_API_KEY set, so nothing can be embedded. "
+                "Set it to calibrate or to match notes.",
+                err=True,
+            )
+            return
+        cache = service.DEFAULT_CACHE_PATH
+        click.echo(
+            f"prototype cache: {'present' if cache.is_file() else 'not built yet'}"
+        )
+        return
+
+    matcher = service.matcher_from(settings)
+    if matcher is None:
+        msg = "EMBEDDING_API_KEY is required to calibrate."
+        raise click.ClickException(msg)
+
+    async def run() -> list:
+        return await calibration.calibrate(matcher, definitions)  # type: ignore[arg-type]
+
+    verdicts = asyncio.run(run())
+
+    click.echo()
+    click.echo(
+        f"{'key':24} {'verdict':11} {'worst+':>7} {'best-':>7} "
+        f"{'current':>8} {'suggest':>8}"
+    )
+    click.echo("-" * 72)
+    for verdict in verdicts:
+        click.echo(
+            f"{verdict.key:24} {verdict.verdict:11} "
+            f"{verdict.worst_positive:7.3f} {verdict.best_negative:7.3f} "
+            f"{verdict.current:8.3f} {verdict.suggested:8.3f}"
+        )
+    bad = [v for v in verdicts if not v.separable]
+    if bad:
+        click.echo()
+        click.echo(
+            f"{len(bad)} of {len(verdicts)} do not separate. Each needs a "
+            "different description, more examples, or a stricter guard."
+        )
+    for verdict in bad:
+        click.echo(f"  {verdict.key}: {verdict.note}")

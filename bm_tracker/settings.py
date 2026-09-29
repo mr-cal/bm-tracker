@@ -47,6 +47,20 @@ class Settings(BaseSettings):
     # section 2.5.3.
     quick_entry_window_minutes: int = Field(default=10, ge=1)
 
+    # --- note achievements --------------------------------------------------
+    # The only thing in the app that calls a provider, and it is off unless a
+    # key is present. Every other achievement is counted, not read, so a private
+    # install works with no key at all and simply has no semantic ones.
+    embedding_api_key: str = ""
+    embedding_base_url: str = "https://openrouter.ai/api/v1"
+    # The same model craft-dashboard searches issues with, so a note and a commit
+    # land in the same vector space if that ever matters.
+    embedding_model: str = "openai/text-embedding-3-small"
+    # Narrowed from the model's native 1536. A sixth of the payload for no
+    # measurable loss on a cosine comparison, and it is what craft-dashboard
+    # stores.
+    embedding_dimensions: int = Field(default=1024, ge=64, le=1536)
+
     @property
     def is_production(self) -> bool:
         """Return whether the app is running in its production configuration."""

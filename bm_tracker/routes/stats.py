@@ -10,13 +10,17 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from bm_tracker import bristol, scoring
 from bm_tracker import strain as strain_lib
 from bm_tracker.achievements import engine
+from bm_tracker.achievements.engine import Status
+from bm_tracker.achievements.registry import Achievement
 from bm_tracker.dependencies import AuthenticatedUser, DbSession, csrf_token
 from bm_tracker.forms import int_arg as _int_arg
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
+from bm_tracker.notes.achievements import NoteAchievement
 from bm_tracker.timezones import now_in, year_bounds
 
 router = APIRouter(tags=["stats"])
@@ -196,6 +200,13 @@ async def achievements_page(
     # happened to define them in. Insertion order put the page out as Common,
     # Rare, Uncommon, Legendary — 2, 10, 5, 20 — which reads as nonsense for a
     # collection laid out to be skimmed.
+    # Note achievements join the same page, same tiers and same counters, rather
+    # than living somewhere of their own. They are earned from a different
+    # trigger — reading a note rather than counting a day — but a reader does not
+    # care why, and a second list of "things you have earned" would be a worse
+    # page than one list of them.
+    statuses = [*statuses, *(await _note_statuses(session, user, year))]
+
     grouped: dict[str, list] = {}
     for status in statuses:
         grouped.setdefault(status.achievement.tier, []).append(status)
@@ -224,6 +235,78 @@ async def achievements_page(
             "nav": "",
             "csrf_token": csrf_token(request),
         },
+    )
+
+
+async def _note_statuses(session: AsyncSession, user: User, year: int) -> list[Status]:
+    """Return the note achievements as statuses the page can render.
+
+    Args:
+        session: The session to read through.
+        user: Whose collection.
+        year: The calendar year.
+
+    Returns:
+        One `Status` per note achievement, from the catalogue and the unlock
+        table. Built without asking the embedder anything, because the page must
+        render whether or not a key is configured.
+
+    """
+    from sqlalchemy import select  # noqa: PLC0415
+
+    from bm_tracker.models import AchievementUnlock  # noqa: PLC0415
+    from bm_tracker.notes import achievements as note_defs  # noqa: PLC0415
+    from bm_tracker.notes import service as note_service  # noqa: PLC0415
+
+    earned = {
+        row.achievement_key.removeprefix(note_service.PREFIX): row
+        for row in (
+            await session.scalars(
+                select(AchievementUnlock).where(
+                    AchievementUnlock.user_id == user.id,
+                    AchievementUnlock.year == year,
+                )
+            )
+        ).all()
+        if note_service.is_note_key(row.achievement_key)
+    }
+    out: list[Status] = []
+    for definition in note_defs.load():
+        row = earned.get(definition.key)
+        out.append(
+            Status(
+                achievement=_as_achievement(definition),
+                unlocked=row is not None,
+                unlocked_at=row.unlocked_at if row else None,
+                progress=1.0 if row else 0.0,
+            )
+        )
+    return out
+
+
+def _as_achievement(definition: NoteAchievement) -> Achievement:
+    """Return a note definition shaped like a registry achievement.
+
+    The page renders one list, and the two kinds of achievement differ in
+    provenance rather than in anything a reader sees. This is the adapter, in
+    one place, rather than a conditional in the template.
+
+    Args:
+        definition: The note definition.
+
+    Returns:
+        An object with the attributes the page reads.
+
+    """
+    return Achievement(
+        key=definition.key,
+        name=definition.name,
+        description=definition.description,
+        tier=definition.tier,
+        icon="default",
+        rule=None,
+        custom=None,
+        points=definition.points,
     )
 
 
