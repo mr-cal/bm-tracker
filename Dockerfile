@@ -6,6 +6,13 @@ RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock README.md ./
 COPY bm_tracker/ bm_tracker/
+# Alembic's configuration and migration environment. The container's command
+# starts with `alembic upgrade head`, so without these the image comes up,
+# prints "No 'script_location' key found in configuration", and exits 255 on a
+# restart loop. They were in the repository the whole time and were simply
+# never copied into the image.
+COPY alembic.ini ./
+COPY alembic/ alembic/
 
 # setuptools_scm derives the version from git metadata, which is not present in
 # the build context. CI passes the real version through this argument.
