@@ -774,64 +774,23 @@ body {
   width: 1.25em;
 }
 
-/* The date input keeps the platform's picker — on a phone that is the OS's own
- * calendar, with the user's locale and accessibility settings already applied —
- * but not the platform's *chrome*. The indicator is drawn per engine with a
- * font that is not always installed, which is how this field came to show an
- * empty box. `-webkit-appearance: none` on the input is what actually removes
- * it in Chromium; hiding the pseudo-element alone does not. */
-input[type="date"],
-input[type="time"] {
-  -webkit-appearance: none;
-  appearance: none;
-  padding-right: 2.5rem;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator,
-input[type="date"]::-webkit-inner-spin-button,
-input[type="time"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  appearance: none;
-  display: none;
-}
-
-/* Our stand-in for the indicator. A real button, not a span, so it is in the
- * tab order and works from the keyboard; `datepicker.js` opens the native
- * picker from it. */
-.date-field {
-  display: flex;
-  position: relative;
-}
-
-.date-field__button {
-  align-items: center;
-  background: none;
-  border: 0;
-  color: var(--bs-secondary-color);
-  cursor: pointer;
-  display: inline-flex;
-  justify-content: center;
-  padding: 0;
-  position: absolute;
-  right: 0.4rem;
-  top: 50%;
-  transform: translateY(-50%);
-  /* 44px minimum touch target, even though the glyph is 20px. */
-  min-height: 44px;
-  min-width: 44px;
-  z-index: 1;
-}
-
-.date-field__button:hover,
-.date-field__button:focus-visible {
-  color: var(--bs-body-color);
-}
-
-.date-field__icon {
-  height: 1.15rem;
-  width: 1.15rem;
-}
+/* The date and time fields are left exactly as the platform draws them.
+ *
+ * This used to strip their chrome: `-webkit-appearance: none` on the input —
+ * which is what actually removes the picker indicator in Chromium, hiding the
+ * pseudo-element on its own does not — plus a drawn button standing in for it.
+ * The reason was that Chromium draws the indicator with a font that is not
+ * always installed, and the field showed an empty box rather than a calendar.
+ *
+ * Worth solving. Not worth solving that way. `::-webkit-calendar-picker-
+ * indicator` is a WebKit-only selector and does nothing in Firefox, which
+ * draws an indicator of its own and keeps it — so in every browser but
+ * Chromium each field carried two icons for one control, and the one that was
+ * not ours was the one the browser had already made correct.
+ *
+ * The indicator is the platform's own, in the user's locale and accessibility
+ * settings, and it is the affordance that says this field opens something. It
+ * stays, and nothing here overrides the control it belongs to. */
 
 /* --- the top bar ---------------------------------------------------------- */
 

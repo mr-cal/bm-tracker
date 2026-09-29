@@ -29,32 +29,33 @@
 
     <div class="log-form__when">
       {#
-        Both fields get the same drawn button. The date always had one; the time
-        kept the user agent's own clock indicator, so the two icons looked
-        identical in purpose and behaved nothing alike. `showPicker()` opens the
-        real thing on both — on a phone that is the OS calendar and the OS clock.
+        Plain native fields, with the user agent's own indicator and nothing
+        beside it. There used to be a drawn button here on top of the native
+        picker, because Chromium once drew its indicator with a font that was
+        not always installed and the field showed an empty box instead.
+
+        Hiding the native indicator to make room for ours is a WebKit-only
+        trick — `::-webkit-calendar-picker-indicator` does nothing in Firefox,
+        which draws its own and keeps it. So in every browser but Chromium the
+        two sat side by side: a calendar icon that opened a calendar, and the
+        browser's calendar icon that opened the same calendar. Two icons, one
+        meaning, on both fields.
+
+        The empty box was worth solving and this was the wrong way. The field
+        is a date field, the picker is the platform's own — on a phone, the OS
+        calendar in the user's locale with their own date format — and hiding
+        the affordance the browser provides to replace it with a worse copy is
+        a downgrade. One icon, and it is the one that belongs to the control.
       #}
       <div>
         <label class="form-label" for="date">Date</label>
-        <div class="date-field">
-          <input class="form-control" type="date" id="date" name="date" required
-                 value="{{ today.isoformat() }}" />
-          <button type="button" class="date-field__button" data-picker-toggle
-                  aria-label="Open the calendar" aria-controls="date" title="Open the calendar">
-            {{ icon_svg("calendar", "date-field__icon") }}
-          </button>
-        </div>
+        <input class="form-control" type="date" id="date" name="date" required
+               value="{{ today.isoformat() }}" />
       </div>
       <div>
         <label class="form-label" for="time">Time</label>
-        <div class="date-field">
-          <input class="form-control" type="time" id="time" name="time" required
-                 value="{{ now.strftime('%H:%M') }}" />
-          <button type="button" class="date-field__button" data-picker-toggle
-                  aria-label="Open the clock" aria-controls="time" title="Open the clock">
-            {{ icon_svg("clock", "date-field__icon") }}
-          </button>
-        </div>
+        <input class="form-control" type="time" id="time" name="time" required
+               value="{{ now.strftime('%H:%M') }}" />
       </div>
     </div>
 

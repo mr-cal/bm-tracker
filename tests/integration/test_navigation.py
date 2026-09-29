@@ -87,19 +87,41 @@ async def test_icons_render_as_elements_not_escaped_text(
     assert not ESCAPED_SVG.search(page.text), "an icon was HTML-escaped into text"
 
 
-async def test_the_date_picker_keeps_a_visible_icon(
+async def test_the_date_and_time_fields_are_the_platform_s_own(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    """The date field has an icon we draw, not one the user agent may not.
+    """Native fields, with the browser's indicator and nothing drawn over it.
 
-    Chromium draws the native picker indicator with a font that is not always
-    installed, and when it is missing the field shows an empty box.
+    There used to be a drawn button on each field, with the native indicator
+    hidden behind it. The rule that hid it was `::-webkit-...`, which does
+    nothing in Firefox, so outside Chromium every field carried two icons for
+    one control.
     """
     await _sign_in(client, session)
 
     page = await client.get("/log")
 
-    assert 'class="ico date-field__icon"' in page.text
+    assert 'type="date" id="date"' in page.text
+    assert 'type="time" id="time"' in page.text
+    # Nothing of ours sits on top of them, and nothing suppresses what the
+    # browser draws.
+    assert "date-field" not in page.text
+    assert "data-picker-toggle" not in page.text
+    assert "picker.js" not in page.text
+
+    # Comments are stripped first. The comment above that rule in custom.css
+    # names the very selectors being removed, and a test that matched on the
+    # raw file would have passed or failed according to how that comment
+    # happened to be line-wrapped.
+    css = re.sub(
+        r"/\*.*?\*/", "", (await client.get("/static/css/custom.css")).text, flags=re.S
+    )
+    assert "-webkit-calendar-picker-indicator" not in css, (
+        "the native picker indicator is being hidden again"
+    )
+    assert not re.search(r'input\[type="date"\][^{]*\{[^}]*-webkit-appearance', css), (
+        "appearance is being stripped, which removes the indicator in Chromium"
+    )
 
 
 async def test_the_drawer_holds_every_destination(
@@ -141,34 +163,6 @@ def test_an_icon_class_cannot_smuggle_markup() -> None:
     """The class is an allowlist, not a hole into the attribute."""
     with pytest.raises(UnknownIconError):
         icon("menu", 'x" onload="alert(1)')
-
-
-async def test_the_date_and_time_fields_both_have_a_picker_button(
-    client: AsyncClient, session: AsyncSession
-) -> None:
-    """Both fields get the same drawn button, and both open a real picker.
-
-    The date had one and the time kept the user agent's own clock indicator, so
-    two icons sat side by side looking identical in purpose and behaving
-    nothing alike: one opened a calendar and the other looked like it should
-    and did not. `showPicker()` opens the platform's own picker on both, so on a
-    phone that is still the OS calendar and the OS clock.
-    """
-    await _sign_in(client, session)
-
-    page = await client.get("/log")
-
-    for field in ("date", "time"):
-        assert f'aria-controls="{field}"' in page.text, f"no button for {field}"
-        assert "data-picker-toggle" in page.text
-    assert 'class="ico date-field__icon"' in page.text
-    assert "/static/js/picker.js" in page.text
-
-    script = await client.get("/static/js/picker.js")
-    assert script.status_code == 200
-    assert "showPicker" in script.text
-    # One rule, not a list of fields, so a third one needs no change here.
-    assert "[data-picker-toggle]" in script.text
 
 
 async def test_log_is_not_in_the_top_bar(
