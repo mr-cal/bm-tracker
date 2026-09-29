@@ -23,21 +23,27 @@
   from the tabs again, and the highlighted item is the same comparison in both.
 #}
 {#
-  The four places you go, in the order they appear in both surfaces. The tab bar
-  renders exactly these; the drawer renders these and then the rest.
+  The four places you go, in the order they appear in both surfaces. The tab
+  bar renders exactly these; the drawer renders these and then the rest.
+
+  Achievements is a tab because that is where the collection lives, and it was
+  otherwise two taps away on a phone. People moved to the drawer: it is a
+  directory of other people, reached by tapping a name in the feed, and it was
+  holding a slot on a page you visit on your own.
 #}
 {% set primary_nav = [
-  {"key": "log",    "href": "/log",         "icon": "log",  "label": "Log"},
-  {"key": "feed",   "href": "/",            "icon": "feed", "label": "Feed"},
-  {"key": "people", "href": "/people",      "icon": "people", "label": "People"},
-  {"key": "board",  "href": "/leaderboard", "icon": "chart",  "label": "Board"},
+  {"key": "feed", "href": "/", "icon": "feed", "label": "Feed"},
+  {"key": "log", "href": "/log", "icon": "log", "label": "Log"},
+  {"key": "achievements", "href": "/achievements", "icon": "trophy", "label": "Achievements"},
+  {"key": "board", "href": "/leaderboard", "icon": "chart", "label": "Board"},
 ] %}
 {% set secondary_nav = [
-  {"key": "you",      "href": "/dashboard",   "icon": "user",     "label": "You"},
-  {"key": "achievements", "href": "/achievements", "icon": "trophy", "label": "Achievements"},
-  {"key": "settings", "href": "/settings",   "icon": "settings", "label": "Settings"},
-  {"key": "admin",    "href": "/admin",      "icon": "shield",   "label": "Admin", "admin_only": true},
-  {"key": "help",     "href": "/help",       "icon": "help",     "label": "Help"},
+  {"key": "you", "href": "/dashboard", "icon": "user", "label": "You"},
+  {"key": "people", "href": "/people", "icon": "people", "label": "People"},
+  {"key": "settings", "href": "/settings", "icon": "settings", "label": "Settings"},
+  {"key": "admin", "href": "/admin", "icon": "shield", "label": "Admin", "admin_only": true},
+  {"key": "help", "href": "/help", "icon": "help", "label": "Help"},
+] %}
 ] %}
 <a class="skip-link" href="#main">Skip to content</a>
 

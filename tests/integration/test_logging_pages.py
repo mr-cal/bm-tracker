@@ -1335,14 +1335,25 @@ async def test_the_drawer_and_the_tab_bar_agree(
 async def test_the_drawer_marks_the_page_you_are_on(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    """The active item is the same comparison in both surfaces."""
+    """The active item is the same comparison in both surfaces.
+
+    Checked on a page that is in both. People is a drawer-only destination
+    now — it moved out of the tab bar when Achievements took its slot — so
+    highlighting it can only ever produce one marker, and asking for two
+    there would be asking for a tab that is not there.
+    """
     await _user(session)
     await _sign_in(client)
 
-    page = await client.get("/people")
+    page = await client.get("/leaderboard")
 
     assert 'aria-current="page"' in page.text
     assert page.text.count("aria-current") == 2, "one in the tabs, one in the drawer"
+
+    drawer_only = await client.get("/people")
+    assert drawer_only.text.count("aria-current") == 1, (
+        "a drawer-only destination should mark itself once, in the drawer"
+    )
 
 
 async def test_the_dashboard_has_no_log_button(

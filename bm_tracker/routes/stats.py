@@ -173,7 +173,7 @@ async def dashboard(
             "bristol_scale": bristol.BRISTOL_SCALE,
             "bristol_by_value": {t.value: t for t in bristol.BRISTOL_SCALE},
             "recent": entries,
-            "nav": "",
+            "nav": "board",
             "csrf_token": csrf_token(request),
         },
     )
@@ -285,7 +285,7 @@ async def achievements_page(
             "tier_points": engine.REGISTRY.tiers,
             "lifetime_points": lifetime,
             "tier_reveal": engine.REGISTRY.reveal_at,
-            "nav": "",
+            "nav": "achievements",
             "csrf_token": csrf_token(request),
         },
     )
