@@ -11,9 +11,20 @@ from __future__ import annotations
 from datetime import date, datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-# Fallback when a stored timezone is not a zone this Python knows about. A
-# missing tzdata entry should not stop somebody logging a BM.
-FALLBACK_TIMEZONE = "UTC"
+#: The zone a person is assumed to be in when it cannot be worked out — an
+#: account created without one, a stored value this Python has no tzdata for.
+#:
+#: Central, not UTC. A fallback is a guess about a human being, and a human
+#: being is on Central time far more often than on the meridian — picking UTC
+#: silently put everybody's day boundary six hours out and made "today" wrong
+#: for the majority rather than for an edge case. `America/Chicago` is the IANA
+#: name for it, and it carries its own daylight saving.
+DEFAULT_TIMEZONE = "America/Chicago"
+
+#: Used when a stored zone is not one this Python knows about. A missing tzdata
+#: entry should not stop somebody logging a BM, and guessing where they are
+#: beats refusing to serve them.
+FALLBACK_TIMEZONE = DEFAULT_TIMEZONE
 
 MAX_HOUR = 23
 MAX_MINUTE = 59

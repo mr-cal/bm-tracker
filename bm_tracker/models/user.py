@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from bm_tracker.models.base import Base, utcnow
 from bm_tracker.theme import DEFAULT_THEME, THEMES
+from bm_tracker.timezones import DEFAULT_TIMEZONE
 
 if TYPE_CHECKING:
     from bm_tracker.models.daily_log import DailyLog
@@ -70,7 +71,9 @@ class User(Base):
     session_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # An IANA name, e.g. "Europe/London". Decides where a day's boundary falls.
-    timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="UTC")
+    timezone: Mapped[str] = mapped_column(
+        String(64), nullable=False, default=DEFAULT_TIMEZONE
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=utcnow

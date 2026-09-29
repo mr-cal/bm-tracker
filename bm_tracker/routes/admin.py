@@ -10,6 +10,7 @@ from sqlalchemy import func, select
 from bm_tracker.dependencies import AdminUser, DbSession, csrf_token, verify_csrf
 from bm_tracker.models import DailyLog, Invite, User
 from bm_tracker.services import audit_service, auth_service, invite_service
+from bm_tracker.timezones import DEFAULT_TIMEZONE
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -81,6 +82,7 @@ async def _admin_page(
         request,
         "admin/index.html",
         {
+            "default_timezone": DEFAULT_TIMEZONE,
             "users": users,
             "live_invite_counts": live_counts,
             "admin": admin,
@@ -116,7 +118,7 @@ async def create_user(
 
     username = str(form.get("username", "")).strip().lower()
     display_name = str(form.get("display_name", "")).strip()
-    timezone_name = str(form.get("timezone", "")).strip() or "UTC"
+    timezone_name = str(form.get("timezone", "")).strip() or DEFAULT_TIMEZONE
     make_admin = form.get("is_admin") == "on"
 
     if not username:

@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bm_tracker import auth
 from bm_tracker.models import User
+from bm_tracker.timezones import DEFAULT_TIMEZONE
 
 # Two dimensions, because either alone is insufficient. Per-IP does nothing
 # against a slow spray across many usernames from many hosts; per-account does
@@ -232,7 +233,7 @@ async def create_user(
     display_name: str,
     *,
     is_admin: bool = False,
-    timezone_name: str = "UTC",
+    timezone_name: str = DEFAULT_TIMEZONE,
 ) -> User:
     """Create a provisioned-but-unusable account.
 

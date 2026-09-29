@@ -21,6 +21,7 @@ from bm_tracker.database import get_engine, get_session_factory
 from bm_tracker.models import User
 from bm_tracker.services import audit_service, invite_service, seed_service
 from bm_tracker.settings import Settings
+from bm_tracker.timezones import DEFAULT_TIMEZONE
 
 
 @dataclass(frozen=True)
@@ -117,7 +118,12 @@ def main() -> None:
     default=None,
     help="Set this password. Omit to issue a one-time setup link instead.",
 )
-@click.option("--timezone", "timezone_name", default="UTC", help="IANA timezone.")
+@click.option(
+    "--timezone",
+    "timezone_name",
+    default=DEFAULT_TIMEZONE,
+    help="IANA timezone.",
+)
 def admin_create(
     username: str, display_name: str, password: str | None, timezone_name: str
 ) -> None:
