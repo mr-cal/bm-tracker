@@ -109,6 +109,1006 @@ id = "bouncy_20"
 pool = "bouncy"
 text = "The Bristol scale is satisfied."
 
+[[message]]
+id = "log_any_021"
+pool = "log_any"
+text = "Recorded. The system thanks you for your service."
+
+[[message]]
+id = "log_any_221"
+pool = "log_any"
+text = "The office has logged your contribution and moved on with its day."
+
+[[message]]
+id = "log_any_022"
+pool = "log_any"
+text = "One for the ledger. The ledger is grateful."
+
+[[message]]
+id = "log_any_023"
+pool = "log_any"
+text = "Delivered, one piece, on schedule."
+
+[[message]]
+id = "log_any_024"
+pool = "log_any"
+text = "In the bucket, and out of you."
+
+[[message]]
+id = "log_any_025"
+pool = "log_any"
+text = "Noted with interest."
+
+[[message]]
+id = "log_any_026"
+pool = "log_any"
+text = "The intake form is complete."
+
+[[message]]
+id = "log_any_027"
+pool = "log_any"
+text = "Filed under the usual heading."
+
+[[message]]
+id = "log_any_028"
+pool = "log_any"
+text = "Another entry in a long and distinguished record."
+
+[[message]]
+id = "log_any_029"
+pool = "log_any"
+text = "A sensor reading, taken and archived."
+
+[[message]]
+id = "log_any_030"
+pool = "log_any"
+text = "You have produced. Well done."
+
+[[message]]
+id = "log_any_031"
+pool = "log_any"
+text = "The process completed without incident."
+
+[[message]]
+id = "log_any_032"
+pool = "log_any"
+text = "Payload received, timestamped, filed."
+
+[[message]]
+id = "log_any_033"
+pool = "log_any"
+text = "One unit, accounted for."
+
+[[message]]
+id = "log_any_034"
+pool = "log_any"
+text = "A small achievement, firmly brown."
+
+[[message]]
+id = "log_any_035"
+pool = "log_any"
+text = "Logged, stamped, done."
+
+[[message]]
+id = "log_any_036"
+pool = "log_any"
+text = "The register grows longer. Good."
+
+[[message]]
+id = "log_any_037"
+pool = "log_any"
+text = "Consider this matter concluded."
+
+[[message]]
+id = "log_any_038"
+pool = "log_any"
+text = "Another line in a diary nobody else is allowed to read."
+
+[[message]]
+id = "log_any_039"
+pool = "log_any"
+text = "Somewhere, a chart just moved a millimetre to the right."
+
+[[message]]
+id = "log_any_040"
+pool = "log_any"
+text = "A data point, acquired and filed."
+
+[[message]]
+id = "log_any_041"
+pool = "log_any"
+text = "Production up. Morale unchanged."
+
+[[message]]
+id = "log_any_042"
+pool = "log_any"
+text = "You did the thing. The thing is recorded."
+
+[[message]]
+id = "log_any_043"
+pool = "log_any"
+text = "Entry accepted. No follow-up required."
+
+[[message]]
+id = "log_any_044"
+pool = "log_any"
+text = "Another brick in the wall of evidence."
+
+[[message]]
+id = "log_any_045"
+pool = "log_any"
+text = "This too shall pass, and has been recorded passing."
+
+[[message]]
+id = "log_any_046"
+pool = "log_any"
+text = "The office is grateful for your continued efficiency."
+
+[[message]]
+id = "log_any_047"
+pool = "log_any"
+text = "Worth ten points, which is ten more than yesterday's nothing."
+
+[[message]]
+id = "log_any_048"
+pool = "log_any"
+text = "A modest, load-bearing contribution."
+
+[[message]]
+id = "log_any_049"
+pool = "log_any"
+text = "Recorded in triplicate, which is one time plus enthusiasm."
+
+[[message]]
+id = "log_any_050"
+pool = "log_any"
+text = "The machinery thanks you. It almost never says that."
+
+[[message]]
+id = "log_any_051"
+pool = "log_any"
+text = "Another successful completion of a bodily function."
+
+[[message]]
+id = "log_any_052"
+pool = "log_any"
+text = "Your contribution has been counted, weighed and forgotten."
+
+[[message]]
+id = "log_any_053"
+pool = "log_any"
+text = "Someone, somewhere, finds this fascinating."
+
+[[message]]
+id = "log_any_054"
+pool = "log_any"
+text = "It happened, it was written down, that is the deal."
+
+[[message]]
+id = "log_any_055"
+pool = "log_any"
+text = "Filed under today."
+
+[[message]]
+id = "log_any_056"
+pool = "log_any"
+text = "The long march of digestion continues. Onward."
+
+[[message]]
+id = "log_any_057"
+pool = "log_any"
+text = "Ate it, kept it, logged it. The full cycle."
+
+[[message]]
+id = "log_any_058"
+pool = "log_any"
+text = "That is one in the book, and the book is happy."
+
+[[message]]
+id = "log_any_059"
+pool = "log_any"
+text = "Punctual. That is the word for this."
+
+[[message]]
+id = "log_any_060"
+pool = "log_any"
+text = "One recorded, zero regrets."
+
+[[message]]
+id = "log_any_061"
+pool = "log_any"
+text = "A contribution of some standing."
+
+[[message]]
+id = "log_any_062"
+pool = "log_any"
+text = "Today has been dealt with."
+
+[[message]]
+id = "log_any_063"
+pool = "log_any"
+text = "The book is one line longer. Everything balances."
+
+[[message]]
+id = "log_any_064"
+pool = "log_any"
+text = "Noted, timestamped, and out of your head."
+
+[[message]]
+id = "log_any_065"
+pool = "log_any"
+text = "More evidence that you are functioning."
+
+[[message]]
+id = "log_any_066"
+pool = "log_any"
+text = "A short entry in a long diary."
+
+[[message]]
+id = "log_any_067"
+pool = "log_any"
+text = "Output registered. The day moves on."
+
+[[message]]
+id = "log_any_068"
+pool = "log_any"
+text = "Filed, and fairly."
+
+[[message]]
+id = "log_any_069"
+pool = "log_any"
+text = "The ledger, which has seen everything, says noted."
+
+[[message]]
+id = "log_any_070"
+pool = "log_any"
+text = "Another one. The body continues its programme."
+
+[[message]]
+id = "log_any_071"
+pool = "log_any"
+text = "Accomplished, admirably, and on the record."
+
+[[message]]
+id = "log_any_072"
+pool = "log_any"
+text = "A fine contribution to the ongoing study."
+
+[[message]]
+id = "log_any_073"
+pool = "log_any"
+text = "That is one, logged, done and deserved."
+
+[[message]]
+id = "log_any_074"
+pool = "log_any"
+text = "Another entry. Somewhere, a database sighs contentedly."
+
+[[message]]
+id = "log_any_075"
+pool = "log_any"
+text = "You showed up, and the record shows it."
+
+[[message]]
+id = "log_any_076"
+pool = "log_any"
+text = "The count is up by one. So is your standing."
+
+[[message]]
+id = "log_any_077"
+pool = "log_any"
+text = "Recorded, and not for the first time."
+
+[[message]]
+id = "log_any_078"
+pool = "log_any"
+text = "Another chapter in the ongoing literature of you."
+
+[[message]]
+id = "log_any_079"
+pool = "log_any"
+text = "Done. Go and enjoy the rest of it."
+
+[[message]]
+id = "log_any_080"
+pool = "log_any"
+text = "That is now part of the record, and the record is permanent."
+
+[[message]]
+id = "log_none_081"
+pool = "log_none"
+text = "Nothing, logged. The streak does not care how."
+
+[[message]]
+id = "log_none_082"
+pool = "log_none"
+text = "A quiet day, recorded. That still counts."
+
+[[message]]
+id = "log_none_083"
+pool = "log_none"
+text = "Nothing today. The chain holds."
+
+[[message]]
+id = "log_none_084"
+pool = "log_none"
+text = "Zero. Deliberately entered. Noted."
+
+[[message]]
+id = "log_none_085"
+pool = "log_none"
+text = "No output, and you still opened the app. That is the win."
+
+[[message]]
+id = "log_none_086"
+pool = "log_none"
+text = "An empty day is data. Specifically, a day with nothing in it."
+
+[[message]]
+id = "log_none_087"
+pool = "log_none"
+text = "Nothing today. The record is honest, which is all it asks."
+
+[[message]]
+id = "log_none_088"
+pool = "log_none"
+text = "You came to say there was nothing. That is still showing up."
+
+[[message]]
+id = "log_none_089"
+pool = "log_none"
+text = "A rest day. The body knows what it is doing."
+
+[[message]]
+id = "log_none_090"
+pool = "log_none"
+text = "A blank page, honestly filled in."
+
+[[message]]
+id = "log_none_091"
+pool = "log_none"
+text = "Nothing to report, and a report of nothing. Filed."
+
+[[message]]
+id = "log_none_092"
+pool = "log_none"
+text = "A day of keeping things in. Respect, again."
+
+[[message]]
+id = "log_none_093"
+pool = "log_none"
+text = "Zero logged, points banked. The maths works out."
+
+[[message]]
+id = "log_none_094"
+pool = "log_none"
+text = "No news is good news, and it is logged."
+
+[[message]]
+id = "log_none_095"
+pool = "log_none"
+text = "Still turning up. Even on the quiet ones."
+
+[[message]]
+id = "log_none_096"
+pool = "log_none"
+text = "Nothing today, and you noticed. That is the habit."
+
+[[message]]
+id = "log_none_097"
+pool = "log_none"
+text = "The day produced nothing, and the log says so."
+
+[[message]]
+id = "log_none_098"
+pool = "log_none"
+text = "A held day. Nothing left the building."
+
+[[message]]
+id = "log_none_099"
+pool = "log_none"
+text = "Zero. Your streak is now the interesting number."
+
+[[message]]
+id = "log_none_100"
+pool = "log_none"
+text = "Nothing. Recorded anyway. That is the whole trick."
+
+[[message]]
+id = "log_none_101"
+pool = "log_none"
+text = "Some days the body simply declines to participate. Logged."
+
+[[message]]
+id = "log_none_102"
+pool = "log_none"
+text = "A day of conservation. Nothing spent, nothing made."
+
+[[message]]
+id = "log_none_103"
+pool = "log_none"
+text = "No output, full marks. See, it keeps working."
+
+[[message]]
+id = "log_none_104"
+pool = "log_none"
+text = "A quiet day, honestly entered."
+
+[[message]]
+id = "log_none_105"
+pool = "log_none"
+text = "Nothing today. Tomorrow exists."
+
+[[message]]
+id = "log_none_106"
+pool = "log_none"
+text = "You logged a blank. It counts. It always counted."
+
+[[message]]
+id = "log_none_107"
+pool = "log_none"
+text = "Nothing, and the app is fine with it."
+
+[[message]]
+id = "log_none_108"
+pool = "log_none"
+text = "A day off, on the record."
+
+[[message]]
+id = "log_none_109"
+pool = "log_none"
+text = "No delivery. Signed for anyway."
+
+[[message]]
+id = "log_none_110"
+pool = "log_none"
+text = "The day was quiet and you said so in writing."
+
+[[message]]
+id = "log_none_111"
+pool = "log_none"
+text = "Empty, entered, counted."
+
+[[message]]
+id = "log_none_112"
+pool = "log_none"
+text = "Nothing today. The streak lives, and so do you."
+
+[[message]]
+id = "log_none_113"
+pool = "log_none"
+text = "Holding the line. Literally."
+
+[[message]]
+id = "log_none_114"
+pool = "log_none"
+text = "Zero, logged with a straight face."
+
+[[message]]
+id = "log_none_115"
+pool = "log_none"
+text = "No activity to report, and a full point for reporting it."
+
+[[message]]
+id = "log_none_116"
+pool = "log_none"
+text = "The quietest of days, faithfully recorded."
+
+[[message]]
+id = "log_none_117"
+pool = "log_none"
+text = "Nothing. Which is information."
+
+[[message]]
+id = "log_none_118"
+pool = "log_none"
+text = "You showed up for a day that gave you nothing to show."
+
+[[message]]
+id = "log_none_119"
+pool = "log_none"
+text = "A blank today, honestly filled."
+
+[[message]]
+id = "log_none_120"
+pool = "log_none"
+text = "Nothing today, and that is allowed."
+
+[[message]]
+id = "log_none_121"
+pool = "log_none"
+text = "The record shows a zero today. The record is not disappointed."
+
+[[message]]
+id = "log_none_122"
+pool = "log_none"
+text = "Quiet. Logged. Moving on."
+
+[[message]]
+id = "log_none_123"
+pool = "log_none"
+text = "Nothing got out. Everything got in the books."
+
+[[message]]
+id = "log_none_124"
+pool = "log_none"
+text = "A day of keeping it in, honestly noted."
+
+[[message]]
+id = "log_none_125"
+pool = "log_none"
+text = "Zero output, streak intact. Good arithmetic."
+
+[[message]]
+id = "note_added_126"
+pool = "note_added"
+text = "A note as well. Now it is a record rather than a receipt."
+
+[[message]]
+id = "note_added_127"
+pool = "note_added"
+text = "Noted. The diary version of this day now exists."
+
+[[message]]
+id = "note_added_128"
+pool = "note_added"
+text = "You wrote something down. That is the rare part."
+
+[[message]]
+id = "note_added_129"
+pool = "note_added"
+text = "Notes too. The database thanks you for the extra colour."
+
+[[message]]
+id = "note_added_130"
+pool = "note_added"
+text = "A note! The future is now better informed than the present."
+
+[[message]]
+id = "note_added_131"
+pool = "note_added"
+text = "Written down, which means it counts for more."
+
+[[message]]
+id = "note_added_132"
+pool = "note_added"
+text = "You added context. This is the good stuff."
+
+[[message]]
+id = "note_added_133"
+pool = "note_added"
+text = "Noted in full. Ten points, and a memory."
+
+[[message]]
+id = "note_added_134"
+pool = "note_added"
+text = "A note. Somewhere, a historian is pleased."
+
+[[message]]
+id = "note_added_135"
+pool = "note_added"
+text = "The record now has a reason attached to it."
+
+[[message]]
+id = "note_added_136"
+pool = "note_added"
+text = "Words as well as data. Bold."
+
+[[message]]
+id = "note_added_137"
+pool = "note_added"
+text = "Noted in your own words, which is the only kind worth having."
+
+[[message]]
+id = "note_added_138"
+pool = "note_added"
+text = "A note! The diary gains a paragraph."
+
+[[message]]
+id = "note_added_139"
+pool = "note_added"
+text = "You explained yourself. Future you raises an eyebrow and moves on."
+
+[[message]]
+id = "note_added_140"
+pool = "note_added"
+text = "Context supplied. This is how an archive gets good."
+
+[[message]]
+id = "note_added_141"
+pool = "note_added"
+text = "Noted, in the way that matters."
+
+[[message]]
+id = "note_added_142"
+pool = "note_added"
+text = "A note, so the number has a story behind it."
+
+[[message]]
+id = "note_added_143"
+pool = "note_added"
+text = "Written down properly. Respect."
+
+[[message]]
+id = "note_added_144"
+pool = "note_added"
+text = "The diary part is the part anyone actually reads."
+
+[[message]]
+id = "note_added_145"
+pool = "note_added"
+text = "Noted, with feeling."
+
+[[message]]
+id = "note_added_146"
+pool = "note_added"
+text = "You left yourself a message. How thoughtful."
+
+[[message]]
+id = "note_added_147"
+pool = "note_added"
+text = "A note. The numbers were not going to explain this one."
+
+[[message]]
+id = "note_added_148"
+pool = "note_added"
+text = "Details supplied. Exemplary."
+
+[[message]]
+id = "note_added_149"
+pool = "note_added"
+text = "Written, and not forgotten."
+
+[[message]]
+id = "note_added_150"
+pool = "note_added"
+text = "A note! Points: still ten. Memory: significantly better."
+
+[[message]]
+id = "note_added_151"
+pool = "note_added"
+text = "You annotated this one. Good instinct."
+
+[[message]]
+id = "note_added_152"
+pool = "note_added"
+text = "Noted for posterity, or at least for next Tuesday."
+
+[[message]]
+id = "note_added_153"
+pool = "note_added"
+text = "The note is saved. So is whatever you forget about it tomorrow."
+
+[[message]]
+id = "bouncy_154"
+pool = "bouncy"
+text = "Splendid. Another fine specimen for the collection."
+
+[[message]]
+id = "bouncy_155"
+pool = "bouncy"
+text = "That is a textbook one. The scale approves."
+
+[[message]]
+id = "bouncy_156"
+pool = "bouncy"
+text = "A model example. Truly."
+
+[[message]]
+id = "bouncy_157"
+pool = "bouncy"
+text = "Excellent work. The Bristol scale has been consulted and is pleased."
+
+[[message]]
+id = "bouncy_158"
+pool = "bouncy"
+text = "That is one for the highlight reel."
+
+[[message]]
+id = "bouncy_159"
+pool = "bouncy"
+text = "Very good. The kind of thing this app exists for."
+
+[[message]]
+id = "bouncy_160"
+pool = "bouncy"
+text = "A crisp result. No notes. Ideal."
+
+[[message]]
+id = "bouncy_161"
+pool = "bouncy"
+text = "Excellent form. The ledger is impressed."
+
+[[message]]
+id = "bouncy_162"
+pool = "bouncy"
+text = "A strong effort and a stronger outcome."
+
+[[message]]
+id = "bouncy_163"
+pool = "bouncy"
+text = "Now that is a movement."
+
+[[message]]
+id = "bouncy_164"
+pool = "bouncy"
+text = "Consider it a good one. Rare, and appreciated."
+
+[[message]]
+id = "bouncy_165"
+pool = "bouncy"
+text = "The apparatus is functioning beautifully."
+
+[[message]]
+id = "bouncy_166"
+pool = "bouncy"
+text = "That is a result worth noting. Which you have now, by logging it."
+
+[[message]]
+id = "bouncy_167"
+pool = "bouncy"
+text = "A fine one. Genuinely."
+
+[[message]]
+id = "bouncy_168"
+pool = "bouncy"
+text = "Quality over quantity, and also quantity."
+
+[[message]]
+id = "bouncy_169"
+pool = "bouncy"
+text = "That went smoothly, which is the highest praise available here."
+
+[[message]]
+id = "bouncy_170"
+pool = "bouncy"
+text = "A tidy one. No complications, no drama."
+
+[[message]]
+id = "bouncy_171"
+pool = "bouncy"
+text = "Well made, promptly delivered."
+
+[[message]]
+id = "bouncy_172"
+pool = "bouncy"
+text = "Satisfying. There is no other word for it."
+
+[[message]]
+id = "bouncy_173"
+pool = "bouncy"
+text = "That is one the Bristol scale will remember."
+
+[[message]]
+id = "bouncy_174"
+pool = "bouncy"
+text = "Clean, efficient, uneventful. Perfect."
+
+[[message]]
+id = "bouncy_175"
+pool = "bouncy"
+text = "A good result. The archive thanks you."
+
+[[message]]
+id = "bouncy_176"
+pool = "bouncy"
+text = "Very nice. Genuinely no notes."
+
+[[message]]
+id = "bouncy_177"
+pool = "bouncy"
+text = "That is a proper one. Well done."
+
+[[message]]
+id = "bouncy_178"
+pool = "bouncy"
+text = "Excellent. The system does not often get to say that."
+
+[[message]]
+id = "quick_entry_179"
+pool = "quick_entry"
+text = "Inside the ten-minute window. Efficient."
+
+[[message]]
+id = "quick_entry_180"
+pool = "quick_entry"
+text = "That was quick. Almost suspiciously quick."
+
+[[message]]
+id = "quick_entry_181"
+pool = "quick_entry"
+text = "Logged at speed, with no elaboration required."
+
+[[message]]
+id = "quick_entry_182"
+pool = "quick_entry"
+text = "In and out. The fast lane."
+
+[[message]]
+id = "quick_entry_183"
+pool = "quick_entry"
+text = "A quick entry, honestly made. The app respects a clean workflow."
+
+[[message]]
+id = "quick_entry_184"
+pool = "quick_entry"
+text = "That did not take long. The scale appreciates efficiency."
+
+[[message]]
+id = "quick_entry_185"
+pool = "quick_entry"
+text = "Speedrun complete. Personal best, or near enough."
+
+[[message]]
+id = "quick_entry_186"
+pool = "quick_entry"
+text = "Typed, submitted, done. Three verbs."
+
+[[message]]
+id = "quick_entry_187"
+pool = "quick_entry"
+text = "Under ten minutes. The record reflects this approvingly."
+
+[[message]]
+id = "quick_entry_188"
+pool = "quick_entry"
+text = "A quick one. No ceremony, no delay."
+
+[[message]]
+id = "quick_entry_189"
+pool = "quick_entry"
+text = "That is a brisk log. Well done."
+
+[[message]]
+id = "quick_entry_190"
+pool = "quick_entry"
+text = "Fast and factual. The ideal entry."
+
+[[message]]
+id = "quick_entry_191"
+pool = "quick_entry"
+text = "You were in and out. The system is grateful."
+
+[[message]]
+id = "quick_entry_192"
+pool = "quick_entry"
+text = "Rapid logging. The dashboard has been updated accordingly."
+
+[[message]]
+id = "quick_entry_193"
+pool = "quick_entry"
+text = "Quickly done, and done properly."
+
+[[message]]
+id = "quick_entry_194"
+pool = "quick_entry"
+text = "That is how it is done when you already know what you are doing."
+
+[[message]]
+id = "backfill_195"
+pool = "backfill"
+text = "Backfilled. The record is glad to see the gap filled."
+
+[[message]]
+id = "backfill_196"
+pool = "backfill"
+text = "A past day, added late. That is not a problem."
+
+[[message]]
+id = "backfill_197"
+pool = "backfill"
+text = "Filling a hole in the record. Sensible."
+
+[[message]]
+id = "backfill_198"
+pool = "backfill"
+text = "Yesterday has been dealt with, at last."
+
+[[message]]
+id = "backfill_199"
+pool = "backfill"
+text = "A backfill, logged. Honesty is the whole policy here."
+
+[[message]]
+id = "backfill_200"
+pool = "backfill"
+text = "The archive completes itself, one forgotten day at a time."
+
+[[message]]
+id = "backfill_201"
+pool = "backfill"
+text = "A day you missed, added now. The streak appreciates the effort."
+
+[[message]]
+id = "backfill_202"
+pool = "backfill"
+text = "Late, accurate, and filed. A good combination."
+
+[[message]]
+id = "backfill_203"
+pool = "backfill"
+text = "A backdated entry, received and accepted without comment."
+
+[[message]]
+id = "backfill_204"
+pool = "backfill"
+text = "The past catches up. Good for the chart."
+
+[[message]]
+id = "backfill_205"
+pool = "backfill"
+text = "A gap, now filled. The diary appreciates it."
+
+[[message]]
+id = "backfill_206"
+pool = "backfill"
+text = "Logging yesterday today. Still counts. Still honest."
+
+[[message]]
+id = "backfill_207"
+pool = "backfill"
+text = "The record was incomplete. Now it is not."
+
+[[message]]
+id = "backfill_208"
+pool = "backfill"
+text = "Catching up on the past, one entry at a time."
+
+[[message]]
+id = "streak_209"
+pool = "streak"
+text = "The streak continues. Do not think about it too hard."
+
+[[message]]
+id = "streak_210"
+pool = "streak"
+text = "Another day on the run. It is becoming a habit."
+
+[[message]]
+id = "streak_211"
+pool = "streak"
+text = "The chain holds."
+
+[[message]]
+id = "streak_212"
+pool = "streak"
+text = "Streak up. The number is becoming impressive."
+
+[[message]]
+id = "streak_213"
+pool = "streak"
+text = "You are on a run now. Ride it."
+
+[[message]]
+id = "streak_214"
+pool = "streak"
+text = "That is another day unbroken."
+
+[[message]]
+id = "streak_215"
+pool = "streak"
+text = "The streak does not care how you feel about it. Neither, ideally, should you."
+
+[[message]]
+id = "streak_216"
+pool = "streak"
+text = "Consistency noted and appreciated."
+
+[[message]]
+id = "streak_217"
+pool = "streak"
+text = "Another link in an increasingly long chain."
+
+[[message]]
+id = "streak_218"
+pool = "streak"
+text = "The streak grows. The app is quietly thrilled."
+
+[[message]]
+id = "streak_219"
+pool = "streak"
+text = "Keep it going, or do not. The record will not judge."
+
 # ---------------------------------------------------------------------------
 # Interface hints.
 #
@@ -140,6 +1140,253 @@ text = "The interesting part, if there is one"
 id = "hint_noting_04"
 slot = "noting"
 text = "Anything the log should know about this one?"
+
+[[variant]]
+id = "hint_noting_05"
+slot = "noting"
+text = "Notes, or move on"
+
+[[variant]]
+id = "hint_noting_06"
+slot = "noting"
+text = "Context, if you feel like it"
+
+[[variant]]
+id = "hint_noting_07"
+slot = "noting"
+text = "The field is optional. The knowing is not."
+
+[[variant]]
+id = "hint_noting_08"
+slot = "noting"
+text = "What happened?"
+
+[[variant]]
+id = "hint_noting_09"
+slot = "noting"
+text = "Any colour you want to add"
+
+[[variant]]
+id = "hint_noting_10"
+slot = "noting"
+text = "Details, complaints, confetti — all welcome"
+
+[[variant]]
+id = "hint_noting_11"
+slot = "noting"
+text = "Optional, but not pointless"
+
+[[variant]]
+id = "hint_noting_12"
+slot = "noting"
+text = "The bit you would remember in a year"
+
+[[variant]]
+id = "hint_noting_13"
+slot = "noting"
+text = "Say as much or as little as you like"
+
+[[variant]]
+id = "hint_noting_14"
+slot = "noting"
+text = "Anything off the record"
+
+[[variant]]
+id = "hint_noting_15"
+slot = "noting"
+text = "Notes?"
+
+[[variant]]
+id = "hint_noting_16"
+slot = "noting"
+text = "The rest of the story"
+
+[[variant]]
+id = "hint_noting_17"
+slot = "noting"
+text = "If there is more to it"
+
+[[variant]]
+id = "hint_noting_18"
+slot = "noting"
+text = "Anything the scale cannot capture"
+
+[[variant]]
+id = "hint_noting_19"
+slot = "noting"
+text = "Write something, or do not"
+
+[[variant]]
+id = "hint_noting_20"
+slot = "noting"
+text = "Your diary, briefly"
+
+[[variant]]
+id = "hint_noting_21"
+slot = "noting"
+text = "The human-readable part"
+
+[[variant]]
+id = "hint_noting_22"
+slot = "noting"
+text = "Anything worth a second sentence"
+
+[[variant]]
+id = "hint_noting_23"
+slot = "noting"
+text = "Add a note if the mood took it"
+
+[[variant]]
+id = "hint_noting_24"
+slot = "noting"
+text = "What is worth remembering about this one"
+
+[[variant]]
+id = "hint_noting_25"
+slot = "noting"
+text = "Context, rants, recipes — anything"
+
+[[variant]]
+id = "hint_noting_26"
+slot = "noting"
+text = "An optional flourish"
+
+[[variant]]
+id = "hint_noting_27"
+slot = "noting"
+text = "The particulars"
+
+[[variant]]
+id = "hint_noting_28"
+slot = "noting"
+text = "Anything you would want on the record"
+
+[[variant]]
+id = "hint_noting_29"
+slot = "noting"
+text = "The reason behind it, if there was one"
+
+[[variant]]
+id = "hint_noting_30"
+slot = "noting"
+text = "Notes, or leave it empty forever"
+
+[[variant]]
+id = "hint_noting_31"
+slot = "noting"
+text = "Anything the form did not ask for"
+
+[[variant]]
+id = "hint_noting_32"
+slot = "noting"
+text = "The part that does not fit a scale"
+
+[[variant]]
+id = "hint_noting_33"
+slot = "noting"
+text = "Say more, if you like"
+
+[[variant]]
+id = "hint_noting_34"
+slot = "noting"
+text = "Your notes"
+
+[[variant]]
+id = "hint_noting_35"
+slot = "noting"
+text = "Anything worth saying out loud"
+
+[[variant]]
+id = "hint_noting_36"
+slot = "noting"
+text = "A line or two, if they exist"
+
+[[variant]]
+id = "hint_noting_37"
+slot = "noting"
+text = "The reason it was worth logging"
+
+[[variant]]
+id = "hint_noting_38"
+slot = "noting"
+text = "Anything in particular"
+
+[[variant]]
+id = "hint_noting_39"
+slot = "noting"
+text = "The details, if you have them"
+
+[[variant]]
+id = "hint_noting_40"
+slot = "noting"
+text = "A note for the archive"
+
+[[variant]]
+id = "hint_noting_41"
+slot = "noting"
+text = "Context encouraged, not required"
+
+[[variant]]
+id = "hint_noting_42"
+slot = "noting"
+text = "Anything that happened around it"
+
+[[variant]]
+id = "hint_noting_43"
+slot = "noting"
+text = "The story, briefly"
+
+[[variant]]
+id = "hint_noting_44"
+slot = "noting"
+text = "Notes for future you"
+
+[[variant]]
+id = "hint_noting_45"
+slot = "noting"
+text = "Anything, or nothing at all"
+
+[[variant]]
+id = "hint_noting_46"
+slot = "noting"
+text = "Whatever is worth keeping"
+
+[[variant]]
+id = "hint_noting_47"
+slot = "noting"
+text = "The interesting bit"
+
+[[variant]]
+id = "hint_noting_48"
+slot = "noting"
+text = "Anything worth a second look later"
+
+[[variant]]
+id = "hint_noting_49"
+slot = "noting"
+text = "Room for a note, if you need one"
+
+[[variant]]
+id = "hint_noting_50"
+slot = "noting"
+text = "The part only you know"
+
+[[variant]]
+id = "hint_noting_51"
+slot = "noting"
+text = "Anything worth a whole paragraph, if it comes to that"
+[[variant]]
+id = "hint_noting_52"
+slot = "noting"
+text = "Free text, no wrong answers"
+[[variant]]
+id = "hint_noting_53"
+slot = "noting"
+text = "The bit that does not fit anywhere else"
+[[variant]]
+id = "hint_noting_54"
+slot = "noting"
+text = "Anything at all, honestly"
 
 [[variant]]
 id = "hint_nothing_01"

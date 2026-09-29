@@ -3,8 +3,11 @@
 The concern this solves: if a message were picked at random, somebody who always
 writes a note would only ever see the note lines, and somebody who never would
 be stuck with a handful. So selection is **fair by construction** — within a
-pool, the line shown fewest times wins, ties broken by longest unseen. Ten days
-of noting cycles every note line before any of them repeats.
+pool, the line shown fewest times wins, ties broken by longest unseen, so a
+pool is cycled completely before any of its lines comes round twice. The pools
+are large — sixty-odd lines in the general one — which means a regular logger
+sees a different line almost every time, and a line is rare enough that reading
+it still lands.
 
 That needs a per-user count per line, which is what `celebration_seen` is for.
 It is a row per (user, message) rather than a cursor, so the fairness property
@@ -27,8 +30,10 @@ from bm_tracker.models.base import utcnow
 MESSAGES_PATH: Final = Path(__file__).parent / "messages.toml"
 
 #: The pool for each kind of event. An event may ask for a specific pool, and
-#: `log_any` is the fallback so there is always something to say.
+#: `log_any` is the one it asks for when nothing more specific happened — the
+#: general pool, and the biggest one.
 POOL_FOR_EVENT: Final[dict[str, str]] = {
+    "log_any": "log_any",
     "log_none": "log_none",
     "quick_entry": "quick_entry",
     "note_added": "note_added",
@@ -36,11 +41,17 @@ POOL_FOR_EVENT: Final[dict[str, str]] = {
     "streak": "streak",
 }
 
+#: The pool an event falls back to when it asks for one that does not exist. It
+#: is `bouncy` rather than `log_any` so a typo in a new event name shows a line
+#: instead of nothing, and so the blend below has a pool to blend with.
 DEFAULT_POOL: Final = "bouncy"
 
-#: Chance of ignoring the specific pool and using the general one anyway, so a
-#: dedicated line does not make the app feel mechanical.
-POOL_BLEND_CHANCE: Final = 0.2
+#: The pool mixed into every event so a dedicated line does not make the app
+#: feel mechanical. Fair rotation across the union means the blend pool's share
+#: is its size over the total, so this is a weight rather than a probability:
+#: `bouncy` at 28 lines against `log_any` at 66 is roughly a third of a plain
+#: log, which is what a playful line in a serious app should amount to.
+BLEND_POOL: Final = "bouncy"
 
 
 class MessageError(ValueError):
@@ -205,9 +216,7 @@ async def pick(
     pool_name = POOL_FOR_EVENT.get(event, DEFAULT_POOL)
     candidates = list(POOLS.get(pool_name, POOLS[DEFAULT_POOL]))
     if blend and candidates:
-        # Blend the general pool in occasionally so a dedicated line does not
-        # make the app feel mechanical.
-        candidates += list(POOLS[DEFAULT_POOL])
+        candidates += list(POOLS.get(BLEND_POOL, ()))
     if not candidates:
         return None
 
