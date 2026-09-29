@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from pathlib import Path
+from typing import Final
 
 import pytest
 from bm_tracker import auth, celebrate, scoring
@@ -571,14 +572,61 @@ def test_every_known_fact_is_actually_produced() -> None:
 
 
 def test_the_catalogue_is_the_size_we_intend() -> None:
-    """One hundred and twenty, by agreement, and not three hundred by inertia.
+    """One hundred and nineteen, by agreement, and not three hundred by inertia.
 
     Variety by volume is the opposite of variety by idea: the first twenty-one
     were twenty-one ways of saying "your number is at least N", and the answer
     was a bigger vocabulary and a smaller catalogue, not a bigger catalogue.
+
+    It was 120 until `no_notes_no_streak` went. It had a rule identical to
+    `silent_streak` — seven days logged with no note — so the two unlocked at
+    the same moment, every time. The one that survived is the first rung of a
+    family that escalates: 7 days uncommon, 30 rare, 50 legendary. The
+    duplicate sat outside it and had nothing to say that the family did not.
+
+    The number is asserted because it is a decision, not an accident. A
+    duplicate slipping in changes it; that is the point.
     """
     loaded = registry.load()
-    assert len(loaded) == 120, f"the catalogue is {len(loaded)}, not 120"
+    assert len(loaded) == 119, f"the catalogue is {len(loaded)}, not 119"
+
+
+#: Rules that two achievements currently share, and are known to. Asserted
+#: rather than ignored, so a *new* duplicate fails and removing one of these
+#: fails until the entry here goes too.
+#:
+#: `lore_master`/`fifty_notes_b` are the same achievement written twice, and
+#: `unbroken`/`month_of_days` hand out 5 and 20 points for the same 30 days.
+#: Both were found by the test below, both are a call for the owner of the
+#: catalogue, and neither is fixed here.
+KNOWN_DUPLICATE_RULES: Final = frozenset(
+    {
+        "{'all': [{'note_count': {'gte': 50}}]}",
+        "{'all': [{'streak_longest': {'gte': 30}}]}",
+    }
+)
+
+
+def test_no_two_achievements_have_the_same_rule() -> None:
+    """Two achievements with one rule unlock together, every time, forever.
+
+    `silent_streak` and `no_notes_no_streak` both meant "seven days logged
+    with no note", and both fired on the same seventh day. The reader is told
+    two things at once and neither is a surprise. A duplicate is worse than a
+    missing entry, because it makes the collection lie about how much there
+    is in it.
+    """
+    seen: dict[str, str] = {}
+    for achievement in registry.load().achievements:
+        if achievement.custom is not None:
+            continue
+        key = str(achievement.rule.spec)
+        if key in KNOWN_DUPLICATE_RULES:
+            continue
+        assert key not in seen, (
+            f"{achievement.key} has the same rule as {seen[key]}: {key}"
+        )
+        seen[key] = achievement.key
 
 
 def test_the_catalogue_covers_more_than_one_shape() -> None:

@@ -210,8 +210,6 @@ ICONS: dict[str, str] = {
 
     "wordless_year": '<path d="M3 5h6.5v14L6 17 3 19Z"/><path d="M14.5 5H21v14l-3.5-2-3 2Z"/>'
     '<path d="M6 9.5v0M6 12.5v0M18 9.5v0M18 12.5v0"/>',
-    "no_notes_no_streak": '<circle cx="12" cy="12" r="1.6"/><path d="M3 19.5h18"/>'
-    '<path d="M4.5 12h2.5M10 12h.5M13.5 12h.5M17 12h2.5"/>',
     "confession": '<path d="M4 4.5h16v15H4Z"/><path d="M12 4.5v8"/>'
     '<path d="m8 12.5-2 3h4Z"/><path d="M8 18.5h8"/>',
     "time_traveller": '<circle cx="12" cy="13" r="7.5"/><path d="M12 8.5V13l3 1.8"/>'

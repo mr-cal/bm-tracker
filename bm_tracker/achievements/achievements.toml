@@ -391,14 +391,6 @@ icon = "time_traveller"
 rule = { all = [{ backfilled_days = { gte = 50 } }] }
 
 
-[[achievement]]
-key = "no_notes_no_streak"
-name = "Bare Minimum"
-description = "A seven-day streak with nothing written on any of it. Efficiency, of a kind."
-tier = "common"
-icon = "no_notes_no_streak"
-rule = { all = [{ streak_longest = { gte = 7 } }, { longest_run_without_note = { gte = 7 } }] }
-
 
 [[achievement]]
 key = "undo"
