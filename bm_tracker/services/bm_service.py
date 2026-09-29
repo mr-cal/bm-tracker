@@ -20,7 +20,7 @@ from bm_tracker import strain as strain_lib
 from bm_tracker.models import BmEntry, DailyLog, User
 from bm_tracker.models.base import utcnow
 from bm_tracker.models.user import MAX_DISPLAY_NAME_LENGTH
-from bm_tracker.timezones import now_in
+from bm_tracker.timezones import is_valid_timezone, now_in
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -363,6 +363,36 @@ def entry_payload(entry: BmEntry) -> dict[str, Any]:
         "notes": entry.notes,
         "has_note": entry.has_note,
     }
+
+
+async def set_timezone(session: AsyncSession, user: User, timezone_name: str) -> str:
+    """Record a new timezone for somebody.
+
+    The timezone is the one setting a person cannot work around. It decides what
+    "today" is, which day a streak counts against, and how far back a day may be
+    filled in — so somebody who moves, or whose account was created in the wrong
+    zone, has no way to fix any of that from the page that shows it. The admin
+    form has a field for it; the account holder did not.
+
+    Args:
+        session: The session to write through.
+        user: Whose timezone to change.
+        timezone_name: The zone they chose.
+
+    Returns:
+        The zone that was stored.
+
+    Raises:
+        ValueError: If the zone is not one the system knows.
+
+    """
+    name = timezone_name.strip()
+    if not is_valid_timezone(name):
+        msg = f"That is not a timezone this system knows: {timezone_name!r}"
+        raise ValueError(msg)
+    user.timezone = name
+    await session.flush()
+    return name
 
 
 async def set_display_name(session: AsyncSession, user: User, display_name: str) -> str:

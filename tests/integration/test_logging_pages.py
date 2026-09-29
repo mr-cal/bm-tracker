@@ -14,9 +14,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 from bm_tracker import auth, theme
-from bm_tracker.achievements import engine
+from bm_tracker.achievements import engine, registry
 from bm_tracker.dependencies import CSRF_FIELD_NAME, CSRF_HEADER_NAME
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
+from bm_tracker.notes import achievements as note_defs
 from bm_tracker.services import bm_service
 from bm_tracker.timezones import now_in
 from httpx import ASGITransport, AsyncClient
@@ -1099,7 +1100,19 @@ async def test_the_leaderboard_names_its_columns_in_full(
     current run and which was the best ever, and the shorter label was what
     caused it.
     """
-    await _user(session)
+    # The board lists only people who are in the year, so somebody has to be in
+    # it. An account with nothing logged is not on the board at all, which is
+    # its own test.
+    user = await _user(session)
+    day = _yesterday()
+    await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9),
+        bristol_type=4,
+    )
+    await session.commit()
     await _sign_in(client)
 
     page = await client.get("/leaderboard")
@@ -1286,7 +1299,7 @@ async def test_the_settings_sections_are_divided(
     page = await client.get("/settings")
 
     # Exactly the section containers, not the __title and __submit inside them.
-    assert len(re.findall(r'class="settings-section(?: |")', page.text)) == 3
+    assert len(re.findall(r'class="settings-section(?: |")', page.text)) == 4
     # One of them opts out of the top border; the other two keep it.
     assert page.text.count("settings-section--first") == 1
     assert (
@@ -1643,7 +1656,11 @@ async def test_achievement_points_reach_the_leaderboard(
     assert "bee" in first.lower(), (
         "the achievement points should have lifted Bee above Cal"
     )
-    assert "Of which achievements" in first, "the row should say where it came from"
+    # Named as points, because it is points. "Of which achievements" sat among a
+    # row of counts, so 348 read as three hundred and forty-eight achievements
+    # out of a hundred and fifty-eight available.
+    assert "Achievement points" in first, "the row should say where it came from"
+    assert "Achievements earned" in first, "and how many that was"
 
 
 async def test_a_locked_tier_shows_question_marks_and_what_it_costs(
@@ -1773,3 +1790,81 @@ async def test_an_unlock_says_what_you_did_to_earn_it(
     assert "five in a single day" in page.text.lower(), (
         "the unlock must say what earns it, not only what it is called"
     )
+
+
+async def test_a_tile_is_never_a_full_bar_and_locked_at_once(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A backfilled year satisfies its rules but records no unlock.
+
+    `unlocked` came from the unlocks table and `progress` from live rules, so
+    looking back at a year you had backfilled into rendered a full progress bar
+    beside the word "Locked" — one tile saying two opposite things. The page now
+    evaluates the year being viewed before reading it, so the table is the only
+    thing that decides.
+    """
+
+    user = await _user(session)
+    await _sign_in(client)
+
+    old = date.today().year - 3
+    day = date(old, 6, 15)
+    await bm_service.log_bm(
+        session, user, day, occurred_local=datetime(old, 6, 15, 9, 0), bristol_type=4
+    )
+    await session.commit()
+
+    page = await client.get(f"/achievements?year={old}")
+
+    assert 'aria-valuenow="100"' not in page.text, (
+        "a locked achievement is showing a full progress bar"
+    )
+    first_blood = re.search(
+        r'achievement-tile__name">First Blood</span>.*?(?=</li>)', page.text, re.S
+    )
+    assert first_blood, "First Blood tile not found"
+    assert "badge text-bg-success" in first_blood.group(0), (
+        "a satisfied rule with no unlock row is still shown as locked"
+    )
+
+
+async def test_an_empty_year_names_itself_rather_than_ranking_nobody(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A board of people with nothing in it is a list of everybody, not a board.
+
+    Looking at a year before anybody used the app listed all eight users in a
+    row, most at zero points, zero days and zero entries — and cost a scoring
+    pass per user to produce.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/leaderboard?year=1998")
+
+    assert "board__row" not in page.text, "an empty year should rank nobody"
+    assert "Nobody has logged anything in 1998 yet." in page.text
+
+
+async def test_the_collection_total_does_not_shrink_with_your_points(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The header names the whole collection, and says what is still hidden.
+
+    It used to say "of N" where N was the number of tiles rendered, so a person
+    on 3,000 points read "of 158" and a person on 800 read "of 120" — two people
+    comparing collections were comparing different-sized ones, and neither figure
+    was how many achievements there are.
+    """
+    await _user(session)
+    await _sign_in(client)
+
+    page = await client.get("/achievements")
+    text = re.sub(r"<[^>]+>", " ", page.text)
+    text = " ".join(text.split())
+
+    total = len(registry.load()) + len(note_defs.load())
+    assert f"of {total} earned" in text, (
+        f"the collection should be {total}: {text[:120]}"
+    )
+    assert "still to reveal" in text, "the hidden tiers should be counted, not hidden"

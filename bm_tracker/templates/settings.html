@@ -61,8 +61,41 @@
 
     <dl class="settings-list">
       <div><dt>Sign-in name</dt><dd>{{ user.username }}</dd></div>
-      <div><dt>Timezone</dt><dd>{{ user.timezone }}</dd></div>
     </dl>
+  </section>
+
+  {#
+    Editable, because this is the one setting with no way around it. The zone
+    decides what "today" is, which day a streak counts against and how far back
+    a day may be filled in, so somebody who moves — or whose account was made
+    in the wrong zone — had a read-only value and no way to fix any of it. The
+    admin form has had a field for this all along.
+  #}
+  <section class="settings-section">
+    <h2 class="settings-section__title">Where your days start</h2>
+    <form method="post" action="/settings/timezone">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+      <div>
+        <label class="form-label" for="timezone">Timezone</label>
+        {#
+          A list rather than a free text box: `zoneinfo` knows around six
+          hundred, nobody can spell them from memory, and a typo would be
+          rejected with an error the reader cannot act on. The current zone is
+          prepended so a zone that has since been dropped from the list still
+          shows as what it is rather than silently falling back to UTC.
+        #}
+        <select class="form-select" id="timezone" name="timezone" required>
+          {% for zone in timezones %}
+          <option value="{{ zone }}"{% if zone == user.timezone %} selected{% endif %}>{{ zone }}</option>
+          {% endfor %}
+        </select>
+        <p class="form-text">
+          Used to decide which day is today, which day your streak counts, and
+          how far back you can fill in a day. Nothing already logged moves.
+        </p>
+      </div>
+      <button type="submit" class="btn btn-primary settings-section__submit">Save timezone</button>
+    </form>
   </section>
 
   <section class="settings-section">

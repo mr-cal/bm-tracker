@@ -120,6 +120,42 @@ class HealthResponse(BaseModel):
     status: str
 
 
+class CachedStaticFiles(StaticFiles):
+    """Static files that say how long they may be kept.
+
+    Nothing under `/static` sent a `Cache-Control` at all, so the browser had no
+    permission to keep any of it and revalidated 158 achievement SVGs plus the
+    stylesheet on every visit. The icons are only 354 bytes each, but the count
+    is what costs.
+
+    The value is a day with `must-revalidate`, not a year with `immutable`,
+    because none of these paths carry a content hash — `custom.css` is one file
+    with one name. A year of `immutable` would mean a deploy does not reach
+    anybody who has the old one, which is worse than the requests it saves.
+    A day bounds the damage to a day and still removes 143 of every 144
+    requests.
+    """
+
+    #: One day, revalidated on use after that. A day is chosen over a year
+    #: because the paths are unhashed; see the class docstring.
+    CACHE_CONTROL = "public, max-age=86400, must-revalidate"
+
+    def file_response(self, *args, **kwargs) -> Response:  # noqa: ANN002, ANN003
+        """Return a file response carrying the cache policy.
+
+        Args:
+            *args: Passed through to `StaticFiles`.
+            **kwargs: Passed through to `StaticFiles`.
+
+        Returns:
+            The response, with `Cache-Control` set.
+
+        """
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = self.CACHE_CONTROL
+        return response
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Create and configure the FastAPI application.
 
@@ -175,7 +211,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     cast(dict[str, object], templates.env.globals)["day_only"] = times.day_only
     cast(dict[str, object], templates.env.globals)["feed_when"] = times.feed_when
     app.state.templates = templates
-    app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+    app.mount("/static", CachedStaticFiles(directory=str(_STATIC_DIR)), name="static")
 
     @app.middleware("http")
     async def _access_log(

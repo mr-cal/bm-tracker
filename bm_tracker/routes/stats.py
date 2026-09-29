@@ -20,6 +20,7 @@ from bm_tracker.achievements.registry import Achievement
 from bm_tracker.dependencies import AuthenticatedUser, DbSession, csrf_token
 from bm_tracker.forms import int_arg as _int_arg
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
+from bm_tracker.notes import achievements as note_defs
 from bm_tracker.notes import service as note_service
 from bm_tracker.notes.achievements import NoteAchievement
 from bm_tracker.timezones import now_in, year_bounds
@@ -49,6 +50,13 @@ def _templates(request: Request) -> Jinja2Templates:
     return templates
 
 
+#: The earliest year the app will render. Nothing before this can exist, so a
+#: year outside the range is a mistyped or hand-edited query parameter rather
+#: than a year somebody is looking for, and it falls back to the current one
+#: instead of rendering an empty page that reads like data loss.
+EARLIEST_YEAR = 1990
+
+
 def requested_year(request: Request, user: AuthenticatedUser) -> int:
     """Return the year being viewed, defaulting to the user's current year.
 
@@ -62,7 +70,7 @@ def requested_year(request: Request, user: AuthenticatedUser) -> int:
     """
     raw = request.query_params.get("year", "")
     current, _ = now_in(user.timezone)
-    if raw.isdigit():
+    if raw.isdigit() and EARLIEST_YEAR <= int(raw) <= current.year + 1:
         return int(raw)
     return current.year
 
@@ -190,6 +198,27 @@ async def achievements_page(
     Hiding something you already have is just a bug wearing a disguise.
     """
     year = requested_year(request, user)
+    # Catch the viewed year up before reading it. The engine runs on every
+    # write, which is enough for the year you are living in and not enough for
+    # a year you are looking back at: a backfilled day satisfies its rules, but
+    # nothing ever recorded the unlock for that year. The page then took
+    # `unlocked` from the table and `progress` from the rules, and rendered a
+    # full bar beside the word "Locked" — one tile saying two opposite things,
+    # under a header that said you had earned none of them.
+    #
+    # `evaluate` is idempotent, so this is one pass over rules already in memory
+    # and a write only when something is genuinely new.
+    await engine.record(
+        session,
+        await engine.evaluate(
+            session,
+            user,
+            year,
+            window_minutes=request.app.state.settings.quick_entry_window_minutes,
+        ),
+        user.id,
+        year,
+    )
     statuses = await engine.status_for(
         session,
         user,
@@ -220,6 +249,11 @@ async def achievements_page(
     # entries from a different subsystem, which reads as a separate list that
     # somebody forgot to label rather than as one collection.
     grouped = {tier: list(_interleave(items)) for tier, items in grouped.items()}
+    lifetime = await _lifetime_points(
+        session,
+        user,
+        request.app.state.settings.quick_entry_window_minutes,
+    )
 
     return _templates(request).TemplateResponse(
         request,
@@ -234,13 +268,22 @@ async def achievements_page(
                 )
             ),
             "earned_count": sum(1 for s in statuses if s.unlocked),
+            # The real size of the collection, and how much of it is still
+            # behind a reveal threshold. The header used to say "of N" where N
+            # was the number of tiles rendered, so a person on 3,000 points
+            # read "of 158" and a person on 800 read "of 120" — two people
+            # comparing collections were comparing different-sized ones, and
+            # neither figure was the number of achievements there are.
+            "collection_size": len(engine.REGISTRY) + len(note_defs.load()),
+            "hidden_count": sum(
+                1
+                for tier, items in grouped.items()
+                for _ in items
+                if engine.REGISTRY.reveal_at.get(tier, 0) > lifetime
+            ),
             "earned_points": sum(s.points for s in statuses if s.unlocked),
             "tier_points": engine.REGISTRY.tiers,
-            "lifetime_points": await _lifetime_points(
-                session,
-                user,
-                request.app.state.settings.quick_entry_window_minutes,
-            ),
+            "lifetime_points": lifetime,
             "tier_reveal": engine.REGISTRY.reveal_at,
             "nav": "",
             "csrf_token": csrf_token(request),
@@ -265,7 +308,6 @@ async def _note_statuses(session: AsyncSession, user: User, year: int) -> list[S
     from sqlalchemy import select  # noqa: PLC0415
 
     from bm_tracker.models import AchievementUnlock  # noqa: PLC0415
-    from bm_tracker.notes import achievements as note_defs  # noqa: PLC0415
 
     earned = {
         row.achievement_key.removeprefix(note_service.PREFIX): row
@@ -447,8 +489,26 @@ async def leaderboard(
         )
     ).all()
     earned = {uid: int(total or 0) for uid, total in earned_rows}
+    count_rows = (
+        await session.execute(
+            select(AchievementUnlock.user_id, func.count())
+            .where(AchievementUnlock.year == year)
+            .group_by(AchievementUnlock.user_id)
+        )
+    ).all()
+    earned_counts = {uid: int(count) for uid, count in count_rows}
     # `rank` yields (User, UserScore) pairs, already ordered best-first.
     ordered = scoring.rank(scores, {u.id: u for u in users}, achievement_points=earned)
+    # Drop the people who have nothing in this year. A leaderboard for 1990
+    # listed all eight users in a row, most of them at zero points, zero days and
+    # zero entries — a list of everybody who exists rather than a list of who is
+    # in it, and each row cost a scoring pass to produce. The empty case has its
+    # own message below.
+    ordered = [
+        (person, score)
+        for person, score in ordered
+        if score.days_logged or earned.get(person.id, 0)
+    ]
 
     return _templates(request).TemplateResponse(
         request,
@@ -458,12 +518,15 @@ async def leaderboard(
             "year": year,
             "today": now_in(user.timezone)[0],
             "nav": "board",
+            "earliest_year": EARLIEST_YEAR,
+            "latest_year": now_in(user.timezone)[0].year + 1,
             "rows": [
                 {
                     "rank": index + 1,
                     "person": person,
                     "score": score,
                     "achievement_points": earned.get(person.id, 0),
+                    "achievements_earned": int(earned_counts.get(person.id, 0)),
                     "total": score.logging_points + earned.get(person.id, 0),
                     "is_you": person.id == user.id,
                 }

@@ -5,7 +5,9 @@
 <main class="container py-3" role="main" id="main" tabindex="-1">
   <h1>Achievements</h1>
   <p class="text-body-secondary">
-    {{ earned_count }} of {{ statuses | length }} earned this year, {{ earned_points }} points.
+    {{ earned_count }} of {{ collection_size }} earned this year,
+    {{ earned_points }} points.{% if hidden_count %}
+    {{ hidden_count }} still to reveal.{% endif %}
   </p>
 
   <form method="get" action="/achievements" class="d-flex flex-wrap align-items-end gap-2 mb-3">

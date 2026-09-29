@@ -511,6 +511,30 @@ body {
   margin: 0 0 0.4rem;
 }
 
+/*
+ * Free text is allowed to be one long unbroken run, and people paste URLs.
+ *
+ * A 286-character URL in a note made the entries page 19,624px wide against a
+ * 1,365px viewport — the whole document scrolled sideways, header included,
+ * because the note sat in a table cell and a table cell does not shrink below
+ * its content. There was no `overflow-wrap` anywhere in this file, so nothing
+ * anywhere had a way to break.
+ *
+ * `anywhere`, not `break-word`: the failure is scroll width rather than
+ * clipping, and `break-word` only breaks a word that would already have
+ * overflowed on its own — which in an auto-sized table cell is never, because
+ * the cell grows instead. `anywhere` also lowers the min-content contribution,
+ * which is what lets the cell shrink at all.
+ */
+.bm-note,
+.feed__quote,
+.entries__note,
+.feed__award-desc,
+.achievement-tile__desc,
+.achievement-icon__tip {
+  overflow-wrap: anywhere;
+}
+
 .feed__verb {
   color: var(--bs-secondary-color);
   font-size: 0.82rem;
