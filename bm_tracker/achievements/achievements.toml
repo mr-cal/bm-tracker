@@ -881,7 +881,9 @@ name = "Considerable Commitment"
 description = "Twenty entries that took real effort."
 tier = "uncommon"
 icon = "strain_hard"
-rule = { all = [{ noted_entry_count = { gte = 20 } }] }
+# Counted notes, not effort. "Real effort" is strain 2 or 3, which is what
+# this now means.
+rule = { all = [{ hard_strain_count = { gte = 20 } }] }
 
 
 [[achievement]]
@@ -890,7 +892,10 @@ name = "Noted"
 description = "Logged a type 1, with some effort."
 tier = "common"
 icon = "type_one"
-rule = { all = [{ bristol_types_seen = { gte = 1 } }] }
+# Was `bristol_types_seen >= 1`, which is "logged anything at all" and fired
+# alongside First Blood on your very first entry of any type. The description
+# always said type 1 and effort; the rule checked neither.
+rule.all = [{ bristol_type = 1 }, { hard_strain_count = { gte = 1 } }]
 
 
 [[achievement]]

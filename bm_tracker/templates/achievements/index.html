@@ -12,9 +12,12 @@
 
   <form method="get" action="/achievements" class="d-flex flex-wrap align-items-end gap-2 mb-3">
     <div>
+      {# w-auto, for the same reason as the dashboard's select: Bootstrap's
+         form-control is width:100%, so in a flex row it claims the whole line
+         and the button wraps under it. #}
       <label for="year">Year</label>
-      <input class="form-control" type="number" id="year" name="year" value="{{ year }}"
-             min="2020" max="2100" />
+      <input class="form-control w-auto" type="number" id="year" name="year" value="{{ year }}"
+             min="{{ earliest_year }}" max="{{ latest_year }}" />
     </div>
     <button type="submit" class="btn btn-outline-secondary">Show</button>
   </form>

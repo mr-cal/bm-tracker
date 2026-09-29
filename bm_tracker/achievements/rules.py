@@ -71,6 +71,8 @@ KNOWN_FACTS: Final[frozenset[str]] = frozenset(
     {
         "bm_count_total",
         "bm_count_day",
+        "hard_strain_count",
+        "strain_count",
         "max_bms_in_day",
         "days_logged_total",
         "note_count",

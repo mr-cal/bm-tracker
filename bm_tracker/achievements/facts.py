@@ -56,6 +56,12 @@ OCCASIONS: Final[dict[str, tuple[int, int]]] = {
 
 #: The facts every evaluation reads, and the ones a rule may name. One list, in
 #: `rules`, because two lists that must agree is how they drift — and they had.
+#: "Some effort" starts at level 2 on the three-point scale; 1 is merely easy.
+HARD_STRAIN_LEVEL = 2
+
+#: Any recorded effort at all.
+RECORDED_STRAIN_LEVEL = 1
+
 FACT_KEYS: Final[tuple[str, ...]] = tuple(sorted(rules.KNOWN_FACTS))
 
 
@@ -217,6 +223,17 @@ async def build(
         ),
         "spicy_count": float(sum(1 for e in entries if e.spicy)),
         "noted_entry_count": float(sum(1 for e in entries if e.has_note)),
+        # Every entry records how hard it was to pass, and until these two facts
+        # existed no rule could see it. Two achievements described themselves in
+        # terms of effort and neither rule checked any: "Logged a type 1, with
+        # some effort" fired on any Bristol type at all, and "Twenty entries that
+        # took real effort" counted notes. The column was there the whole time.
+        "hard_strain_count": float(
+            sum(1 for e in entries if (e.strain or 0) >= HARD_STRAIN_LEVEL)
+        ),
+        "strain_count": float(
+            sum(1 for e in entries if (e.strain or 0) >= RECORDED_STRAIN_LEVEL)
+        ),
         "bristol_type": float(max(seen_types, default=0)),
         "bristol_types_seen": float(len(seen_types)),
         "streak_current": float(score.current_streak),

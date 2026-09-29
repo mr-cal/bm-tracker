@@ -7,7 +7,9 @@
 
   <form method="get" action="/dashboard" class="d-flex flex-wrap align-items-end gap-2 mb-3">
     <label for="year">Year</label>
-    <select class="form-select" id="year" name="year">
+    {# w-auto: form-select is width:100%, so in a flex row it takes the whole
+       line and pushes Show onto the next one. #}
+    <select class="form-select w-auto" id="year" name="year">
       {% if not years %}<option value="{{ year }}">{{ year }}</option>{% endif %}
       {% for y in years %}
       <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
