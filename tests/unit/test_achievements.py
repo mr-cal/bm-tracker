@@ -212,25 +212,106 @@ def test_an_empty_registry_fails_at_load(tmp_path: Path) -> None:
 
 
 def test_progress_reflects_how_close_a_rule_is() -> None:
-    """A locked achievement still says how far along it is."""
+    """A locked achievement still says how far along a running total is."""
     fact_set = facts.FactSet(values={"bm_count_total": 5.0})
 
-    ok, progress = rules.Rule(spec={"bm_count_total": {"gte": 10}}).evaluate(fact_set)
+    verdict = rules.Rule(spec={"bm_count_total": {"gte": 10}}).evaluate(fact_set)
 
-    assert not ok
-    assert progress == pytest.approx(0.5)
+    assert not verdict.unlocked
+    assert verdict.progress == pytest.approx(0.5)
+    assert (verdict.current, verdict.target) == (5.0, 10.0)
+
+
+def test_a_record_gets_a_count_but_never_a_percentage() -> None:
+    """Nine BMs in one day is not ninety per cent of anything.
+
+    The tenth is not a tenth of a bowel movement, it is a different day, and it
+    will not arrive by carrying on as normal. So the tile says what the count is
+    and offers no bar, rather than drawing one at nine tenths and implying the
+    gap can be walked.
+    """
+    verdict = rules.Rule(spec={"max_bms_in_day": {"gte": 10}}).evaluate(
+        facts.FactSet(values={"max_bms_in_day": 9.0})
+    )
+
+    assert not verdict.unlocked
+    assert verdict.progress is None, "a best-ever record is not a live ratio"
+    assert (verdict.current, verdict.target) == (9.0, 10.0)
+
+
+def test_a_rolling_window_gets_no_ratio_either() -> None:
+    """It counts down as well as up, so any percentage of it is a lie."""
+    verdict = rules.Rule(spec={"weekend_entry_count": {"gte": 4}}).evaluate(
+        facts.FactSet(values={"weekend_entry_count": 3.0})
+    )
+
+    assert verdict.progress is None
+    assert (verdict.current, verdict.target) == (3.0, 4.0)
+
+
+def test_an_upper_bound_has_no_denominator() -> None:
+    """Under three days is not a distance to a target, and passing it loses it."""
+    verdict = rules.Rule(spec={"max_bms_in_day": {"lte": 5}}).evaluate(
+        facts.FactSet(values={"max_bms_in_day": 3.0})
+    )
+
+    assert verdict.unlocked
+    assert verdict.progress is None
+    assert verdict.current is None, "3 / 5 would read as progress towards 5"
+
+
+def test_a_group_is_only_a_ratio_when_every_part_is_one() -> None:
+    """A bar over the logged half of a gated requirement is a broken promise.
+
+    "Log on the Ides of March" and "log fifty this year" is one achievement. You
+    can be part-way through the counting and the gate is still months away, so
+    the pair has no ratio to show.
+    """
+    mixed = rules.Rule(
+        spec={"all": [{"bm_count_total": {"gte": 50}}, {"logged_mar_15": True}]}
+    ).evaluate(facts.FactSet(values={"bm_count_total": 45.0, "logged_mar_15": 0.0}))
+
+    assert mixed.progress is None
+    # Nor a count. The thing standing in the way is a date, and "45 / 50" beside
+    # it would be the more misleading of the two: it points at five more logs
+    # when five more logs change nothing until 15 March.
+    assert (mixed.current, mixed.target) == (None, None)
+
+    both_counting = rules.Rule(
+        spec={"all": [{"bm_count_total": {"gte": 50}}, {"note_count": {"gte": 10}}]}
+    ).evaluate(facts.FactSet(values={"bm_count_total": 45.0, "note_count": 9.0}))
+
+    assert both_counting.progress == pytest.approx(0.9)
+
+
+def test_a_time_window_shows_nothing_to_measure() -> None:
+    """There is no such thing as forty per cent of the way to between 23 and 05."""
+    verdict = rules.Rule(
+        spec={"time_of_day": {"between": ["23:00", "05:00"]}}
+    ).evaluate(facts.FactSet(values={"time_of_day": 2.0}))
+
+    assert verdict.unlocked
+    assert verdict.progress is None
 
 
 def test_all_takes_the_minimum_and_any_the_maximum() -> None:
     """Partially-met requirements read as partial, not as zero."""
-    fact_set = facts.FactSet(values={"bm_count_day": 2.0, "streak_longest": 1.0})
 
-    _, all_progress = rules.Rule(
-        spec={"all": [{"bm_count_day": {"gte": 3}}, {"streak_longest": {"gte": 8}}]}
-    ).evaluate(fact_set)
-    _, any_progress = rules.Rule(
-        spec={"any": [{"bm_count_day": {"gte": 3}}, {"streak_longest": {"gte": 8}}]}
-    ).evaluate(fact_set)
+    values = {"bm_count_total": 2.0, "note_count": 1.0}
+    all_progress = (
+        rules.Rule(
+            spec={"all": [{"bm_count_total": {"gte": 3}}, {"note_count": {"gte": 8}}]}
+        )
+        .evaluate(facts.FactSet(values=values))
+        .progress
+    )
+    any_progress = (
+        rules.Rule(
+            spec={"any": [{"bm_count_total": {"gte": 3}}, {"note_count": {"gte": 8}}]}
+        )
+        .evaluate(facts.FactSet(values=values))
+        .progress
+    )
 
     assert all_progress < any_progress
 
@@ -240,21 +321,21 @@ def test_a_time_window_can_wrap_midnight() -> None:
     rule = rules.Rule(spec={"time_of_day": {"between": ["23:00", "05:00"]}})
 
     for hour in (23.5, 2.0, 4.75):
-        met, _ = rule.evaluate(facts.FactSet(values={"time_of_day": hour}))
-        assert met, f"{hour} should be inside the night window"
+        assert rule.evaluate(facts.FactSet(values={"time_of_day": hour})).unlocked, (
+            f"{hour} should be inside the night window"
+        )
 
     for hour in (12.0, 18.0):
-        met, _ = rule.evaluate(facts.FactSet(values={"time_of_day": hour}))
-        assert not met
+        assert not rule.evaluate(facts.FactSet(values={"time_of_day": hour})).unlocked
 
 
 def test_an_unknown_fact_is_zero_not_an_error() -> None:
     """A fact nobody has earned yet must not blow up a registry evaluation."""
-    ok, _ = rules.Rule(spec={"bm_count_total": {"gte": 1}}).evaluate(
+    verdict = rules.Rule(spec={"bm_count_total": {"gte": 1}}).evaluate(
         facts.FactSet(values={})
     )
 
-    assert not ok
+    assert not verdict.unlocked
 
 
 # --- the engine -----------------------------------------------------------
@@ -520,3 +601,30 @@ def test_the_catalogue_covers_more_than_one_shape() -> None:
     assert composed / len(counts) > 0.4, (
         f"only {composed} of {len(counts)} definitions use more than one condition"
     )
+
+
+def test_status_shows_a_count_where_there_is_no_ratio() -> None:
+    """What the tile renders for a locked record achievement."""
+    status = engine.Status(
+        achievement=registry.load().achievements[0],
+        unlocked=False,
+        unlocked_at=None,
+        progress=None,
+        current=9.0,
+        target=10.0,
+    )
+
+    assert status.count == "9 / 10"
+
+
+def test_status_with_nothing_to_measure_says_nothing() -> None:
+    status = engine.Status(
+        achievement=registry.load().achievements[0],
+        unlocked=False,
+        unlocked_at=None,
+        progress=None,
+        current=None,
+        target=None,
+    )
+
+    assert status.count == ""

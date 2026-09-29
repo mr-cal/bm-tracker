@@ -278,7 +278,12 @@ async def _note_statuses(session: AsyncSession, user: User, year: int) -> list[S
                 achievement=_as_achievement(definition),
                 unlocked=row is not None,
                 unlocked_at=row.unlocked_at if row else None,
-                progress=1.0 if row else 0.0,
+                # A note achievement is either found or not, and the search
+                # itself was already the work. There is no partial credit for a
+                # note that did not say enough, so there is no bar.
+                progress=1.0 if row else None,
+                current=None,
+                target=None,
             )
         )
     return out

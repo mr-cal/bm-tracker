@@ -72,13 +72,19 @@
       <span class="achievement-tile__desc">{{ status.achievement.description }}</span>
       {% if status.unlocked %}
       <span class="badge text-bg-success">+{{ status.points }} · {{ status.year }}</span>
-      {% elif status.progress > 0 %}
+      {% elif status.progress is not none and status.progress > 0 %}
+      {# A bar only where the fact is a running total you can still move. For
+         everything else the shortfall is not a distance, and a bar under "99%
+         there" is a promise the number cannot keep. #}
       <div class="progress" role="progressbar" aria-label="{{ status.achievement.name }}"
            aria-valuenow="{{ (status.progress * 100) | round | int }}"
            aria-valuemin="0" aria-valuemax="100">
         <div class="progress-bar" style="width: {{ (status.progress * 100) | round(1) }}%"></div>
       </div>
       <span class="text-body-secondary small">{{ (status.progress * 100) | round | int }}% there</span>
+      {% elif status.count %}
+      {# The count, which is true, where the percentage would not be. #}
+      <span class="text-body-secondary small">{{ status.count }} so far</span>
       {% else %}
       <span class="text-body-secondary small">Locked</span>
       {% endif %}

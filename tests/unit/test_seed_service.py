@@ -13,7 +13,9 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from bm_tracker import auth
+from bm_tracker.achievements import engine
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
+from bm_tracker.routes.stats import _lifetime_points
 from bm_tracker.services import seed_service
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -357,3 +359,25 @@ async def test_seeding_leaves_the_next_log_one_achievement_away(
     assert any(
         s.unlocked and s.achievement.key == seed_service.DEMO_UNLOCK_KEY for s in after
     ), f"logging one BM did not earn {seed_service.DEMO_UNLOCK_NAME}"
+
+
+async def test_the_admin_is_left_short_of_the_top_tier(session: AsyncSession) -> None:
+    """The seeded first account must not sail past every reveal threshold.
+
+    A uniformly seeded admin unlocks everything, which makes the collection page
+    a wall of lit icons and the reveal gates invisible. Signing in as the admin
+    is how you look at the app, so the admin is the account that has to show the
+    gates working.
+    """
+    await seed_service.seed(session, users=8)
+
+    admin = await session.scalar(select(User).where(User.username == "cal"))
+    points = await _lifetime_points(session, admin, 10)
+    revealed = engine.REGISTRY.points_to_reveal("legendary")
+
+    assert points < revealed, (
+        f"admin has {points} points, legendary reveals at {revealed}"
+    )
+    assert points >= engine.REGISTRY.points_to_reveal("rare"), (
+        "the page should still have tiers to show"
+    )

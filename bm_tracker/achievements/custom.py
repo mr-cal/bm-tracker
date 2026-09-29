@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
+from bm_tracker.achievements.rules import Verdict
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -27,38 +29,52 @@ GHOST_WRITER_ENTRIES = 20
 FIERY_STREAK_DAYS = 5
 
 
-def _every_entry_noted(facts: Facts) -> tuple[bool, float]:
+def _every_entry_noted(facts: Facts) -> Verdict:
     """Reward writing down everything.
+
+    A ratio is honest here. `noted_entry_count` is a running total for the year
+    and the only thing standing between you and this is writing the next note,
+    which is an ordinary thing to do.
 
     Args:
         facts: The facts to evaluate against.
 
     Returns:
-        `(unlocked, progress)`.
+        The `Verdict`.
 
     """
     if facts.get("bm_count_total") <= 0:
-        return False, 0.0
+        return Verdict(unlocked=False, progress=None, current=None, target=None)
     noted = facts.get("noted_entry_count")
-    return (noted >= GHOST_WRITER_ENTRIES, min(noted / GHOST_WRITER_ENTRIES, 1.0))
+    return Verdict(
+        noted >= GHOST_WRITER_ENTRIES,
+        min(noted / GHOST_WRITER_ENTRIES, 1.0),
+        noted,
+        GHOST_WRITER_ENTRIES,
+    )
 
 
-def _fiery_streak(facts: Facts) -> tuple[bool, float]:
+def _fiery_streak(facts: Facts) -> Verdict:
     """Reward a run of consecutive logged days that were all spicy.
+
+    No bar. This reads the *longest* spicy run ever, so a run of three is
+    sixty per cent of nothing — the fourth day of a run has to be adjacent to
+    the third, and last month's run cannot be extended from here. The count is
+    worth showing; the percentage is not.
 
     Args:
         facts: The facts to evaluate against.
 
     Returns:
-        `(unlocked, progress)`.
+        The `Verdict`.
 
     """
     run = facts.get("max_spicy_consecutive_days")
-    return (run >= FIERY_STREAK_DAYS, min(run / FIERY_STREAK_DAYS, 1.0))
+    return Verdict(run >= FIERY_STREAK_DAYS, None, run, FIERY_STREAK_DAYS)
 
 
 #: Custom rules, keyed by the name the registry refers to them by.
-CUSTOM_RULES: Final[dict[str, Callable[[Facts], tuple[bool, float]]]] = {
+CUSTOM_RULES: Final[dict[str, Callable[[Facts], Verdict]]] = {
     "every_entry_noted": _every_entry_noted,
     "fiery_streak": _fiery_streak,
 }

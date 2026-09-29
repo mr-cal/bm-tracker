@@ -43,6 +43,23 @@ DEFAULT_USERS = 8
 # current year, which is exactly the case the timeline was built to avoid and
 # therefore the one worth being able to look at.
 DEFAULT_DAYS = 730
+
+# How much history the first account gets. The others get all of it, so the feed
+# has a two-year timeline with a year boundary in it; the first account gets
+# enough to have a streak and a tier of achievements and no more.
+#
+# The reason is the Legendary reveal. Tiers unlock at a lifetime points
+# threshold — 1,100 for Legendary — and a full 730 days of logging is worth
+# around 7,000 points, so a uniformly seeded admin sails past every gate and the
+# collection page is a wall of unlocked icons. That demonstrates nothing. The
+# gates themselves are the interesting part: they are what makes the Legendary
+# achievements feel like somewhere to get to rather than a list to grind, and
+# you cannot see a gate working if everything is already open.
+#
+# So the admin is deliberately short of it, at roughly a tenth of a year's
+# logging. Sign in as the admin to see the collection mid-progress, which is the
+# state a real user is in for most of their first month.
+DEFAULT_DEMO_DAYS = 75
 DEFAULT_PASSWORD = "e2e-password"
 
 # Weighted Bristol types. Real distributions cluster hard on 3-5; the tails are
@@ -241,6 +258,9 @@ async def seed(
         # Only the first account is staged for a demo unlock. A demo that fires
         # for one person is a demo; one that fires for all eight is noise.
         is_demo = position == 0
+        # The first account is the one you sign into, so its history is sized to
+        # leave the Legendary tier locked. See DEFAULT_DEMO_DAYS.
+        user_days = DEFAULT_DEMO_DAYS if is_demo else days
         # Each user's "today" is their own. Computing one date for the whole
         # group means someone in a western timezone is handed a day they have
         # not reached yet, and `log_nothing_today` rightly refuses it.
@@ -252,7 +272,7 @@ async def seed(
             if now
             else utcnow()
         )
-        for offset in range(days, -1, -1):
+        for offset in range(user_days, -1, -1):
             day = today - timedelta(days=offset)
             # The demo day is never a missed day: the whole point is that the
             # next log lands on an achievement, and a seeded gap would leave the

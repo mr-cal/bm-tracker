@@ -46,12 +46,25 @@ class Status:
     achievement: Achievement
     unlocked: bool
     unlocked_at: datetime | None
-    progress: float
+    progress: float | None
+    current: float | None
+    target: float | None
 
     @property
     def points(self) -> int:
         """Return the achievement's point value."""
         return self.achievement.points
+
+    @property
+    def count(self) -> str:
+        """Return the measured count as "9 / 10", or an empty string.
+
+        Shown instead of a bar where the shortfall is not a distance. It says
+        the same thing without implying the gap can be walked.
+        """
+        if self.current is None or self.target is None:
+            return ""
+        return f"{self.current:g} / {self.target:g}"
 
 
 async def _unlocked_keys(
@@ -112,7 +125,7 @@ async def evaluate(
     for achievement in REGISTRY.achievements:
         if achievement.key in have:
             continue
-        unlocked, _ = achievement.evaluate(fact_set)
+        unlocked = achievement.evaluate(fact_set).unlocked
         if unlocked:
             fresh.append(
                 Unlock(
@@ -182,13 +195,16 @@ async def status_for(
 
     statuses: list[Status] = []
     for achievement in REGISTRY.achievements:
-        unlocked, progress = achievement.evaluate(fact_set)
+        verdict = achievement.evaluate(fact_set)
+        earned = achievement.key in have
         statuses.append(
             Status(
                 achievement=achievement,
-                unlocked=achievement.key in have,
+                unlocked=earned,
                 unlocked_at=have.get(achievement.key),
-                progress=1.0 if achievement.key in have else progress,
+                progress=1.0 if earned else verdict.progress,
+                current=None if earned else verdict.current,
+                target=None if earned else verdict.target,
             )
         )
     return statuses

@@ -40,7 +40,7 @@ class Achievement:
     rule: rules.Rule | None
     custom: str | None
 
-    def evaluate(self, facts: rules.Facts) -> tuple[bool, float]:
+    def evaluate(self, facts: rules.Facts) -> rules.Verdict:
         """Return whether it is unlocked, and how close it is.
 
         Args:

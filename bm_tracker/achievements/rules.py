@@ -38,6 +38,33 @@ NUMERIC_OPS: Final = frozenset({"gte", "gt", "lte", "lt", "eq"})
 #: Comparisons that need more than a number.
 SPECIAL_OPS: Final = frozenset({"between"})
 
+#: Facts that are a running total you can still move today, and that only ever
+#: go up within the year.
+#:
+#: This set is the whole of the progress bar. Everything else is deliberately
+#: excluded, because a percentage implies something the number cannot promise:
+#: that the gap is a distance you are walking. For most facts it is not.
+#:
+#: `max_bms_in_day` at 9 of 10 is not ninety per cent of the way to anything —
+#: the next one is not a tenth of a bowel movement, it is a completely different
+#: day, and it will not arrive by carrying on as normal. `streak_longest` is a
+#: record of something already past. `weekend_entry_count` runs on a rolling
+#: seven-day window, so it can go *down*, which makes any percentage of it a
+#: lie with a bar under it. The rest are flags, timestamps and sets.
+#:
+#: So those show a count — "9 / 10" — which is true, and the six below show a
+#: bar, which is also true.
+CUMULATIVE_FACTS: Final = frozenset(
+    {
+        "bm_count_total",
+        "days_logged_total",
+        "note_count",
+        "noted_entry_count",
+        "spicy_count",
+        "streak_current",
+    }
+)
+
 #: Every fact a rule may reference. Validated at import, so an achievement using
 #: a fact nothing computes is a startup error rather than a silent never.
 KNOWN_FACTS: Final[frozenset[str]] = frozenset(
@@ -97,26 +124,50 @@ class RuleError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class Verdict:
+    """What a rule says about a user, and what it is honest enough to show.
+
+    Attributes:
+        unlocked: Whether the rule is satisfied now.
+        progress: 0.0-1.0, or `None` when a bar would be a lie. See
+            `CUMULATIVE_FACTS`.
+        current: The value measured, when it is a count worth stating.
+        target: What it is measured against, or `None`.
+
+    """
+
+    unlocked: bool
+    progress: float | None
+    current: float | None
+    target: float | None
+
+
+#: The absence of a measurement, for rules that have nothing to measure.
+NO_VERDICT: Final = Verdict(unlocked=False, progress=None, current=None, target=None)
+
+
+@dataclass(frozen=True, slots=True)
 class Rule:
     """One compiled achievement rule."""
 
     spec: dict[str, Any]
 
-    def evaluate(self, facts: Facts) -> tuple[bool, float]:
-        """Return whether the rule is satisfied, and how close it is.
+    def evaluate(self, facts: Facts) -> Verdict:
+        """Return whether the rule is satisfied, and what may honestly be shown.
 
         Args:
             facts: The facts to evaluate against.
 
         Returns:
-            `(unlocked, progress)` where progress is 0.0-1.0, so a locked
-            achievement can still show "14 / 20".
+            A `Verdict`. `progress` is `None` unless the rule is built from
+            cumulative totals, so a locked achievement shows a count rather than
+            a percentage it has not earned.
 
         """
         return _eval(self.spec, facts)
 
 
-def _eval(spec: Any, facts: Facts) -> tuple[bool, float]:
+def _eval(spec: Any, facts: Facts) -> Verdict:
     """Evaluate a rule specification.
 
     Args:
@@ -124,7 +175,7 @@ def _eval(spec: Any, facts: Facts) -> tuple[bool, float]:
         facts: The facts to evaluate against.
 
     Returns:
-        `(unlocked, progress)`.
+        The `Verdict` for the rule.
 
     Raises:
         RuleError: If the specification is malformed.
@@ -144,11 +195,16 @@ def _eval(spec: Any, facts: Facts) -> tuple[bool, float]:
     return _predicate(spec, facts)
 
 
-def _combine(children: Any, facts: Facts, *, require_all: bool) -> tuple[bool, float]:
+def _combine(children: Any, facts: Facts, *, require_all: bool) -> Verdict:
     """Evaluate an `all` or `any` group.
 
     Progress is the minimum for `all` and the maximum for `any`, which is what
     makes a partially-met requirement read as partial rather than as zero.
+
+    The group only has a progress if *every* child does. One `all` containing a
+    cumulative total and a calendar gate is a requirement you can be part-way
+    through by logging, and gating; bar-filling the logged half would imply the
+    gated half is coming, which it is not until its date.
 
     Args:
         children: The child rules.
@@ -156,7 +212,7 @@ def _combine(children: Any, facts: Facts, *, require_all: bool) -> tuple[bool, f
         require_all: Whether every child must be satisfied.
 
     Returns:
-        `(unlocked, progress)`.
+        The `Verdict` for the group.
 
     Raises:
         RuleError: If the group is empty or malformed.
@@ -167,12 +223,30 @@ def _combine(children: Any, facts: Facts, *, require_all: bool) -> tuple[bool, f
         raise RuleError(msg)
 
     results = [_eval(child, facts) for child in children]
-    if require_all:
-        return all(ok for ok, _ in results), min(p for _, p in results)
-    return any(ok for ok, _ in results), max(p for _, p in results)
+    unlocked = (
+        all(r.unlocked for r in results)
+        if require_all
+        else any(r.unlocked for r in results)
+    )
+    if any(r.progress is None for r in results):
+        # The shortfall is not a distance, so say nothing about one. The count
+        # of the closest child is still worth showing.
+        best = min(results, key=_rank) if require_all else max(results, key=_rank)
+        return Verdict(unlocked, None, best.current, best.target)
+    best = (
+        min(results, key=lambda r: r.progress)
+        if require_all
+        else max(results, key=lambda r: r.progress)
+    )
+    return Verdict(unlocked, best.progress, best.current, best.target)
 
 
-def _predicate(spec: dict[str, Any], facts: Facts) -> tuple[bool, float]:
+def _rank(verdict: Verdict) -> tuple[float, float]:
+    """Return a sort key for comparing two verdicts without a progress value."""
+    return (verdict.current or 0.0) / (verdict.target or 1.0), verdict.current or 0.0
+
+
+def _predicate(spec: dict[str, Any], facts: Facts) -> Verdict:
     """Evaluate a single `fact = comparison` predicate.
 
     Args:
@@ -180,7 +254,7 @@ def _predicate(spec: dict[str, Any], facts: Facts) -> tuple[bool, float]:
         facts: The facts to evaluate against.
 
     Returns:
-        `(unlocked, progress)`.
+        The `Verdict` for the predicate.
 
     Raises:
         RuleError: If the fact or comparison is not recognised.
@@ -197,10 +271,7 @@ def _predicate(spec: dict[str, Any], facts: Facts) -> tuple[bool, float]:
 
     # A bare value is equality, which reads well for booleans and small counts.
     if not isinstance(comparison, dict):
-        return (
-            facts.get(name) == comparison,
-            1.0 if facts.get(name) == comparison else 0.0,
-        )
+        return Verdict(facts.get(name) == comparison, None, None, None)
 
     if len(comparison) != 1:
         msg = f"{name} must have exactly one comparison"
@@ -216,9 +287,21 @@ def _predicate(spec: dict[str, Any], facts: Facts) -> tuple[bool, float]:
         msg = f"Unknown comparison {op!r} for {name!r}"
         raise RuleError(msg)
 
-    met = _NUMERIC[op](value, float(target))
-    return met, _progress(value, float(target))
+    if op not in REACH_OPS:
+        # "under 3 days" has no denominator, and the moment you pass it the
+        # achievement is gone rather than complete. Nothing to show.
+        return Verdict(_NUMERIC[op](value, float(target)), None, None, None)
 
+    target_value = float(target)
+    met = _NUMERIC[op](value, target_value)
+    if name not in CUMULATIVE_FACTS:
+        return Verdict(met, None, value, target_value)
+    return Verdict(met, _progress(value, target_value), value, target_value)
+
+
+#: Comparisons that mean "get to at least this much", and so have a denominator
+#: a percentage can honestly divide by.
+REACH_OPS: Final = frozenset({"gte", "gt"})
 
 _NUMERIC = {
     "gte": lambda v, t: v >= t,
@@ -229,9 +312,7 @@ _NUMERIC = {
 }
 
 
-def _compare_special(
-    name: str, value: float, op: str, target: Any
-) -> tuple[bool, float]:
+def _compare_special(name: str, value: float, op: str, target: Any) -> Verdict:
     """Evaluate a comparison that is not a plain numeric one.
 
     Args:
@@ -241,7 +322,7 @@ def _compare_special(
         target: The comparison's operand.
 
     Returns:
-        `(unlocked, progress)`.
+        The `Verdict` for the comparison.
 
     Raises:
         RuleError: If the operand is malformed.
@@ -262,10 +343,11 @@ def _compare_special(
         # Fact is expressed as the hour of day plus a minute fraction.
         stamp = f"{int(value) % 24:02d}:{(value % 1) * 60:02.0f}"
         met = (low <= stamp <= high) if low <= high else (stamp >= low or stamp <= high)
-        return met, 1.0 if met else 0.0
+        return Verdict(met, None, None, None)
 
-    met = float(low) <= value <= float(high)
-    return met, _progress(value, float(high))
+    # A window, not a distance: there is no "40 per cent of the way to between
+    # 23:00 and 05:00", and the value is a clock reading rather than a count.
+    return Verdict(float(low) <= value <= float(high), None, None, None)
 
 
 def _progress(value: float, target: float) -> float:
