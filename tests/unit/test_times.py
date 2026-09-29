@@ -7,10 +7,11 @@ the next at 7:30 am.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pytest
 from bm_tracker import times
+from bm_tracker.times import feed_when
 
 
 @pytest.mark.parametrize(
@@ -48,3 +49,29 @@ def test_nothing_renders_as_nothing() -> None:
 
 def test_day_only_has_no_clock_on_it() -> None:
     assert times.day_only(date(2026, 9, 6)) == "6 Sep"
+
+
+@pytest.mark.parametrize(
+    ("days_ago", "expected"),
+    [
+        (0, "30 Jun"),
+        (1, "29 Jun"),
+        (90, "1 Apr"),
+        (91, "31 Mar 2026"),
+        (400, "26 May 2025"),
+    ],
+)
+def test_the_year_is_only_shown_once_it_is_doing_work(
+    days_ago: int, expected: str
+) -> None:
+    """The common case is this week, and the year is noise on it.
+
+    Args:
+        days_ago: How far back the entry is.
+        expected: What the feed should render.
+
+    """
+    today = date(2026, 6, 30)
+    moment = datetime(2026, 6, 30) - timedelta(days=days_ago)
+
+    assert feed_when(moment, today) == expected

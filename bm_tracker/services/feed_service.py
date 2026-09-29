@@ -170,6 +170,7 @@ async def feed_items(
     viewer: User,
     limit: int = PAGE_SIZE,
     offset: int = 0,
+    subject: User | None = None,
 ) -> list[FeedItem]:
     """Return a page of activity, newest first, shaped by who is looking.
 
@@ -187,11 +188,18 @@ async def feed_items(
     where a missing condition shows someone else's Bristol type rather than
     nothing at all.
 
+    `subject` narrows the timeline to one person, for their own page. It is a
+    filter here rather than a second query in the route so that a person's
+    history and the group feed cannot disagree about what a note is or who may
+    see it — the privacy rule is applied once, in this function, and the person
+    page gets it by asking rather than by reimplementing.
+
     Args:
         session: The session to read through.
         viewer: Who is looking. Their own items get the full treatment.
         limit: How many items to return.
         offset: How many items to skip, for the page being asked for.
+        subject: Whose history to return, or None for the whole group.
 
     Returns:
         The `FeedItem`s, newest first.
@@ -207,13 +215,20 @@ async def feed_items(
     # one.
     depth = offset + limit
     # The group, limited to what other people are allowed to see.
-    items = await _notes(session, users, limit=depth, exclude_entries_of=viewer.id)
-    items.extend(await _achievements(session, users, limit=depth))
+    only = subject.id if subject is not None else None
+    items = await _notes(
+        session, users, limit=depth, exclude_entries_of=viewer.id, only_user=only
+    )
+    items.extend(await _achievements(session, users, limit=depth, only_user=only))
 
     # The viewer, in full. The viewer's own notes and achievements are already
-    # in the two calls above, so these add only what nobody else may see.
-    items.extend(await _own_entries(session, viewer, limit=depth))
-    items.extend(await _own_days(session, viewer, limit=depth))
+    # in the two calls above, so these add only what nobody else may see. On
+    # somebody else's page there is nothing here to add: the entries and empty
+    # days of another person are not public, and `feed_items` is the only place
+    # that knows it.
+    if subject is None or subject.id == viewer.id:
+        items.extend(await _own_entries(session, viewer, limit=depth))
+        items.extend(await _own_days(session, viewer, limit=depth))
 
     items.sort(key=lambda item: item.at, reverse=True)
     return items[offset : offset + limit]
@@ -338,6 +353,7 @@ async def _notes(
     limit: int,
     *,
     exclude_entries_of: int | None = None,
+    only_user: int | None = None,
 ) -> list[FeedItem]:
     """Return note items, using only notes that are live.
 
@@ -357,7 +373,9 @@ async def _notes(
         session: The session to read through.
         users: Users keyed by id.
         limit: The most to return, across every user.
+        only_user: Whose unlocks to return, or None for everyone.
         exclude_entries_of: A user whose entry-notes to leave out.
+        only_user: Whose notes to return, or None for everyone.
 
     Returns:
         The note `FeedItem`s.
@@ -371,6 +389,7 @@ async def _notes(
             .where(
                 DailyLog.n_bms == 0,
                 DailyLog.notes.is_not(None),
+                *([DailyLog.user_id == only_user] if only_user is not None else []),
             )
             .order_by(DailyLog.logged_at.desc())
             .limit(limit)
@@ -399,7 +418,10 @@ async def _notes(
         await session.execute(
             select(BmEntry, DailyLog)
             .join(DailyLog, DailyLog.id == BmEntry.daily_log_id)
-            .where(BmEntry.notes.is_not(None))
+            .where(
+                BmEntry.notes.is_not(None),
+                *([DailyLog.user_id == only_user] if only_user is not None else []),
+            )
             .order_by(BmEntry.created_at.desc())
             .limit(limit)
         )
@@ -430,6 +452,8 @@ async def _achievements(
     session: AsyncSession,
     users: dict[int, User],
     limit: int,
+    *,
+    only_user: int | None = None,
 ) -> list[FeedItem]:
     """Return achievement unlocks for the year.
 
@@ -437,6 +461,7 @@ async def _achievements(
         session: The session to read through.
         users: Users keyed by id.
         limit: The most to return, across every user.
+        only_user: Whose unlocks to return, or None for everyone.
 
     Returns:
         The achievement `FeedItem`s.
@@ -445,6 +470,13 @@ async def _achievements(
     rows = (
         await session.scalars(
             select(AchievementUnlock)
+            .where(
+                *(
+                    [AchievementUnlock.user_id == only_user]
+                    if only_user is not None
+                    else []
+                )
+            )
             .order_by(AchievementUnlock.unlocked_at.desc())
             .limit(limit)
         )

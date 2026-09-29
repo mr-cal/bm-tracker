@@ -8,7 +8,6 @@ does.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -20,19 +19,11 @@ from bm_tracker.achievements.engine import REGISTRY
 from bm_tracker.achievements.registry import RegistryError
 from bm_tracker.dependencies import AuthenticatedUser, DbSession, csrf_token
 from bm_tracker.forms import int_arg
-from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
+from bm_tracker.models import AchievementUnlock, DailyLog, User
 from bm_tracker.services import feed_service, visibility
 from bm_tracker.timezones import now_in
 
 router = APIRouter(tags=["people"])
-
-
-@dataclass(frozen=True, slots=True)
-class PublishedNote:
-    """A note a person has made public, attributed to its day."""
-
-    day: date
-    text: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,61 +182,33 @@ async def people(
     )
 
 
-async def published_notes(session: DbSession, user_id: int) -> list[PublishedNote]:
-    """Return every note a person has published, newest day first.
+#: The order tiers are listed in. Least valuable first, so the page reads as a
+#: ladder: the things almost everybody has are at the top, and the rare ones at
+#: the bottom are the ones worth scrolling to. Sorted by name this would be
+#: alphabetical, which puts a Legendary somebody earned last March above a
+#: Common they earned on Tuesday, and that reads as a mistake.
+TIER_ORDER: tuple[str, ...] = ("common", "uncommon", "rare", "legendary")
 
-    Both kinds, because notes are exactly what other users are allowed to see: a
-    note on a specific BM and a note on an empty day are equally part of the
-    published record, and showing one without the other would be arbitrary.
-    Superseded day-notes are excluded — they have been overtaken by a BM.
+
+def _by_tier(badges: tuple[Badge, ...]) -> list[tuple[str, tuple[Badge, ...]]]:
+    """Group earned achievements by tier, rarest last.
 
     Args:
-        session: The session to read through.
-        user_id: Whose notes to return.
+        badges: The person's earned achievements.
 
     Returns:
-        The published notes, newest first.
+        `(tier, achievements)` pairs in `TIER_ORDER`, tiers with nothing in them
+        left out entirely.
 
     """
-    notes: list[PublishedNote] = []
-
-    day_notes = (
-        await session.scalars(
-            select(DailyLog)
-            .where(
-                DailyLog.user_id == user_id,
-                DailyLog.n_bms == 0,
-                DailyLog.notes.is_not(None),
-            )
-            .order_by(DailyLog.day.desc())
-        )
-    ).all()
-    notes += [
-        PublishedNote(day=row.day, text=row.notes or "")
-        for row in day_notes
-        if row.is_note_live
-    ]
-
-    entry_notes = (
-        await session.execute(
-            select(BmEntry.notes, DailyLog.day)
-            .join(DailyLog, DailyLog.id == BmEntry.daily_log_id)
-            .where(DailyLog.user_id == user_id, BmEntry.notes.is_not(None))
-            .order_by(DailyLog.day.desc(), BmEntry.occurred_local.desc())
-        )
-    ).all()
-    notes += [
-        PublishedNote(day=day, text=text.strip())
-        for text, day in entry_notes
-        if text and text.strip()
-    ]
-
-    notes.sort(key=lambda note: note.day, reverse=True)
-    return notes
+    grouped: dict[str, list[Badge]] = {}
+    for badge in badges:
+        grouped.setdefault(badge.tier, []).append(badge)
+    return [(tier, tuple(grouped[tier])) for tier in TIER_ORDER if grouped.get(tier)]
 
 
 async def _badges(session: DbSession, user_id: int, year: int) -> tuple[Badge, ...]:
-    """Return a person's earned badges for the year, ready to render.
+    """Return a person's earned achievements for the year, ready to render.
 
     Each carries the registry's own name and description rather than the bare
     key, so an icon's tooltip cannot drift from what the achievement is.
@@ -315,10 +278,6 @@ async def person_page(
     )
     see_detail = visibility.can_see_detail(user, subject)
 
-    # Notes are published to everyone, including the owner, so they are gathered
-    # unconditionally. `see_detail` only governs the finer-grained stuff.
-    notes = await published_notes(session, subject.id)
-
     days: list[visibility.VisibleDay] = []
     if not see_detail:
         qualified_by_day = {d.day: d.qualified for d in score.days}
@@ -337,6 +296,7 @@ async def person_page(
             for row in rows
         ]
 
+    badges = await _badges(session, subject.id, year)
     return _templates(request).TemplateResponse(
         request,
         "people/person.html",
@@ -346,9 +306,16 @@ async def person_page(
             "year": year,
             "score": score,
             "days": days,
-            "notes": notes,
             "see_detail": see_detail,
-            "badges": await _badges(session, subject.id, year),
+            "badges": badges,
+            "by_tier": _by_tier(badges),
+            "history": await feed_service.feed_items(
+                session, viewer=user, subject=subject, limit=feed_service.PAGE_SIZE
+            ),
+            "kinds": feed_service.KINDS,
+            "bristol_by_value": {t.value: t for t in bristol.BRISTOL_SCALE},
+            "strain_by_value": {s.value: s for s in strain.STRAIN_SCALE},
+            "today": now_in(user.timezone)[0],
             "nav": "people",
             "csrf_token": csrf_token(request),
         },

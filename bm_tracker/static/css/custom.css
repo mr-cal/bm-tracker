@@ -517,6 +517,38 @@ body {
   margin: 0;
 }
 
+/*
+ * Name above, description below, both in the flex row beside the icon and the
+ * points. The column is what the request was for: the name and its explanation
+ * read as one label on a badge rather than as two things that happen to be
+ * near each other, and the description needs the full card width because it is
+ * a sentence.
+ */
+.feed__award-text {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.feed__award-name {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.feed__award-desc {
+  color: var(--bs-secondary-color);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.person__tier {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  margin: 1.1rem 0 0.4rem;
+  text-transform: uppercase;
+}
+
 .feed__total {
   font-size: 1.6rem;
   font-weight: 700;
@@ -1910,16 +1942,19 @@ input[type="time"]::-webkit-inner-spin-button {
 }
 
 .achievement-tile__glyph--hidden {
-  align-items: center;
+  /*
+   * A silhouette rather than a question mark. The tile keeps the dashed ring,
+   * so it still reads as locked, and the badge inside is desaturated to a
+   * shadow: you can see there is a shape to collect and roughly what kind of
+   * thing it is, without the artwork doing the rewarding. Names and points
+   * stay behind the threshold; only the picture comes early.
+   */
   border: 1.5px dashed var(--bs-border-color);
   border-radius: 50%;
-  color: var(--bs-secondary-color);
-  display: flex;
-  font-size: 1.3rem;
-  font-weight: 700;
+  filter: grayscale(1);
   height: 2.6rem;
-  justify-content: center;
-  line-height: 1;
+  object-fit: contain;
+  opacity: 0.4;
   width: 2.6rem;
 }
 

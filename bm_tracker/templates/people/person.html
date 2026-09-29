@@ -13,24 +13,59 @@
     <li class="tile"><span class="tile__value">{{ score.days_logged }}</span><span class="tile__label">days logged</span></li>
   </ul>
 
-  <h2>Badges</h2>
+  {#
+    "Achievements", not "badges". Every icon on this page is an achievement, the
+    collection page calls them achievements, and the reward screen says
+    "unlocked an achievement" — so the one page that said "badges" was the odd
+    one out, and a reader landing here from a link had to work out that a badge
+    and an achievement were the same thing.
+
+    Grouped by tier, rarest last, so the page is a ladder rather than an
+    undifferentiated row. Twenty Common and one Rare reads very differently
+    when the Rare is somewhere you have to scroll to.
+  #}
+  <h2>Achievements</h2>
   {% if badges %}
-  {% include "partials/achievements.html" %}
+  {% for tier, group in by_tier %}
+  <h3 class="person__tier">
+    {{ tier | title }}
+    <span class="text-body-secondary small">{{ group | length }}</span>
+  </h3>
+  <span class="achievement-icons">
+    {% for badge in group %}
+    <span class="achievement-icon achievement-icon--{{ badge.tier }}" tabindex="0"
+          aria-label="{{ badge.name }}. {{ badge.description }}">
+      <img src="/static/img/badges/{{ badge.icon }}.svg" alt="" width="30" height="30" loading="lazy" />
+      <span class="achievement-icon__tip" role="tooltip">
+        <strong>{{ badge.name }}</strong>
+        <span>{{ badge.description }}</span>
+      </span>
+    </span>
+    {% endfor %}
+  </span>
+  {% endfor %}
   {% else %}
-  <p class="text-body-secondary">No badges yet this year.</p>
+  <p class="text-body-secondary">No achievements yet this year.</p>
   {% endif %}
 
-  <h2>Notes</h2>
-  <ul class="bm-entries">
-    {% for note in notes %}
-    <li>
-      <strong>{{ note.day.strftime('%d %b') }}</strong>
-      <p class="bm-note">“{{ note.text }}”</p>
-    </li>
-    {% else %}
-    <li class="text-body-secondary">Nothing noted.</li>
+  {#
+    History rather than Notes. Notes alone were half the story — a person who
+    has unlocked thirty things and written nothing looked identical to someone
+    who has done the reverse — and it read as a list rather than as a
+    timeline. The same card the feed uses, filtered to this person, so a note
+    looks the same here as it does there and the privacy rule is applied once.
+  #}
+  <h2>History</h2>
+  {% if history %}
+  {% set show_who = false %}
+  <div class="feed feed--person">
+    {% for item in history %}
+    {% include "partials/feed_card.html" %}
     {% endfor %}
-  </ul>
+  </div>
+  {% else %}
+  <p class="text-body-secondary">Nothing to show yet.</p>
+  {% endif %}
   {% if not see_detail %}
   <p class="text-body-secondary small">
     Times, types and individual entries are not shown to other people.

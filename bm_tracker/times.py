@@ -69,3 +69,31 @@ def day_only(day: date | None) -> str:
     if day is None:
         return ""
     return day.strftime("%-d %b")
+
+
+#: How far back an entry can be before its date needs the year on it. Three
+#: months is about as long as anyone holds a date in their head without it, and
+#: it happens to be a quarter, so "last quarter" and "this year" line up with
+#: the way people already talk about their own year.
+DAYS_BEFORE_YEAR_MATTERS = 90
+
+
+def feed_when(moment: datetime, today: date) -> str:
+    """Return a feed date, with the year only when it is doing any work.
+
+    The year used to be on every card, which made the common case — scrolling
+    this week — read as though everything were old. It is not noise on an entry
+    from last March and it is noise on one from this morning, so it is shown
+    only where the year is what you cannot infer, and dropped everywhere else.
+
+    Args:
+        moment: When the thing happened.
+        today: The reader's today, in their own timezone.
+
+    Returns:
+        "21 Jan" for anything inside the window, "21 Jan 2025" beyond it.
+
+    """
+    if (today - moment.date()).days > DAYS_BEFORE_YEAR_MATTERS:
+        return moment.strftime("%-d %b %Y")
+    return moment.strftime("%-d %b")

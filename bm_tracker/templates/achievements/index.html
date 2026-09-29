@@ -52,8 +52,18 @@
       <span class="badge text-bg-success">+{{ status.points }} · {{ status.year }}</span>
     </li>
     {% else %}
-    <li class="achievement-tile achievement-tile--hidden">
-      <span class="achievement-tile__glyph achievement-tile__glyph--hidden" aria-hidden="true">?</span>
+    {#
+      The icon is shown; the name is not. A wall of identical question marks
+      tells you there is something to come back for and nothing about what,
+      which is the most discouraging way to render a locked tier. The pictures
+      are the tease — you can see there is a shape worth having, and collecting
+      a set is a thing you do with pictures. The words stay hidden, because
+      the names are the reward and there is nothing to collect yet.
+    #}
+    <li class="achievement-tile achievement-tile--hidden achievement-tile--{{ status.achievement.tier }}">
+      <img class="achievement-tile__glyph achievement-tile__glyph--hidden"
+           src="/static/img/badges/{{ status.achievement.icon }}.svg"
+           alt="" width="40" height="40" loading="lazy" aria-hidden="true" />
       <span class="achievement-tile__name">???</span>
     </li>
     {% endif %}

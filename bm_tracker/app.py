@@ -173,6 +173,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     cast(dict[str, object], templates.env.globals)["clock"] = times.clock
     cast(dict[str, object], templates.env.globals)["stamp"] = times.stamp
     cast(dict[str, object], templates.env.globals)["day_only"] = times.day_only
+    cast(dict[str, object], templates.env.globals)["feed_when"] = times.feed_when
     app.state.templates = templates
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 

@@ -1,0 +1,95 @@
+{#
+  One card in a timeline. Shared by the group feed and by a person's history so
+  the two cannot drift: a note reads the same on your own page as it does
+  amongst everyone else's, and the privacy rule is applied in one place.
+
+  `item.user.id == user.id` is the same test the service used to decide what
+  detail to attach, so a card can only render BM detail for an item that carries
+  it. The two cannot disagree.
+
+  `show_who` is false on a person's own page, where the name above every card
+  would be the same name forty times.
+#}
+<article class="card feed__card feed__card--{{ item.kind }}{{ ' feed__card--mine' if item.user.id == user.id }}">
+  <div class="card-body">
+    <header class="feed__head">
+      {#
+        Your own name is not a link. It is on every card in the feed, so making
+        each one a link put "Cal (you)" into the tab order thirty times before
+        the reader reached anything else — the same sentence, over and over, to
+        a screen reader and to a keyboard.
+      #}
+      {% if show_who | default(true) %}
+      <a class="feed__who{% if item.user.id != user.id %} feed__who--plain{% endif %}"
+         href="/people/{{ item.user.username }}"
+         {%- if item.user.id == user.id and not first_own_name %} tabindex="-1"{% endif %}>
+        {{ item.display_name }}{{ ' (you)' if item.user.id == user.id }}
+      </a>
+      {% if item.user.is_admin %}<span class="badge text-bg-secondary">admin</span>{% endif %}
+      {% endif %}
+      {# The year only when it is doing work. See times.feed_when. #}
+      <time class="feed__when" datetime="{{ item.at.isoformat() }}">
+        {{ feed_when(item.at, today) }}, {{ clock(item.at) }}
+      </time>
+    </header>
+
+    {% if item.kind == kinds.bm %}
+      <p class="feed__verb">logged a BM</p>
+      <p class="feed__bm">
+        <strong>{{ clock(item.entry.occurred_local) }}</strong>
+        <span class="bristol-dot bristol-{{ bristol_by_value[item.entry.bristol_type].band }}">
+          {{ item.entry.bristol_type }}
+        </span>
+        {% if item.entry.urgent %}<span class="badge text-bg-danger">urgent</span>{% endif %}
+        {% if item.entry.spicy %}<span class="badge text-bg-warning">spicy</span>{% endif %}
+        {% if item.entry.strain %}
+        <span class="strain-pill strain-{{ item.entry.strain }}">
+          {{ strain_by_value[item.entry.strain].label }}
+        </span>
+        {% endif %}
+      </p>
+      {% if item.entry.has_note %}
+      <p class="feed__quote">“{{ item.entry.notes }}”</p>
+      {% endif %}
+
+    {% elif item.kind == kinds.day %}
+      <p class="feed__verb">logged nothing today</p>
+      <p class="feed__nothing">streak continues</p>
+
+    {% elif item.kind == kinds.note %}
+      <p class="feed__verb">noted</p>
+      <p class="feed__quote">{{ item.text }}</p>
+
+    {% elif item.kind == kinds.achievement %}
+      <p class="feed__verb">unlocked an achievement</p>
+      <p class="feed__award">
+        {% if item.achievement %}
+        <span class="badge-icon badge-icon--{{ item.achievement.tier }}" tabindex="0"
+              aria-label="{{ item.achievement.name }}. {{ item.achievement.description }}">
+          <img src="/static/img/badges/{{ item.achievement.icon }}.svg" alt=""
+               width="30" height="30" loading="lazy" />
+          <span class="badge-icon__tip" role="tooltip">
+            <strong>{{ item.achievement.name }}</strong>
+            <span>{{ item.achievement.description }}</span>
+          </span>
+        </span>
+        {#
+          The name on one line and the description on the next. A tooltip holds
+          the description, but a tooltip is a thing you have to find, and what
+          an unlock actually was is the interesting half — so it is set out
+          rather than tucked away. This is the one card in the timeline that
+          says something about the person rather than the day.
+        #}
+        <span class="feed__award-text">
+          <span class="feed__award-name">{{ item.achievement.name }}</span>
+          <span class="feed__award-desc">{{ item.achievement.description }}</span>
+        </span>
+        {% else %}
+        <span>{{ item.achievement_key | replace('_', ' ') | title }}</span>
+        {% endif %}
+        <span class="badge text-bg-warning">+{{ item.points }}</span>
+      </p>
+
+    {% endif %}
+  </div>
+</article>

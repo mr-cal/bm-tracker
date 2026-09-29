@@ -21,6 +21,8 @@ from bm_tracker import auth, celebrate, scoring
 from bm_tracker.achievements import custom as custom_rules
 from bm_tracker.achievements import engine, facts, registry, rules
 from bm_tracker.models import AchievementUnlock, CelebrationSeen, User
+from bm_tracker.routes.people import Badge
+from bm_tracker.routes.people import _by_tier as group_by_tier
 from bm_tracker.services import bm_service
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -628,3 +630,28 @@ def test_status_with_nothing_to_measure_says_nothing() -> None:
     )
 
     assert status.count == ""
+
+
+def test_tier_groups_run_least_rare_first() -> None:
+    """Rarest last, so a person's page is a ladder rather than a flat row.
+
+    Alphabetical would put a Legendary earned last March above a Common earned
+    on Tuesday, which reads as a mistake rather than as a rarity.
+    """
+
+    def badge(tier: str, name: str) -> Badge:
+        return Badge(
+            key=name, name=name, description=name, icon="default", tier=tier, points=2
+        )
+
+    grouped = group_by_tier(
+        (
+            badge("legendary", "The Century"),
+            badge("common", "First Blood"),
+            badge("rare", "Quincentenary"),
+        )
+    )
+
+    # Uncommon has nothing in it and is left out entirely, rather than
+    # rendering an empty heading between the two that are populated.
+    assert [tier for tier, _ in grouped] == ["common", "rare", "legendary"]

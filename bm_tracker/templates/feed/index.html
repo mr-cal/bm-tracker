@@ -6,9 +6,9 @@
   <h1>Feed</h1>
 
   {#
-    Your own history, and the group. `item.user.id == user.id` is the same test
-    the service used to decide what detail to attach, so a card can only render
-    BM detail for an item that carries it. The two cannot disagree.
+    Your own history, and the group. The card is a partial so the same markup
+    serves a person's own history, where a note reads identically to how it
+    reads here.
   #}
   <p class="feed__more">
     <a class="btn btn-outline-secondary" href="/achievements">See all the achievements</a>
@@ -17,82 +17,8 @@
   <div class="feed">
     {% set ns = namespace(seen_own=false) %}
     {% for item in items %}
-    {% set mine = item.user.id == user.id %}
-    {%- set first_own_name = not ns.seen_own %}{% if mine %}{% set ns.seen_own = true %}{% endif %}
-    <article class="card feed__card feed__card--{{ item.kind }}{{ ' feed__card--mine' if mine }}">
-      <div class="card-body">
-        <header class="feed__head">
-          {#
-            Your own name is not a link. It is on every card in the feed, so
-            making each one a link put "Cal (you)" into the tab order thirty
-            times before the reader reached anything else — the same sentence,
-            over and over, to a screen reader and to a keyboard.
-          #}
-          <a class="feed__who{% if not mine %} feed__who--plain{% endif %}"
-             href="/people/{{ item.user.username }}"
-             {%- if mine and not first_own_name %} tabindex="-1"{% endif %}>
-            {{ item.display_name }}{{ ' (you)' if mine }}
-          </a>
-          {% if item.user.is_admin %}<span class="badge text-bg-secondary">admin</span>{% endif %}
-          <time class="feed__when" datetime="{{ item.at.isoformat() }}">
-            {# The year, always. The feed is one timeline across years, so
-               "21 Jan" and "19 Sep" on adjacent cards give no clue which is
-               which — and the year is the one thing a reader needs when the
-               thing they are reading is history. #}
-            {{ item.at.strftime("%-d %b %Y") }}, {{ clock(item.at) }}
-          </time>
-        </header>
-
-        {% if item.kind == kinds.bm %}
-          <p class="feed__verb">logged a BM</p>
-          <p class="feed__bm">
-            <strong>{{ clock(item.entry.occurred_local) }}</strong>
-            <span class="bristol-dot bristol-{{ bristol_by_value[item.entry.bristol_type].band }}">
-              {{ item.entry.bristol_type }}
-            </span>
-            {% if item.entry.urgent %}<span class="badge text-bg-danger">urgent</span>{% endif %}
-            {% if item.entry.spicy %}<span class="badge text-bg-warning">spicy</span>{% endif %}
-            {% if item.entry.strain %}
-            <span class="strain-pill strain-{{ item.entry.strain }}">
-              {{ strain_by_value[item.entry.strain].label }}
-            </span>
-            {% endif %}
-          </p>
-          {% if item.entry.has_note %}
-          <p class="feed__quote">“{{ item.entry.notes }}”</p>
-          {% endif %}
-
-        {% elif item.kind == kinds.day %}
-          <p class="feed__verb">logged nothing today</p>
-          <p class="feed__nothing">streak continues</p>
-
-        {% elif item.kind == kinds.note %}
-          <p class="feed__verb">noted</p>
-          <p class="feed__quote">{{ item.text }}</p>
-
-        {% elif item.kind == kinds.achievement %}
-          <p class="feed__verb">unlocked an achievement</p>
-          <p class="feed__award">
-            {% if item.achievement %}
-            <span class="badge-icon badge-icon--{{ item.achievement.tier }}" tabindex="0"
-                  aria-label="{{ item.achievement.name }}. {{ item.achievement.description }}">
-              <img src="/static/img/badges/{{ item.achievement.icon }}.svg" alt=""
-                   width="30" height="30" loading="lazy" />
-              <span class="badge-icon__tip" role="tooltip">
-                <strong>{{ item.achievement.name }}</strong>
-                <span>{{ item.achievement.description }}</span>
-              </span>
-            </span>
-            <span>{{ item.achievement.name }}</span>
-            {% else %}
-            <span>{{ item.achievement_key | replace('_', ' ') | title }}</span>
-            {% endif %}
-            <span class="badge text-bg-warning">+{{ item.points }}</span>
-          </p>
-
-        {% endif %}
-      </div>
-    </article>
+    {%- set first_own_name = not ns.seen_own %}{% if item.user.id == user.id %}{% set ns.seen_own = true %}{% endif %}
+    {% include "partials/feed_card.html" %}
     {% else %}
     <p class="text-body-secondary">
       {% if page > 1 %}Nothing further back.{% else %}Nothing logged yet.{% endif %}
