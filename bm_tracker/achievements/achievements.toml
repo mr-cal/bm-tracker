@@ -208,7 +208,7 @@ key = "new_years_day"
 name = "New Year's Day"
 description = "Logged on the first of January. Whatever you were doing, you did it and wrote it down."
 tier = "common"
-icon = "cake"
+icon = "new_years_day"
 rule = { all = [{ logged_jan_1 = { gte = 1 } }] }
 
 
@@ -217,7 +217,7 @@ key = "groundhog_day"
 name = "Groundhog Day"
 description = "Logged on the second of February. Six more weeks of winter, apparently."
 tier = "common"
-icon = "sun"
+icon = "groundhog_day"
 rule = { all = [{ logged_feb_2 = { gte = 1 } }] }
 
 
@@ -226,7 +226,7 @@ key = "valentines_day"
 name = "Unconditional"
 description = "Logged on the fourteenth of February. No notes on the day; the entry is the note."
 tier = "common"
-icon = "heart"
+icon = "valentines_day"
 rule = { all = [{ logged_feb_14 = { gte = 1 } }] }
 
 
@@ -235,7 +235,7 @@ key = "leap_day"
 name = "Once in Four Years"
 description = "Logged on the twenty-ninth of February. It only exists in some years, which is the point."
 tier = "uncommon"
-icon = "calendar"
+icon = "leap_day"
 rule = { all = [{ logged_feb_29 = { gte = 1 } }] }
 
 
@@ -244,7 +244,7 @@ key = "ides_of_march"
 name = "The Ides of March Poo"
 description = "Logged on the fifteenth of March. So much depends upon it."
 tier = "uncommon"
-icon = "flag"
+icon = "ides_of_march"
 rule = { all = [{ logged_mar_15 = { gte = 1 } }] }
 
 
@@ -253,7 +253,7 @@ key = "april_fools"
 name = "April Fool's"
 description = "Logged on the first of April. It really was that."
 tier = "common"
-icon = "puzzle"
+icon = "april_fools"
 rule = { all = [{ logged_apr_1 = { gte = 1 } }] }
 
 
@@ -262,7 +262,7 @@ key = "may_day"
 name = "May Day"
 description = "Logged on the first of May. The traditional end of the winter logs."
 tier = "common"
-icon = "leaf"
+icon = "may_day"
 rule = { all = [{ logged_may_1 = { gte = 1 } }] }
 
 
@@ -271,7 +271,7 @@ key = "midsummer"
 name = "Midsummer"
 description = "Logged on the twenty-first of June, the longest day. Logged it, and stayed out too late."
 tier = "uncommon"
-icon = "sun"
+icon = "midsummer"
 rule = { all = [{ logged_jun_21 = { gte = 1 } }] }
 
 
@@ -280,7 +280,7 @@ key = "halloween"
 name = "All Hallows Eve"
 description = "Logged on the thirty-first of October. Appropriate."
 tier = "uncommon"
-icon = "pumpkin"
+icon = "halloween"
 rule = { all = [{ logged_oct_31 = { gte = 1 } }] }
 
 
@@ -289,7 +289,7 @@ key = "bonfire_night"
 name = "Bonfire Night"
 description = "Logged on the fifth of November. Guy Fawkes would have approved of the streak."
 tier = "uncommon"
-icon = "flame"
+icon = "bonfire_night"
 rule = { all = [{ logged_nov_5 = { gte = 1 } }] }
 
 
@@ -298,7 +298,7 @@ key = "winter_solstice"
 name = "The Longest Night"
 description = "Logged on the twenty-first of December. The shortest day, and you still turned up."
 tier = "uncommon"
-icon = "moon"
+icon = "winter_solstice"
 rule = { all = [{ logged_dec_21 = { gte = 1 } }] }
 
 
@@ -307,7 +307,7 @@ key = "christmas_eve"
 name = "Christmas Eve"
 description = "Logged on the twenty-fourth of December. Somewhere in it, between the wrapping and the sleep."
 tier = "common"
-icon = "gift"
+icon = "christmas_eve"
 rule = { all = [{ logged_dec_24 = { gte = 1 } }] }
 
 
@@ -316,7 +316,7 @@ key = "christmas_day"
 name = "Christmas Day"
 description = "Logged on the twenty-fifth of December. Third entry of the holiday, which is a sentence nobody needs to finish."
 tier = "common"
-icon = "gift"
+icon = "christmas_day"
 rule = { all = [{ logged_dec_25 = { gte = 1 } }] }
 
 
@@ -325,7 +325,7 @@ key = "boxing_day"
 name = "Boxing Day"
 description = "Logged on the twenty-sixth of December. The day after the day. Of course."
 tier = "common"
-icon = "gift"
+icon = "boxing_day"
 rule = { all = [{ logged_dec_26 = { gte = 1 } }] }
 
 
@@ -334,7 +334,7 @@ key = "friday_the_thirteenth"
 name = "Friday the Thirteenth"
 description = "Logged on a Friday the thirteenth. Bad luck, formally documented."
 tier = "uncommon"
-icon = "moon"
+icon = "friday_the_thirteenth"
 rule = { all = [{ logged_friday_13 = { gte = 1 } }] }
 
 
@@ -343,7 +343,7 @@ key = "new_years_eve"
 name = "New Year's Eve"
 description = "Logged on the thirty-first of December. The year's last entry, in its last hours."
 tier = "uncommon"
-icon = "clock"
+icon = "new_years_eve"
 rule = { all = [{ logged_dec_31 = { gte = 1 } }] }
 
 [[achievement]]
@@ -351,7 +351,7 @@ key = "silent_streak"
 name = "The Unread Day"
 description = "Seven days logged, not one note. The streak is immaculate and completely unexplained."
 tier = "uncommon"
-icon = "eyeoof"
+icon = "silent_streak"
 rule = { all = [{ streak_longest = { gte = 7 } }, { longest_run_without_note = { gte = 7 } }] }
 
 
@@ -360,7 +360,7 @@ key = "silent_month"
 name = "A Month of Nothing"
 description = "Thirty days logged without a single note. At this point the note field is decorative."
 tier = "rare"
-icon = "mute"
+icon = "silent_month"
 rule = { all = [{ longest_run_without_note = { gte = 30 } }] }
 
 
@@ -369,7 +369,7 @@ key = "wordless_year"
 name = "Silent Running"
 description = "Fifty days in a row with no note. Achieved while not noticing."
 tier = "legendary"
-icon = "mute"
+icon = "wordless_year"
 rule = { all = [{ longest_run_without_note = { gte = 50 } }] }
 
 
@@ -378,7 +378,7 @@ key = "confession"
 name = "Backfilled All Year"
 description = "Thirty days filled in after the fact. None of them happened in real time."
 tier = "rare"
-icon = "hourglass"
+icon = "confession"
 rule = { all = [{ backfilled_days = { gte = 30 } }] }
 
 
@@ -387,7 +387,7 @@ key = "time_traveller"
 name = "Chronological Rearrangement"
 description = "Fifty days entered after they had already happened. The streak is real; the dates are a work of fiction."
 tier = "legendary"
-icon = "hourglass"
+icon = "time_traveller"
 rule = { all = [{ backfilled_days = { gte = 50 } }] }
 
 
@@ -396,7 +396,7 @@ key = "no_notes_no_streak"
 name = "Bare Minimum"
 description = "A seven-day streak with nothing written on any of it. Efficiency, of a kind."
 tier = "common"
-icon = "eyeoof"
+icon = "no_notes_no_streak"
 rule = { all = [{ streak_longest = { gte = 7 } }, { longest_run_without_note = { gte = 7 } }] }
 
 
@@ -405,7 +405,7 @@ key = "undo"
 name = "Second Thoughts"
 description = "Deleted an entry and logged another. The data is a record of indecision."
 tier = "common"
-icon = "hourglass"
+icon = "undo"
 rule = { all = [{ deleted_entries = { gte = 1 } }] }
 
 
@@ -414,7 +414,7 @@ key = "regrets"
 name = "The Full Set"
 description = "Deleted twenty entries. Twenty versions of the truth, one of which survived."
 tier = "legendary"
-icon = "hourglass"
+icon = "regrets"
 rule = { all = [{ deleted_entries = { gte = 20 } }] }
 
 
@@ -423,7 +423,7 @@ key = "twelvenotes"
 name = "One A Year"
 description = "Exactly one note in the whole of the year, on the most memorable day available."
 tier = "rare"
-icon = "key"
+icon = "twelvenotes"
 rule = { all = [{ note_count = { gte = 1 } }, { note_count = { lte = 1 } }] }
 
 
@@ -432,7 +432,7 @@ key = "weekend_warrior"
 name = "Weekend Warrior"
 description = "A hundred entries, every one of them on a Saturday or a Sunday. The weekdays are a different person."
 tier = "rare"
-icon = "calendar"
+icon = "weekend_warrior"
 rule = { all = [{ weekend_entry_count = { gte = 100 } }] }
 
 
@@ -441,7 +441,7 @@ key = "weekday_only"
 name = "Nine to Five"
 description = "Sixty entries, none at the weekend. A committed position."
 tier = "uncommon"
-icon = "calendar"
+icon = "weekday_only"
 rule = { all = [{ bm_count_total = { gte = 60 } }, { weekend_entry_count = { lte = 0 } }] }
 
 
@@ -450,7 +450,7 @@ key = "weekday_sweep"
 name = "Seven Day Sweep"
 description = "Logged something on every day of the week, in the same week."
 tier = "rare"
-icon = "calendar"
+icon = "weekday_sweep"
 rule = { all = [{ distinct_weekdays_logged = { gte = 7 } }] }
 
 
@@ -459,7 +459,7 @@ key = "working_week"
 name = "Five Days Out of Seven"
 description = "Every weekday, all month, without a weekend in sight."
 tier = "uncommon"
-icon = "calendar"
+icon = "working_week"
 rule = { all = [{ days_logged_total = { gte = 20 } }, { weekend_entry_count = { lte = 1 } }] }
 
 
@@ -468,7 +468,7 @@ key = "annual_review"
 name = "A Year in Review"
 description = "Logged in all twelve months. Nobody does this by accident."
 tier = "legendary"
-icon = "layers"
+icon = "annual_review"
 rule = { all = [{ distinct_months_logged = { gte = 12 } }] }
 
 
@@ -477,7 +477,7 @@ key = "not_a_streak"
 name = "Twice a Year"
 description = "Logged in exactly two months. It was a good year, in two bursts."
 tier = "common"
-icon = "calendar"
+icon = "not_a_streak"
 rule = { all = [{ distinct_months_logged = { gte = 2 } }, { distinct_months_logged = { lte = 2 } }] }
 
 
@@ -486,7 +486,7 @@ key = "monotony"
 name = "Same Again"
 description = "Fifty entries, every one of them the same Bristol type. Variety was not the goal."
 tier = "rare"
-icon = "dice"
+icon = "monotony"
 rule = { all = [{ bm_count_total = { gte = 50 } }, { bristol_types_seen = { lte = 1 } }] }
 
 
@@ -495,7 +495,7 @@ key = "one_of_everything"
 name = "The Full Set of Everything"
 description = "Logged at least once in all seven types and wrote something about all of them."
 tier = "legendary"
-icon = "puzzle"
+icon = "one_of_everything"
 rule = { all = [{ bristol_types_seen = { gte = 7 } }, { note_count = { gte = 7 } }] }
 
 
@@ -504,7 +504,7 @@ key = "undocumented"
 name = "Perfectly Documented"
 description = "Every single entry has a note. Nobody will believe this, including you."
 tier = "legendary"
-icon = "puzzle"
+icon = "undocumented"
 rule = { all = [{ all_entries_noted = { gte = 1 } }, { bm_count_total = { gte = 50 } }] }
 
 
@@ -513,7 +513,7 @@ key = "weekend_none"
 name = "Never a Weekend"
 description = "Fifty entries, every one on a weekday. Statistically improbable, and no one will ever know."
 tier = "rare"
-icon = "scale"
+icon = "weekend_none"
 rule = { all = [{ bm_count_total = { gte = 50 } }, { weekend_entry_count = { lte = 0 } }] }
 
 
@@ -522,7 +522,7 @@ key = "after_hours"
 name = "The Graveyard Shift"
 description = "Twenty entries, all of them after ten at night. The honesty of the small hours."
 tier = "uncommon"
-icon = "clock"
+icon = "after_hours"
 rule = { all = [{ bm_count_total = { gte = 20 } }, { time_of_day = { gte = 22 } }] }
 
 
@@ -531,7 +531,7 @@ key = "early_bird_tier"
 name = "Commuter"
 description = "An entry before six in the morning, on twenty days. Alarms, and dignity."
 tier = "rare"
-icon = "sun"
+icon = "early_bird_tier"
 rule = { all = [{ bm_count_total = { gte = 20 } }, { time_of_day = { lte = 6 } }] }
 
 [[achievement]]
@@ -539,7 +539,7 @@ key = "noted_run"
 name = "Annotated Marathon"
 description = "A seven-day streak with a note on every single day of it."
 tier = "rare"
-icon = "puzzle"
+icon = "noted_run"
 rule = { all = [{ streak_longest = { gte = 7 } }, { noted_entry_count = { gte = 7 } }] }
 
 
@@ -548,7 +548,7 @@ key = "quick_and_long"
 name = "Fast and Long"
 description = "Ten entries, each logged within a minute, inside a streak that reached ten days."
 tier = "legendary"
-icon = "bolt"
+icon = "quick_and_long"
 rule = { all = [{ bm_count_total = { gte = 10 } }, { streak_longest = { gte = 10 } }] }
 
 
@@ -557,7 +557,7 @@ key = "spicy_comeback"
 name = "Seasoned Return"
 description = "Came back after a week away, and the comeback was spicy."
 tier = "rare"
-icon = "spicy"
+icon = "spicy_comeback"
 rule = { all = [{ gap_since_previous_days = { gte = 7 } }, { spicy_count = { gte = 5 } }] }
 
 
@@ -566,7 +566,7 @@ key = "type_seven_streak"
 name = "The Long Haul"
 description = "A ten-day streak that included a type 7. Long, and not what you hoped for."
 tier = "rare"
-icon = "dice"
+icon = "type_seven_streak"
 rule = { all = [{ streak_longest = { gte = 10 } }, { bristol_type = { gte = 7 } }] }
 
 
@@ -575,7 +575,7 @@ key = "night_streak"
 name = "Insomniac"
 description = "A fourteen-day streak with at least one entry logged after eleven at night."
 tier = "rare"
-icon = "moon"
+icon = "night_streak"
 rule = { all = [{ streak_longest = { gte = 14 } }, { time_of_day = { gte = 23 } }] }
 
 
@@ -584,7 +584,7 @@ key = "dawn_patrol"
 name = "Dawn Watch"
 description = "A fourteen-day streak with an entry logged before five in the morning."
 tier = "legendary"
-icon = "sun"
+icon = "dawn_patrol"
 rule = { all = [{ streak_longest = { gte = 14 } }, { time_of_day = { lte = 5 } }] }
 
 
@@ -593,7 +593,7 @@ key = "spicy_streak"
 name = "Seasoned Streak"
 description = "A five-day run where every day had something spicy in it."
 tier = "rare"
-icon = "spicy"
+icon = "spicy_streak"
 rule = { all = [{ streak_longest = { gte = 5 } }, { max_spicy_consecutive_days = { gte = 5 } }] }
 
 
@@ -602,7 +602,7 @@ key = "documented_return"
 name = "Annotated Comeback"
 description = "A gap of a week, and a note on the day you came back."
 tier = "common"
-icon = "key"
+icon = "documented_return"
 rule = { all = [{ gap_since_previous_days = { gte = 7 } }, { note_count = { gte = 10 } }] }
 
 
@@ -611,7 +611,7 @@ key = "weekend_streak"
 name = "Seven Day Weekender"
 description = "A fourteen-day streak that crossed two weekends without dropping one."
 tier = "rare"
-icon = "calendar"
+icon = "weekend_streak"
 rule = { all = [{ streak_longest = { gte = 14 } }, { weekend_entry_count = { gte = 4 } }] }
 
 
@@ -620,7 +620,7 @@ key = "quick_variety"
 name = "Speed Dial"
 description = "Twenty entries, all logged within the window, covering all seven types."
 tier = "legendary"
-icon = "bolt"
+icon = "quick_variety"
 rule = { all = [{ bm_count_total = { gte = 20 } }, { bristol_types_seen = { gte = 7 } }] }
 
 
@@ -629,7 +629,7 @@ key = "crowded"
 name = "Five in the Morning"
 description = "Ten entries in a single day, on a day that began before six."
 tier = "legendary"
-icon = "clock"
+icon = "crowded"
 rule = { all = [{ bm_count_day = { gte = 10 } }, { time_of_day = { lte = 6 } }] }
 
 
@@ -638,7 +638,7 @@ key = "note_streak"
 name = "Twenty Straight"
 description = "A twenty-day streak with at least twenty notes somewhere in it."
 tier = "rare"
-icon = "puzzle"
+icon = "note_streak"
 rule = { all = [{ streak_longest = { gte = 20 } }, { note_count = { gte = 20 } }] }
 
 
@@ -647,7 +647,7 @@ key = "spicy_quick"
 name = "Hot and Fresh"
 description = "A spicy entry, logged within a minute of it happening."
 tier = "common"
-icon = "bolt"
+icon = "spicy_quick"
 rule = { all = [{ spicy_count = { gte = 20 } }, { bm_count_total = { gte = 20 } }] }
 
 
@@ -656,7 +656,7 @@ key = "all_seven_streak"
 name = "Full Spectrum"
 description = "A seven-day streak that used every Bristol type between them."
 tier = "legendary"
-icon = "dice"
+icon = "all_seven_streak"
 rule = { all = [{ streak_longest = { gte = 7 } }, { bristol_types_seen = { gte = 7 } }] }
 
 
@@ -665,7 +665,7 @@ key = "empty_and_full"
 name = "Contrast"
 description = "A month with both a day logged empty and a day with five on it."
 tier = "uncommon"
-icon = "scale"
+icon = "empty_and_full"
 rule = { all = [{ days_logged_total = { gte = 30 } }, { max_bms_in_day = { gte = 5 } }] }
 
 
@@ -674,7 +674,7 @@ key = "long_and_annotated"
 name = "The Annotated Century"
 description = "A hundred entries, and notes on at least fifty of them."
 tier = "legendary"
-icon = "puzzle"
+icon = "long_and_annotated"
 rule = { all = [{ bm_count_total = { gte = 100 } }, { note_count = { gte = 50 } }] }
 
 
@@ -683,7 +683,7 @@ key = "spicy_type_seven"
 name = "Spicy Type 7"
 description = "A spicy entry that was also a type 7. The worst possible combination, deliberately chosen."
 tier = "uncommon"
-icon = "spicy"
+icon = "spicy_type_seven"
 rule = { all = [{ spicy_count = { gte = 5 } }, { bristol_type = { gte = 7 } }] }
 
 
@@ -692,7 +692,7 @@ key = "dawn_spicy"
 name = "Early and Spicy"
 description = "An entry before six in the morning that followed something spicy. A hard morning."
 tier = "rare"
-icon = "sun"
+icon = "dawn_spicy"
 rule = { all = [{ time_of_day = { lte = 6 } }, { spicy_count = { gte = 20 } }] }
 
 
@@ -701,7 +701,7 @@ key = "noted_comeback_streak"
 name = "The Annotated Return"
 description = "A ten-day streak after a gap of a week, with notes throughout."
 tier = "rare"
-icon = "key"
+icon = "noted_comeback_streak"
 rule = { all = [{ streak_longest = { gte = 10 } }, { gap_since_previous_days = { gte = 7 } }, { note_count = { gte = 10 } }] }
 
 
@@ -710,7 +710,7 @@ key = "triple_types"
 name = "Three Ways"
 description = "A single day carrying three different Bristol types."
 tier = "common"
-icon = "dice"
+icon = "triple_types"
 rule = { all = [{ bm_count_day = { gte = 3 } }, { bristol_types_seen = { gte = 3 } }] }
 
 
@@ -719,7 +719,7 @@ key = "weekend_variety"
 name = "Weekend Sampler"
 description = "A weekend on which every Bristol type made an appearance."
 tier = "rare"
-icon = "calendar"
+icon = "weekend_variety"
 rule = { all = [{ weekend_entry_count = { gte = 4 } }, { bristol_types_seen = { gte = 7 } }] }
 
 
@@ -728,7 +728,7 @@ key = "documented_streak"
 name = "Forty Notes, Forty Days"
 description = "A forty-day streak and forty notes. A record you could actually read back."
 tier = "legendary"
-icon = "puzzle"
+icon = "documented_streak"
 rule = { all = [{ streak_longest = { gte = 40 } }, { note_count = { gte = 40 } }] }
 
 
@@ -737,7 +737,7 @@ key = "quick_streak"
 name = "Quick Streak"
 description = "A twenty-day streak where every day had at least one entry inside the window."
 tier = "legendary"
-icon = "bolt"
+icon = "quick_streak"
 rule = { all = [{ streak_longest = { gte = 20 } }, { bm_count_total = { gte = 20 } }] }
 
 
@@ -746,7 +746,7 @@ key = "backfilled_streak"
 name = "Borrowed Time"
 description = "A streak of ten days where some of them were filled in afterwards."
 tier = "uncommon"
-icon = "hourglass"
+icon = "backfilled_streak"
 rule = { all = [{ streak_longest = { gte = 10 } }, { backfilled_days = { gte = 10 } }] }
 
 [[achievement]]
@@ -754,7 +754,7 @@ key = "century"
 name = "The Century"
 description = "A hundred entries logged."
 tier = "common"
-icon = "layers"
+icon = "century"
 rule = { all = [{ bm_count_total = { gte = 100 } }] }
 
 
@@ -763,7 +763,7 @@ key = "two_hundred"
 name = "Double Century"
 description = "Two hundred entries."
 tier = "uncommon"
-icon = "layers"
+icon = "two_hundred"
 rule = { all = [{ bm_count_total = { gte = 200 } }] }
 
 
@@ -772,7 +772,7 @@ key = "five_hundred"
 name = "Quincentenary"
 description = "Five hundred entries. Two a day, every day, for a year."
 tier = "rare"
-icon = "trophy"
+icon = "five_hundred"
 rule = { all = [{ bm_count_total = { gte = 500 } }] }
 
 
@@ -781,7 +781,7 @@ key = "thousand"
 name = "Millennium"
 description = "A thousand entries. There is not a polite way to describe this."
 tier = "legendary"
-icon = "trophy"
+icon = "thousand"
 rule = { all = [{ bm_count_total = { gte = 1000 } }] }
 
 
@@ -790,7 +790,7 @@ key = "month_of_days"
 name = "Every Day of a Month"
 description = "Thirty consecutive days logged without a gap."
 tier = "uncommon"
-icon = "calendar"
+icon = "month_of_days"
 rule = { all = [{ streak_longest = { gte = 30 } }] }
 
 
@@ -799,7 +799,7 @@ key = "fifty_days"
 name = "Fifty Straight"
 description = "Fifty days in a row."
 tier = "rare"
-icon = "calendar"
+icon = "fifty_days"
 rule = { all = [{ streak_longest = { gte = 50 } }] }
 
 
@@ -808,7 +808,7 @@ key = "hundred_days"
 name = "The Hundred"
 description = "A hundred consecutive days."
 tier = "legendary"
-icon = "calendar"
+icon = "hundred_days"
 rule = { all = [{ streak_longest = { gte = 100 } }] }
 
 
@@ -817,7 +817,7 @@ key = "ten_notes"
 name = "Tenth Note"
 description = "Ten notes written."
 tier = "common"
-icon = "puzzle"
+icon = "ten_notes"
 rule = { all = [{ note_count = { gte = 10 } }] }
 
 
@@ -826,7 +826,7 @@ key = "twenty_five_notes"
 name = "Twenty-Five Notes"
 description = "Twenty-five notes. Enough to be a diary."
 tier = "uncommon"
-icon = "puzzle"
+icon = "twenty_five_notes"
 rule = { all = [{ note_count = { gte = 25 } }] }
 
 
@@ -835,7 +835,7 @@ key = "fifty_notes_b"
 name = "Fifty Notes"
 description = "Fifty notes."
 tier = "rare"
-icon = "puzzle"
+icon = "fifty_notes_b"
 rule = { all = [{ note_count = { gte = 50 } }] }
 
 
@@ -844,7 +844,7 @@ key = "hundred_notes"
 name = "A Hundred Notes"
 description = "A hundred notes. This is now a book, badly ordered."
 tier = "legendary"
-icon = "puzzle"
+icon = "hundred_notes"
 rule = { all = [{ note_count = { gte = 100 } }] }
 
 
@@ -853,7 +853,7 @@ key = "spicy_ten"
 name = "Regular Spice"
 description = "Ten spicy entries."
 tier = "common"
-icon = "spicy"
+icon = "spicy_ten"
 rule = { all = [{ spicy_count = { gte = 10 } }] }
 
 
@@ -862,7 +862,7 @@ key = "spicy_fifty"
 name = "The Spice Rack"
 description = "Fifty spicy entries. The fridge has opinions."
 tier = "rare"
-icon = "spicy"
+icon = "spicy_fifty"
 rule = { all = [{ spicy_count = { gte = 50 } }] }
 
 
@@ -871,7 +871,7 @@ key = "spicy_hundred"
 name = "Chef's Degree"
 description = "A hundred spicy entries."
 tier = "legendary"
-icon = "spicy"
+icon = "spicy_hundred"
 rule = { all = [{ spicy_count = { gte = 100 } }] }
 
 
@@ -880,7 +880,7 @@ key = "strain_hard"
 name = "Considerable Commitment"
 description = "Twenty entries that took real effort."
 tier = "uncommon"
-icon = "scale"
+icon = "strain_hard"
 rule = { all = [{ noted_entry_count = { gte = 20 } }] }
 
 
@@ -889,7 +889,7 @@ key = "type_one"
 name = "Noted"
 description = "Logged a type 1, with some effort."
 tier = "common"
-icon = "dice"
+icon = "type_one"
 rule = { all = [{ bristol_types_seen = { gte = 1 } }] }
 
 
@@ -898,7 +898,7 @@ key = "night_ten"
 name = "Ten Nights"
 description = "Ten entries between eleven at night and five in the morning."
 tier = "uncommon"
-icon = "moon"
+icon = "night_ten"
 rule = { all = [{ time_of_day = { gte = 23 } }] }
 
 
@@ -907,7 +907,7 @@ key = "dawn_ten"
 name = "Ten Dawns"
 description = "Ten entries before six in the morning."
 tier = "uncommon"
-icon = "sun"
+icon = "dawn_ten"
 rule = { all = [{ time_of_day = { lte = 6 } }] }
 
 
@@ -916,7 +916,7 @@ key = "quick_fifty"
 name = "Fifty on the Spot"
 description = "Fifty entries logged inside the quick-entry window."
 tier = "rare"
-icon = "bolt"
+icon = "quick_fifty"
 rule = { all = [{ fastest_entry_delay = { lte = 1 } }] }
 
 
@@ -925,7 +925,7 @@ key = "four_in_a_day"
 name = "The Quartet"
 description = "Four entries in a day."
 tier = "uncommon"
-icon = "layers"
+icon = "four_in_a_day"
 rule = { all = [{ max_bms_in_day = { gte = 4 } }] }
 
 
@@ -934,7 +934,7 @@ key = "seven_in_a_day"
 name = "Full House"
 description = "Seven entries in a day."
 tier = "rare"
-icon = "layers"
+icon = "seven_in_a_day"
 rule = { all = [{ max_bms_in_day = { gte = 7 } }] }
 
 
@@ -943,7 +943,7 @@ key = "a_year_of_days"
 name = "Three Hundred and Sixty-Five"
 description = "Logged on every day of a full year."
 tier = "legendary"
-icon = "calendar"
+icon = "a_year_of_days"
 rule = { all = [{ days_logged_total = { gte = 365 } }] }
 
 
@@ -952,7 +952,7 @@ key = "spicy_and_urgent"
 name = "The Full Report"
 description = "A spicy entry that was also urgent."
 tier = "common"
-icon = "spicy"
+icon = "spicy_and_urgent"
 rule = { all = [{ spicy_count = { gte = 20 } }] }
 
 
@@ -961,7 +961,7 @@ key = "first_week"
 name = "Week One"
 description = "Seven days logged, in your first week of using this."
 tier = "common"
-icon = "calendar"
+icon = "first_week"
 rule = { all = [{ days_logged_total = { gte = 7 } }] }
 
 [[achievement]]
@@ -969,7 +969,7 @@ key = "december_double"
 name = "The Twelve of Christmas"
 description = "Logged in December, with a note on at least one of them."
 tier = "uncommon"
-icon = "gift"
+icon = "december_double"
 rule = { all = [{ distinct_months_logged = { gte = 12 } }, { note_count = { gte = 1 } }] }
 
 
@@ -978,7 +978,7 @@ key = "new_year_same_day"
 name = "Straight Through"
 description = "Logged on the first of January, on the day it happened."
 tier = "uncommon"
-icon = "cake"
+icon = "new_year_same_day"
 rule = { all = [{ logged_jan_1 = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
 
 
@@ -987,7 +987,7 @@ key = "christmas_quick"
 name = "Christmas Morning"
 description = "A Christmas Day entry logged within the window of it happening."
 tier = "rare"
-icon = "gift"
+icon = "christmas_quick"
 rule = { all = [{ logged_dec_25 = { gte = 1 } }, { bm_count_total = { gte = 25 } }] }
 
 
@@ -996,7 +996,7 @@ key = "halloween_night"
 name = "Midnight, More Or Less"
 description = "A Halloween entry, at night, with a streak behind it."
 tier = "rare"
-icon = "pumpkin"
+icon = "halloween_night"
 rule = { all = [{ logged_oct_31 = { gte = 1 } }, { streak_longest = { gte = 5 } }] }
 
 
@@ -1005,7 +1005,7 @@ key = "valentine_quick"
 name = "Same Day Service"
 description = "A Valentine's Day entry logged on the day."
 tier = "uncommon"
-icon = "heart"
+icon = "valentine_quick"
 rule = { all = [{ logged_feb_14 = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
 
 
@@ -1014,7 +1014,7 @@ key = "unmarked"
 name = "The Invisible Year"
 description = "A full year of logging with nothing ever deleted. A flawless record of a life nobody witnessed."
 tier = "legendary"
-icon = "scale"
+icon = "unmarked"
 rule = { all = [{ days_logged_total = { gte = 200 } }, { deleted_entries = { lte = 0 } }] }
 
 
@@ -1023,7 +1023,7 @@ key = "untouched"
 name = "Straight Through The Year"
 description = "No entry deleted and no day backfilled. Everything was written when it happened."
 tier = "legendary"
-icon = "hourglass"
+icon = "untouched"
 rule = { all = [{ days_logged_total = { gte = 100 } }, { deleted_entries = { lte = 0 } }, { backfilled_days = { lte = 0 } }] }
 
 
@@ -1032,7 +1032,7 @@ key = "half_and_half"
 name = "Fifty-Fifty"
 description = "Half your entries are noted. A deliberate fraction."
 tier = "uncommon"
-icon = "scale"
+icon = "half_and_half"
 rule = { all = [{ noted_entry_count = { gte = 25 } }, { bm_count_total = { gte = 50 } }] }
 
 
@@ -1041,7 +1041,7 @@ key = "two_thirds"
 name = "Two Thirds Noted"
 description = "Two entries in three have a note on them."
 tier = "uncommon"
-icon = "puzzle"
+icon = "two_thirds"
 rule = { all = [{ noted_entry_count = { gte = 40 } }, { bm_count_total = { gte = 60 } }] }
 
 
@@ -1050,7 +1050,7 @@ key = "every_third"
 name = "Every Third"
 description = "Exactly a third of your entries are noted. Precision, of a pointless kind."
 tier = "rare"
-icon = "scale"
+icon = "every_third"
 rule = { all = [{ noted_entry_count = { gte = 30 } }, { bm_count_total = { gte = 90 } }] }
 
 
@@ -1059,7 +1059,7 @@ key = "night_owl_streak"
 name = "The Owl's Week"
 description = "A seven-day streak with something logged after eleven at night, every day of it."
 tier = "legendary"
-icon = "moon"
+icon = "night_owl_streak"
 rule = { all = [{ streak_longest = { gte = 7 } }, { time_of_day = { gte = 23 } }] }
 
 
@@ -1068,7 +1068,7 @@ key = "spicy_urgent_night"
 name = "The Full Night Out"
 description = "A spicy, urgent entry logged after eleven at night."
 tier = "rare"
-icon = "spicy"
+icon = "spicy_urgent_night"
 rule = { all = [{ spicy_count = { gte = 10 } }, { time_of_day = { gte = 23 } }] }
 
 
@@ -1077,7 +1077,7 @@ key = "comeback_quick"
 name = "Straight Back"
 description = "Came back after a week away and logged the return within the window."
 tier = "rare"
-icon = "bolt"
+icon = "comeback_quick"
 rule = { all = [{ gap_since_previous_days = { gte = 7 } }, { bm_count_total = { gte = 20 } }] }
 
 
@@ -1086,5 +1086,5 @@ key = "the_long_way_round"
 name = "All Seven"
 description = "Every Bristol type, and a note on the day you finally got the one you had been avoiding."
 tier = "legendary"
-icon = "puzzle"
+icon = "the_long_way_round"
 rule = { all = [{ bristol_types_seen = { gte = 7 } }, { note_count = { gte = 50 } }] }
