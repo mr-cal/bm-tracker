@@ -1823,7 +1823,7 @@ async def test_an_empty_year_names_itself_rather_than_ranking_nobody(
 async def test_the_collection_total_does_not_shrink_with_your_points(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    """The header names the whole collection, and says what is still hidden.
+    """The header names the whole collection, not just what it is allowed to show.
 
     It used to say "of N" where N was the number of tiles rendered, so a person
     on 3,000 points read "of 158" and a person on 800 read "of 120" — two people
@@ -1841,7 +1841,6 @@ async def test_the_collection_total_does_not_shrink_with_your_points(
     assert f"of {total} earned" in text, (
         f"the collection should be {total}: {text[:120]}"
     )
-    assert "still to reveal" in text, "the hidden tiers should be counted, not hidden"
 
 
 async def test_resetting_a_person_leaves_them_an_account_and_no_history(

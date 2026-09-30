@@ -1352,6 +1352,17 @@ body {
  * `display: grid` — a grid on a <table> throws away the table box model
  * entirely, so the columns collapsed and the whole thing sat in the left third
  * of the page. Its own class, and a plain full-width table. */
+/*
+ * Above a phone width the actions column is sized and right-aligned. Below it
+ * the row becomes a card, one field per line, labelled from the `data-label`
+ * the template already carries.
+ *
+ * This was previously `table-layout: fixed` with a 22rem actions column at
+ * every width. On a 390px phone that column wanted most of the screen, so the
+ * User and Status columns were squeezed into the few pixels left and their
+ * contents overlapped on the left. It also pushed the action buttons — including
+ * Reset data — off the right edge, which is why that button looked missing.
+ */
 .admin-people {
   table-layout: fixed;
   width: 100%;
@@ -1360,7 +1371,50 @@ body {
 .admin-people th:last-child,
 .admin-people td:last-child {
   text-align: right;
-  width: 22rem;
+  width: 26rem;
+}
+
+.admin-people th:nth-child(2) {
+  width: 8rem;
+}
+
+@media (max-width: 767.98px) {
+  .admin-people,
+  .admin-people tbody,
+  .admin-people tr,
+  .admin-people td {
+    display: block;
+  }
+
+  .admin-people thead {
+    display: none;
+  }
+
+  .admin-people tr {
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 0.6rem 0;
+  }
+
+  .admin-people td {
+    border: 0;
+    padding: 0.35rem 0;
+    text-align: left;
+    width: auto;
+  }
+
+  .admin-people td::before {
+    color: var(--bs-secondary-color);
+    content: attr(data-label);
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.15rem;
+    text-transform: uppercase;
+  }
+
+  .admin-people td:last-child {
+    width: auto;
+  }
 }
 
 .board {
