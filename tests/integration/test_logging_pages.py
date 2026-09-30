@@ -1979,3 +1979,40 @@ async def test_every_admin_action_accepts_a_plain_form_post(
         assert response.status_code != 403, (
             f"{action} rejected a form post: {response.text[:120]}"
         )
+
+
+async def test_a_feed_card_names_the_achievement_it_announces(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A card says which achievement it is announcing.
+
+    It used to say only "unlocked an achievement" and leave the thirty-pixel
+    picture to identify it, which is the same problem the tooltip was meant to
+    solve: in a run of unlocks every card looks alike and the reader learns
+    nothing. The description can wait for a hover. The name cannot — it is the
+    event.
+    """
+    cal = await _user(session, "cal")
+    session.add(
+        AchievementUnlock(
+            user_id=cal.id,
+            achievement_key="first_blood",
+            year=now_in("UTC")[0].year,
+            points=10,
+        )
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get("/")
+    named = re.search(
+        r"unlocked an achievement: <strong[^>]*>(\w[^<]+)</strong>", page.text
+    )
+    assert named, (
+        "a card should read 'unlocked an achievement: <name>': "
+        f"{re.findall(r'feed__verb.>(.{0,80})', page.text)[:3]}"
+    )
+    # The tooltip keeps the explanation, so the description stays off the card.
+    assert "achievement-icon__tip" in page.text, (
+        "the description should still be in the popup"
+    )

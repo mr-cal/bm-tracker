@@ -548,6 +548,16 @@ body {
   margin: 0;
 }
 
+/* The verb is a small grey aside and the name is the point of the card, so the
+ * name is pulled back up to the body colour. Left in the verb's own colour and
+ * size it read as part of the aside, and a feed of unlocks all looked alike
+ * again — which is the thing the tooltip was supposed to stop. */
+.feed__award-name {
+  color: var(--bs-body-color);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 /* The badge and its explanation are the same component on the feed and on a
  * person's page, so they are the same component here. The feed grew its own
  * `badge-icon` classes instead, and nothing ever styled them: with no

@@ -69,19 +69,25 @@
       <p class="feed__quote">{{ item.text }}</p>
 
     {% elif item.kind == kinds.achievement %}
-      <p class="feed__verb">unlocked an achievement</p>
+      {#
+        The name is in the sentence, not only in the tooltip. A card that says
+        "unlocked an achievement" and leaves the picture to say which one was
+        useless on its own: the icons are thirty pixels, and a feed where every
+        unlock looks alike tells the reader nothing they came to read. The
+        description is the part that can wait for a hover; the name cannot.
+      #}
+      {% set award_name = item.achievement.name if item.achievement
+                          else item.achievement_key | replace('_', ' ') | title %}
+      <p class="feed__verb">
+        unlocked an achievement: <strong class="feed__award-name">{{ award_name }}</strong>
+      </p>
       <p class="feed__award">
         {% if item.achievement %}
         {#
-          The picture is the event; the description is the explanation, and it
-          is a tap or a hover away. It used to be laid out in full on every card,
-          which made a run of unlocks read as a wall of sentences.
-
-          These are the classes a person's page already uses for the same thing,
-          deliberately: the feed had its own `badge-icon` copy that nothing ever
-          styled, so the tooltip rendered permanently inline and, on focus,
-          straight over the picture. The name that used to sit beside the icon
-          was a second always-visible copy of the tooltip's own first line.
+          The picture and its explanation, kept as the one component a person's
+          page already uses. The feed had its own `badge-icon` copy that nothing
+          ever styled, so the tooltip rendered permanently inline and, on
+          focus, straight over the picture.
 
           Focusable rather than clickable-on purpose: the same affordance works
           for a mouse, a finger and a keyboard, and `badges.js` already
@@ -97,8 +103,6 @@
             <span>{{ item.achievement.description }}</span>
           </span>
         </span>
-        {% else %}
-        <span>{{ item.achievement_key | replace('_', ' ') | title }}</span>
         {% endif %}
         <span class="badge text-bg-warning">+{{ item.points }}</span>
       </p>
