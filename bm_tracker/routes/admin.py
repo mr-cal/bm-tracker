@@ -7,7 +7,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import delete, func, select
 
-from bm_tracker.dependencies import AdminUser, DbSession, csrf_token, verify_csrf
+from bm_tracker.dependencies import AdminUser, DbSession, csrf_token
+from bm_tracker.forms import guard_csrf
 from bm_tracker.models import (
     AchievementUnlock,
     BmEntry,
@@ -119,10 +120,7 @@ async def create_user(
 ) -> HTMLResponse:
     """Create an account and show its one-time setup link exactly once."""
     form = await request.form()
-    verify_csrf(
-        request,
-        request.headers.get("X-CSRF-Token") or str(form.get("csrf_token", "")),
-    )
+    guard_csrf(request, form)
 
     username = str(form.get("username", "")).strip().lower()
     display_name = str(form.get("display_name", "")).strip()
@@ -186,7 +184,8 @@ async def deactivate(
     An admin cannot suspend themselves: that is how a group accidentally locks
     everybody out of administration with nobody left to undo it.
     """
-    verify_csrf(request, request.headers.get("X-CSRF-Token"))
+    form = await request.form()
+    guard_csrf(request, form)
     user = await _find_user(session, username)
     if user is not None and user.id != admin.id:
         user.is_active = False
@@ -211,7 +210,8 @@ async def reactivate(
     admin: AdminUser,
 ) -> RedirectResponse:
     """Restore a suspended account."""
-    verify_csrf(request, request.headers.get("X-CSRF-Token"))
+    form = await request.form()
+    guard_csrf(request, form)
     user = await _find_user(session, username)
     if user is not None:
         user.is_active = True
@@ -235,7 +235,8 @@ async def reissue(
     admin: AdminUser,
 ) -> RedirectResponse:
     """Issue a fresh setup link for an account that has not redeemed one."""
-    verify_csrf(request, request.headers.get("X-CSRF-Token"))
+    form = await request.form()
+    guard_csrf(request, form)
     user = await _find_user(session, username)
     if user is not None:
         await invite_service.issue(session, user)
@@ -263,7 +264,8 @@ async def toggle_admin(
     Demotion bumps the session version too: an admin who loses the role must
     stop being one on their next request, not in thirty days.
     """
-    verify_csrf(request, request.headers.get("X-CSRF-Token"))
+    form = await request.form()
+    guard_csrf(request, form)
     user = await _find_user(session, username)
     if user is not None and user.id != admin.id:
         user.is_admin = not user.is_admin
@@ -295,7 +297,8 @@ async def delete_user(
     carries no foreign key, so the record that this happened survives the
     deletion.
     """
-    verify_csrf(request, request.headers.get("X-CSRF-Token"))
+    form = await request.form()
+    guard_csrf(request, form)
     user = await _find_user(session, username)
     if user is None or user.id == admin.id:
         return RedirectResponse("/admin", status_code=303)
@@ -352,7 +355,8 @@ async def reset_user(
     typed back, because this is the one button on the page that cannot be undone
     by clicking it again.
     """
-    verify_csrf(request, request.headers.get("X-CSRF-Token"))
+    form = await request.form()
+    guard_csrf(request, form)
     user = await _find_user(session, username)
     if user is None:
         return RedirectResponse("/admin", status_code=303)

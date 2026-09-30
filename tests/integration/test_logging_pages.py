@@ -1947,3 +1947,35 @@ async def test_a_person_cannot_reset_themselves_or_others(
 
     assert page.status_code in (403, 404), page.status_code
     assert "/reset" not in page.text
+
+
+async def test_every_admin_action_accepts_a_plain_form_post(
+    session: AsyncSession, client: AsyncClient
+) -> None:
+    """Each admin form posts its token as a hidden field.
+
+    Six of the seven admin routes read `X-CSRF-Token` and nothing else. Every
+    form on that page posts `csrf_token` in a hidden input and no script sets the
+    header, so all six answered 403 for every admin action — including Delete and
+    Reset data. Only "Add someone" worked, because it alone fell back to the
+    form field.
+
+    The test posts the way a browser does, with the token in the body and no
+    header, and asserts none of them answers 403.
+    """
+    await _user(session, "bee", admin=True)
+    await _user(session, "sam")
+    await _sign_in(client, "bee")
+
+    page = await client.get("/admin")
+    token = re.search(r'name="csrf_token" value="([^"]+)"', page.text).group(1)
+
+    for action in ("deactivate", "reissue", "admin", "reset", "delete"):
+        response = await client.post(
+            f"/admin/users/sam/{action}",
+            data={"csrf_token": token, "confirm": "sam"},
+            follow_redirects=False,
+        )
+        assert response.status_code != 403, (
+            f"{action} rejected a form post: {response.text[:120]}"
+        )
