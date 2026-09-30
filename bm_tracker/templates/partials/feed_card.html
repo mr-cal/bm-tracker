@@ -73,24 +73,26 @@
       <p class="feed__award">
         {% if item.achievement %}
         {#
-          One target for the picture and the name, with the description in the
-          tooltip they share. It used to be laid out in full on every card, which
-          made a run of unlocks read as a wall of sentences and buried the one
-          thing that mattered — that something was earned. The name and the
-          picture are the event; the description is the explanation, and it is a
-          tap or a hover away.
+          The picture is the event; the description is the explanation, and it
+          is a tap or a hover away. It used to be laid out in full on every card,
+          which made a run of unlocks read as a wall of sentences.
+
+          These are the classes a person's page already uses for the same thing,
+          deliberately: the feed had its own `badge-icon` copy that nothing ever
+          styled, so the tooltip rendered permanently inline and, on focus,
+          straight over the picture. The name that used to sit beside the icon
+          was a second always-visible copy of the tooltip's own first line.
 
           Focusable rather than clickable-on purpose: the same affordance works
           for a mouse, a finger and a keyboard, and `badges.js` already
           repositions the tooltip on focus so it cannot run off the edge.
         #}
-        <span class="feed__award-link badge-icon badge-icon--{{ item.achievement.tier }}"
+        <span class="achievement-icon achievement-icon--{{ item.achievement.tier }}"
               tabindex="0"
               aria-label="{{ item.achievement.name }}. {{ item.achievement.description }}">
           <img src="/static/img/badges/{{ item.achievement.icon }}.svg" alt=""
                width="30" height="30" loading="lazy" />
-          <span class="feed__award-name">{{ item.achievement.name }}</span>
-          <span class="badge-icon__tip" role="tooltip">
+          <span class="achievement-icon__tip" role="tooltip">
             <strong>{{ item.achievement.name }}</strong>
             <span>{{ item.achievement.description }}</span>
           </span>

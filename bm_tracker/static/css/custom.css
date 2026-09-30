@@ -548,37 +548,16 @@ body {
   margin: 0;
 }
 
-/*
- * Name above, description below, both in the flex row beside the icon and the
- * points. The column is what the request was for: the name and its explanation
- * read as one label on a badge rather than as two things that happen to be
- * near each other, and the description needs the full card width because it is
- * a sentence.
- */
-/* The picture and the name are one target now, not two things that happen to
- * be near each other. The tooltip hangs off the wrapper, so hovering either the
- * icon or the name opens it — which is what the description being a tap away
- * actually requires. */
-.feed__award-link {
-  align-items: center;
-  cursor: help;
-  display: inline-flex;
-  flex: 1 1 12rem;
-  gap: 0.45rem;
-  min-width: 0;
-  position: relative;
-}
-
-.feed__award-name {
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.feed__award-desc {
-  color: var(--bs-secondary-color);
-  font-size: 0.85rem;
-  line-height: 1.35;
-}
+/* The badge and its explanation are the same component on the feed and on a
+ * person's page, so they are the same component here. The feed grew its own
+ * `badge-icon` classes instead, and nothing ever styled them: with no
+ * `display: none` the tooltip was permanently inline, and with no positioning
+ * it had nowhere to go but on top of the picture. The name beside the icon was
+ * a second, always-visible copy of the tooltip's own first line.
+ *
+ * Reusing `achievement-icon` rather than styling `badge-icon` is the point:
+ * one rule, and `badges.js` already measures and pulls both tooltips back
+ * inside the window. */
 
 .person__tier {
   font-size: 0.8rem;

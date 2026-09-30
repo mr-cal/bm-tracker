@@ -9,12 +9,10 @@
  * Runs on hover and on focus, because a tooltip that only appears for a mouse
  * is not a tooltip, it is a decoration.
  *
- * There are two icon classes and they name their tooltips differently: the feed
- * uses `badge-icon`, the collection and people pages use `achievement-icon`.
- * This originally wired only the second and then looked for the first one's
- * tooltip inside it, so it found nothing and returned early. Every tooltip on
- * both pages kept its centred position and overflowed off the right-hand side.
- * Both are wired, and the tip is found by either name.
+ * The feed used to carry its own `badge-icon` copy of this component, wired
+ * alongside the one below so both would be measured. It had no stylesheet, so
+ * the second class was a second thing to keep in step for nothing; both the
+ * markup and the extra selector are gone.
  */
 (function () {
   "use strict";
@@ -22,7 +20,7 @@
   var MARGIN = 8;
 
   function place(icon) {
-    var tip = icon.querySelector(".badge-icon__tip, .achievement-icon__tip");
+    var tip = icon.querySelector(".achievement-icon__tip");
     if (!tip) return;
 
     // Measure at the natural centred position first, then correct.
@@ -64,9 +62,7 @@
   }
 
   function init() {
-    var icons = document.querySelectorAll(
-      ".achievement-icon, .badge-icon"
-    );
+    var icons = document.querySelectorAll(".achievement-icon");
     for (var i = 0; i < icons.length; i++) {
       wire(icons[i]);
     }
