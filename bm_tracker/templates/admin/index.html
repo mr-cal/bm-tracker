@@ -75,49 +75,48 @@
           {% endif %}
         </td>
         <td data-label="Actions">
-          {% if user.id != admin.id %}
-          <form method="post" action="/admin/users/{{ user.username }}/deactivate"
-                class="d-flex flex-wrap align-items-end gap-2 mb-3">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-            <button type="submit" class="btn btn-outline-secondary btn-sm">Suspend</button>
-          </form>
-          <form method="post" action="/admin/users/{{ user.username }}/reissue"
-                class="d-flex flex-wrap align-items-end gap-2 mb-3">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-            <button type="submit" class="btn btn-outline-secondary btn-sm">New link</button>
-          </form>
-          <form method="post" action="/admin/users/{{ user.username }}/admin"
-                class="d-flex flex-wrap align-items-end gap-2 mb-3">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-            <button type="submit" class="btn btn-outline-secondary btn-sm">
-              {% if user.is_admin %}Revoke admin{% else %}Make admin{% endif %}
-            </button>
-          </form>
-          <form method="post" action="/admin/users/{{ user.username }}/delete"
-                class="d-flex flex-wrap align-items-end gap-2 mb-3"
-                onsubmit="return confirm('Delete {{ user.username }} and everything they logged? This cannot be undone.')">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-          </form>
           {#
-            Wipes the logging and keeps the account, so the person can sign in
-            again and start from nothing. Deliberately harder to hit than the
-            buttons around it: the username has to be typed back, and it only
-            ever clears that person's own history — never the account itself,
-            and never the audit log.
+            The four account actions on one line. They were four stacked
+            forms, each a block of its own, which made the row four times
+            taller than the person in it needed to be.
+
+            Reset data is below them and separate, because it needs a typed
+            confirmation and a text box does not belong in a row of buttons —
+            and because it is the one here that cannot be undone by clicking it
+            again.
           #}
-          <form method="post" action="/admin/users/{{ user.username }}/reset"
-                class="d-flex flex-wrap align-items-end gap-2 mt-2">
+          <div class="admin-actions">
+            {% if user.id != admin.id %}
+            <form method="post" action="/admin/users/{{ user.username }}/deactivate">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+              <button type="submit" class="btn btn-outline-secondary btn-sm">Suspend</button>
+            </form>
+            <form method="post" action="/admin/users/{{ user.username }}/reissue">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+              <button type="submit" class="btn btn-outline-secondary btn-sm">New link</button>
+            </form>
+            <form method="post" action="/admin/users/{{ user.username }}/admin">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+              <button type="submit" class="btn btn-outline-secondary btn-sm">
+                {% if user.is_admin %}Revoke admin{% else %}Make admin{% endif %}
+              </button>
+            </form>
+            <form method="post" action="/admin/users/{{ user.username }}/delete"
+                  onsubmit="return confirm('Delete {{ user.username }} and everything they logged? This cannot be undone.')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+            {% else %}
+            <span class="text-body-secondary me-2">that is you</span>
+            {% endif %}
+          </div>
+          <form method="post" action="/admin/users/{{ user.username }}/reset" class="admin-reset">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
             <input class="form-control form-control-sm" type="text" name="confirm"
-                   style="max-width: 11rem"
                    placeholder="type {{ user.username }}"
                    aria-label="Type {{ user.username }} to confirm the reset" />
             <button type="submit" class="btn btn-warning btn-sm">Reset data</button>
           </form>
-          {% else %}
-          <span class="text-body-secondary">that is you</span>
-          {% endif %}
         </td>
       </tr>
       {% endfor %}

@@ -1363,6 +1363,33 @@ body {
  * contents overlapped on the left. It also pushed the action buttons — including
  * Reset data — off the right edge, which is why that button looked missing.
  */
+/* The four account actions, on one line, so a row is not four times taller
+ * than the person in it. Reset data stays below: it needs a typed confirmation,
+ * and a text box does not belong in a row of buttons. */
+.admin-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-actions form {
+  margin: 0;
+}
+
+.admin-reset {
+  align-items: center;
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  max-width: 22rem;
+}
+
+.admin-reset .form-control {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .admin-people {
   table-layout: fixed;
   width: 100%;
