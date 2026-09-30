@@ -42,7 +42,6 @@ description = "Your first entry, ever."
 tier = "common"
 icon = "first_blood"
 rule.all = [{ bm_count_total = { gte = 1 } }]
-
 [[achievement]]
 key = "night_owl"
 name = "Late Night Larry"
@@ -50,7 +49,6 @@ description = "Logged one between 11pm and 5am."
 tier = "common"
 icon = "night_owl"
 rule.any = [{ time_of_day = { between = ["23:00", "05:00"] } }]
-
 [[achievement]]
 key = "early_bird"
 name = "The Early Bird"
@@ -58,7 +56,6 @@ description = "Logged one before 6am."
 tier = "common"
 icon = "early_bird"
 rule.any = [{ time_of_day = { between = ["04:00", "06:00"] } }]
-
 [[achievement]]
 key = "type_7"
 name = "Ring the Bell"
@@ -66,7 +63,6 @@ description = "A Bristol type 7. Entirely liquid."
 tier = "common"
 icon = "type_7"
 rule.any = [{ bristol_type = 7 }]
-
 [[achievement]]
 key = "type_1"
 name = "Hard as Nails"
@@ -74,7 +70,6 @@ description = "A Bristol type 1. Difficult to pass."
 tier = "common"
 icon = "type_1"
 rule.any = [{ bristol_type = 1 }]
-
 [[achievement]]
 key = "gold_star"
 name = "Gold Star"
@@ -82,7 +77,13 @@ description = "A Bristol type 4. The classic."
 tier = "common"
 icon = "gold_star"
 rule.any = [{ bristol_type = 4 }]
-
+[[achievement]]
+key = "type_2"
+name = "Soft Serve"
+description = "A Bristol type 2. A little loose, entirely manageable."
+tier = "common"
+icon = "type_2"
+rule.any = [{ bristol_type = 2 }]
 [[achievement]]
 key = "connoisseur"
 name = "Bristol Connoisseur"
@@ -90,7 +91,6 @@ description = "All seven types, at least once each."
 tier = "rare"
 icon = "connoisseur"
 rule.all = [{ bristol_types_seen = { gte = 7 } }]
-
 [[achievement]]
 key = "the_double"
 name = "The Double"
@@ -98,7 +98,6 @@ description = "Two in a single day."
 tier = "common"
 icon = "the_double"
 rule.all = [{ bm_count_day = { gte = 2 } }]
-
 [[achievement]]
 key = "triple_threat"
 name = "Triple Threat"
@@ -106,7 +105,6 @@ description = "Three in a single day."
 tier = "uncommon"
 icon = "triple_threat"
 rule.all = [{ bm_count_day = { gte = 3 } }]
-
 [[achievement]]
 key = "marathon"
 name = "The Marathon"
@@ -114,7 +112,6 @@ description = "Five in a single day."
 tier = "rare"
 icon = "marathon"
 rule.all = [{ bm_count_day = { gte = 5 } }]
-
 [[achievement]]
 key = "blatherer"
 name = "Blatherer"
@@ -123,7 +120,13 @@ tier = "rare"
 icon = "blatherer"
 rule.all = [{ bm_count_day = { gte = 10 } }]
 
-
+[[achievement]]
+key = "type_3"
+name = "The Smooth One"
+description = "A Bristol type 3. The sort you do not dwell on."
+tier = "common"
+icon = "type_3"
+rule.any = [{ bristol_type = 3 }]
 [[achievement]]
 key = "note_to_self"
 name = "Note to Self"
@@ -131,7 +134,6 @@ description = "Added a note to anything."
 tier = "common"
 icon = "note_to_self"
 rule.all = [{ note_count = { gte = 1 } }]
-
 [[achievement]]
 key = "lore_master"
 name = "Lore Master"
@@ -139,7 +141,6 @@ description = "Fifty notes written."
 tier = "rare"
 icon = "lore_master"
 rule.all = [{ note_count = { gte = 50 } }]
-
 [[achievement]]
 key = "ghost_writer"
 name = "Ghost Writer"
@@ -147,7 +148,6 @@ description = "Twenty entries, every single one with a note."
 tier = "legendary"
 icon = "ghost_writer"
 rule = { custom = "every_entry_noted" }
-
 [[achievement]]
 key = "speed_run"
 name = "Speedrun"
@@ -155,7 +155,6 @@ description = "Logged within a minute of it happening."
 tier = "rare"
 icon = "speed_run"
 rule.any = [{ fastest_entry_delay = { lte = 1 } }]
-
 [[achievement]]
 key = "perfect_week"
 name = "Perfect Week"
@@ -163,7 +162,13 @@ description = "A seven-day streak."
 tier = "uncommon"
 icon = "perfect_week"
 rule.all = [{ streak_longest = { gte = 7 } }]
-
+[[achievement]]
+key = "type_5"
+name = "Soft Edges"
+description = "A Bristol type 5. Floats like a small boat."
+tier = "common"
+icon = "type_5"
+rule.any = [{ bristol_type = 5 }]
 [[achievement]]
 key = "fortnight"
 name = "Fortnight"
@@ -171,7 +176,6 @@ description = "A fourteen-day streak."
 tier = "rare"
 icon = "fortnight"
 rule.all = [{ streak_longest = { gte = 14 } }]
-
 [[achievement]]
 key = "unbroken"
 name = "Unbroken"
@@ -179,7 +183,6 @@ description = "A thirty-day streak."
 tier = "legendary"
 icon = "unbroken"
 rule.all = [{ streak_longest = { gte = 30 } }]
-
 [[achievement]]
 key = "comeback_kid"
 name = "Comeback Kid"
@@ -187,7 +190,6 @@ description = "Returned after a week away and logged the same day."
 tier = "rare"
 icon = "comeback_kid"
 rule.all = [{ gap_since_previous_days = { gte = 7 } }, { logged_same_day = true }]
-
 [[achievement]]
 key = "spicy_baby"
 name = "Spicy Baby"
@@ -195,7 +197,6 @@ description = "Your first spicy entry."
 tier = "common"
 icon = "spicy_baby"
 rule.all = [{ spicy_count = { gte = 1 } }]
-
 [[achievement]]
 key = "fiery_streak"
 name = "The Inferno"
@@ -203,7 +204,13 @@ description = "Five spicy entries in five consecutive logged days."
 tier = "rare"
 icon = "fiery_streak"
 rule = { custom = "fiery_streak" }
-
+[[achievement]]
+key = "type_6"
+name = "Fluffy"
+description = "A Bristol type 6. Soft, and barely there."
+tier = "common"
+icon = "type_6"
+rule.any = [{ bristol_type = 6 }]
 [[achievement]]
 key = "new_years_day"
 name = "New Year's Day"
@@ -211,7 +218,6 @@ description = "Logged on the first of January. Whatever you were doing, you did 
 tier = "common"
 icon = "new_years_day"
 rule = { all = [{ logged_jan_1 = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "groundhog_day"
@@ -221,7 +227,6 @@ tier = "common"
 icon = "groundhog_day"
 rule = { all = [{ logged_feb_2 = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "valentines_day"
 name = "Unconditional"
@@ -229,7 +234,6 @@ description = "Logged on the fourteenth of February. No notes on the day; the en
 tier = "common"
 icon = "valentines_day"
 rule = { all = [{ logged_feb_14 = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "leap_day"
@@ -239,7 +243,6 @@ tier = "uncommon"
 icon = "leap_day"
 rule = { all = [{ logged_feb_29 = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "ides_of_march"
 name = "The Ides of March Poo"
@@ -248,7 +251,13 @@ tier = "uncommon"
 icon = "ides_of_march"
 rule = { all = [{ logged_mar_15 = { gte = 1 } }] }
 
-
+[[achievement]]
+key = "curry_regret"
+name = "Curry Regret"
+description = "A spicy entry with a note that blames the food."
+tier = "common"
+icon = "curry_regret"
+rule = { all = [{ spicy_count = { gte = 1 } }, { note_theme_anger = { gte = 1 } }] }
 [[achievement]]
 key = "april_fools"
 name = "April Fool's"
@@ -256,7 +265,6 @@ description = "Logged on the first of April. It really was that."
 tier = "common"
 icon = "april_fools"
 rule = { all = [{ logged_apr_1 = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "may_day"
@@ -266,7 +274,6 @@ tier = "common"
 icon = "may_day"
 rule = { all = [{ logged_may_1 = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "midsummer"
 name = "Midsummer"
@@ -274,7 +281,6 @@ description = "Logged on the twenty-first of June, the longest day. Logged it, a
 tier = "uncommon"
 icon = "midsummer"
 rule = { all = [{ logged_jun_21 = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "halloween"
@@ -284,7 +290,6 @@ tier = "uncommon"
 icon = "halloween"
 rule = { all = [{ logged_oct_31 = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "bonfire_night"
 name = "Bonfire Night"
@@ -293,7 +298,13 @@ tier = "uncommon"
 icon = "bonfire_night"
 rule = { all = [{ logged_nov_5 = { gte = 1 } }] }
 
-
+[[achievement]]
+key = "two_am_rant"
+name = "Two in the Morning"
+description = "An entry logged after eleven at night, with a note about work."
+tier = "common"
+icon = "two_am_rant"
+rule = { all = [{ time_of_day = { gte = 23 } }, { note_theme_work_rant = { gte = 1 } }] }
 [[achievement]]
 key = "winter_solstice"
 name = "The Longest Night"
@@ -301,7 +312,6 @@ description = "Logged on the twenty-first of December. The shortest day, and you
 tier = "uncommon"
 icon = "winter_solstice"
 rule = { all = [{ logged_dec_21 = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "christmas_eve"
@@ -311,7 +321,6 @@ tier = "common"
 icon = "christmas_eve"
 rule = { all = [{ logged_dec_24 = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "christmas_day"
 name = "Christmas Day"
@@ -319,7 +328,6 @@ description = "Logged on the twenty-fifth of December. Third entry of the holida
 tier = "common"
 icon = "christmas_day"
 rule = { all = [{ logged_dec_25 = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "boxing_day"
@@ -329,7 +337,6 @@ tier = "common"
 icon = "boxing_day"
 rule = { all = [{ logged_dec_26 = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "friday_the_thirteenth"
 name = "Friday the Thirteenth"
@@ -338,7 +345,13 @@ tier = "uncommon"
 icon = "friday_the_thirteenth"
 rule = { all = [{ logged_friday_13 = { gte = 1 } }] }
 
-
+[[achievement]]
+key = "nightmare_shift"
+name = "Night Shift"
+description = "An entry logged after eleven at night, and the note is about dreaming badly."
+tier = "uncommon"
+icon = "nightmare_shift"
+rule = { all = [{ time_of_day = { gte = 23 } }, { note_theme_nightmare = { gte = 1 } }] }
 [[achievement]]
 key = "new_years_eve"
 name = "New Year's Eve"
@@ -346,7 +359,6 @@ description = "Logged on the thirty-first of December. The year's last entry, in
 tier = "uncommon"
 icon = "new_years_eve"
 rule = { all = [{ logged_dec_31 = { gte = 1 } }] }
-
 [[achievement]]
 key = "silent_streak"
 name = "The Unread Day"
@@ -354,7 +366,6 @@ description = "Seven days logged, not one note. The streak is immaculate and com
 tier = "uncommon"
 icon = "silent_streak"
 rule = { all = [{ streak_longest = { gte = 7 } }, { longest_run_without_note = { gte = 7 } }] }
-
 
 [[achievement]]
 key = "silent_month"
@@ -364,7 +375,6 @@ tier = "rare"
 icon = "silent_month"
 rule = { all = [{ longest_run_without_note = { gte = 30 } }] }
 
-
 [[achievement]]
 key = "wordless_year"
 name = "Silent Running"
@@ -372,7 +382,6 @@ description = "Fifty days in a row with no note. Achieved while not noticing."
 tier = "legendary"
 icon = "wordless_year"
 rule = { all = [{ longest_run_without_note = { gte = 50 } }] }
-
 
 [[achievement]]
 key = "confession"
@@ -382,7 +391,13 @@ tier = "rare"
 icon = "confession"
 rule = { all = [{ backfilled_days = { gte = 30 } }] }
 
-
+[[achievement]]
+key = "exam_nerves"
+name = "Exam Nerves"
+description = "A note about exams, on an entry that took real effort."
+tier = "uncommon"
+icon = "exam_nerves"
+rule = { all = [{ note_theme_exams = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
 [[achievement]]
 key = "time_traveller"
 name = "Chronological Rearrangement"
@@ -390,7 +405,6 @@ description = "Fifty days entered after they had already happened. The streak is
 tier = "legendary"
 icon = "time_traveller"
 rule = { all = [{ backfilled_days = { gte = 50 } }] }
-
 
 
 [[achievement]]
@@ -401,7 +415,6 @@ tier = "common"
 icon = "undo"
 rule = { all = [{ deleted_entries = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "regrets"
 name = "The Full Set"
@@ -409,7 +422,6 @@ description = "Deleted twenty entries. Twenty versions of the truth, one of whic
 tier = "legendary"
 icon = "regrets"
 rule = { all = [{ deleted_entries = { gte = 20 } }] }
-
 
 
 [[achievement]]
@@ -420,7 +432,6 @@ tier = "rare"
 icon = "weekend_warrior"
 rule = { all = [{ weekend_entry_count = { gte = 100 } }] }
 
-
 [[achievement]]
 key = "weekday_only"
 name = "Nine to Five"
@@ -429,7 +440,13 @@ tier = "uncommon"
 icon = "weekday_only"
 rule = { all = [{ bm_count_total = { gte = 60 } }, { weekend_entry_count = { lte = 0 } }] }
 
-
+[[achievement]]
+key = "manager_provoked"
+name = "Manager Provoked"
+description = "An angry note on an entry that took real effort."
+tier = "uncommon"
+icon = "manager_provoked"
+rule = { all = [{ note_theme_anger = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
 [[achievement]]
 key = "weekday_sweep"
 name = "Seven Day Sweep"
@@ -437,7 +454,6 @@ description = "Logged something on every day of the week, in the same week."
 tier = "rare"
 icon = "weekday_sweep"
 rule = { all = [{ distinct_weekdays_logged = { gte = 7 } }] }
-
 
 [[achievement]]
 key = "working_week"
@@ -447,7 +463,6 @@ tier = "uncommon"
 icon = "working_week"
 rule = { all = [{ days_logged_total = { gte = 20 } }, { weekend_entry_count = { lte = 1 } }] }
 
-
 [[achievement]]
 key = "annual_review"
 name = "A Year in Review"
@@ -455,7 +470,6 @@ description = "Logged in all twelve months. Nobody does this by accident."
 tier = "legendary"
 icon = "annual_review"
 rule = { all = [{ distinct_months_logged = { gte = 12 } }] }
-
 
 [[achievement]]
 key = "not_a_streak"
@@ -465,7 +479,6 @@ tier = "common"
 icon = "not_a_streak"
 rule = { all = [{ distinct_months_logged = { gte = 2 } }, { distinct_months_logged = { lte = 2 } }] }
 
-
 [[achievement]]
 key = "monotony"
 name = "Same Again"
@@ -474,7 +487,13 @@ tier = "rare"
 icon = "monotony"
 rule = { all = [{ bm_count_total = { gte = 50 } }, { bristol_types_seen = { lte = 1 } }] }
 
-
+[[achievement]]
+key = "commute_grumble"
+name = "Commute"
+description = "A note about the journey, logged on a weekday."
+tier = "common"
+icon = "commute_grumble"
+rule = { all = [{ note_theme_commute = { gte = 1 } }, { time_of_day = { between = ["06:00", "10:00"] } }] }
 [[achievement]]
 key = "one_of_everything"
 name = "The Full Set of Everything"
@@ -482,7 +501,6 @@ description = "Logged at least once in all seven types and wrote something about
 tier = "legendary"
 icon = "one_of_everything"
 rule = { all = [{ bristol_types_seen = { gte = 7 } }, { note_count = { gte = 7 } }] }
-
 
 [[achievement]]
 key = "undocumented"
@@ -492,7 +510,6 @@ tier = "legendary"
 icon = "undocumented"
 rule = { all = [{ all_entries_noted = { gte = 1 } }, { bm_count_total = { gte = 50 } }] }
 
-
 [[achievement]]
 key = "weekend_none"
 name = "Never a Weekend"
@@ -500,7 +517,6 @@ description = "Fifty entries, every one on a weekday. Statistically improbable, 
 tier = "rare"
 icon = "weekend_none"
 rule = { all = [{ bm_count_total = { gte = 50 } }, { weekend_entry_count = { lte = 0 } }] }
-
 
 [[achievement]]
 key = "after_hours"
@@ -510,7 +526,6 @@ tier = "uncommon"
 icon = "after_hours"
 rule = { all = [{ bm_count_total = { gte = 20 } }, { time_of_day = { gte = 22 } }] }
 
-
 [[achievement]]
 key = "early_bird_tier"
 name = "Commuter"
@@ -518,7 +533,13 @@ description = "An entry before six in the morning, on twenty days. Alarms, and d
 tier = "rare"
 icon = "early_bird_tier"
 rule = { all = [{ bm_count_total = { gte = 20 } }, { time_of_day = { lte = 6 } }] }
-
+[[achievement]]
+key = "comfort_food"
+name = "Comfort Food"
+description = "A note about eating, on a spicy entry."
+tier = "common"
+icon = "comfort_food"
+rule = { all = [{ note_theme_food_review = { gte = 1 } }, { spicy_count = { gte = 1 } }] }
 [[achievement]]
 key = "noted_run"
 name = "Annotated Marathon"
@@ -526,7 +547,6 @@ description = "A seven-day streak with a note on every single day of it."
 tier = "rare"
 icon = "noted_run"
 rule = { all = [{ streak_longest = { gte = 7 } }, { noted_entry_count = { gte = 7 } }] }
-
 
 [[achievement]]
 key = "quick_and_long"
@@ -536,7 +556,6 @@ tier = "legendary"
 icon = "quick_and_long"
 rule = { all = [{ bm_count_total = { gte = 10 } }, { streak_longest = { gte = 10 } }] }
 
-
 [[achievement]]
 key = "spicy_comeback"
 name = "Seasoned Return"
@@ -544,7 +563,6 @@ description = "Came back after a week away, and the comeback was spicy."
 tier = "rare"
 icon = "spicy_comeback"
 rule = { all = [{ gap_since_previous_days = { gte = 7 } }, { spicy_count = { gte = 5 } }] }
-
 
 [[achievement]]
 key = "type_seven_streak"
@@ -554,7 +572,6 @@ tier = "rare"
 icon = "type_seven_streak"
 rule = { all = [{ streak_longest = { gte = 10 } }, { bristol_type = { gte = 7 } }] }
 
-
 [[achievement]]
 key = "night_streak"
 name = "Insomniac"
@@ -563,7 +580,13 @@ tier = "rare"
 icon = "night_streak"
 rule = { all = [{ streak_longest = { gte = 14 } }, { time_of_day = { gte = 23 } }] }
 
-
+[[achievement]]
+key = "drink_and_regret"
+name = "One Too Many"
+description = "A note about drinking, logged on the day it happened."
+tier = "uncommon"
+icon = "drink_and_regret"
+rule = { all = [{ note_theme_drink = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
 [[achievement]]
 key = "dawn_patrol"
 name = "Dawn Watch"
@@ -571,7 +594,6 @@ description = "A fourteen-day streak with an entry logged before five in the mor
 tier = "legendary"
 icon = "dawn_patrol"
 rule = { all = [{ streak_longest = { gte = 14 } }, { time_of_day = { lte = 5 } }] }
-
 
 [[achievement]]
 key = "spicy_streak"
@@ -581,7 +603,6 @@ tier = "rare"
 icon = "spicy_streak"
 rule = { all = [{ streak_longest = { gte = 5 } }, { max_spicy_consecutive_days = { gte = 5 } }] }
 
-
 [[achievement]]
 key = "documented_return"
 name = "Annotated Comeback"
@@ -589,7 +610,6 @@ description = "A gap of a week, and a note on the day you came back."
 tier = "common"
 icon = "documented_return"
 rule = { all = [{ gap_since_previous_days = { gte = 7 } }, { note_count = { gte = 10 } }] }
-
 
 [[achievement]]
 key = "weekend_streak"
@@ -599,7 +619,6 @@ tier = "rare"
 icon = "weekend_streak"
 rule = { all = [{ streak_longest = { gte = 14 } }, { weekend_entry_count = { gte = 4 } }] }
 
-
 [[achievement]]
 key = "quick_variety"
 name = "Speed Dial"
@@ -608,7 +627,13 @@ tier = "legendary"
 icon = "quick_variety"
 rule = { all = [{ bm_count_total = { gte = 20 } }, { bristol_types_seen = { gte = 7 } }] }
 
-
+[[achievement]]
+key = "fever_dreams"
+name = "Fever Dreams"
+description = "A note about being ill, and another about dreaming."
+tier = "uncommon"
+icon = "fever_dreams"
+rule = { all = [{ note_theme_illness = { gte = 1 } }, { note_theme_dream = { gte = 1 } }] }
 [[achievement]]
 key = "crowded"
 name = "Five in the Morning"
@@ -616,7 +641,6 @@ description = "Ten entries in a single day, on a day that began before six."
 tier = "legendary"
 icon = "crowded"
 rule = { all = [{ bm_count_day = { gte = 10 } }, { time_of_day = { lte = 6 } }] }
-
 
 [[achievement]]
 key = "note_streak"
@@ -626,7 +650,6 @@ tier = "rare"
 icon = "note_streak"
 rule = { all = [{ streak_longest = { gte = 20 } }, { note_count = { gte = 20 } }] }
 
-
 [[achievement]]
 key = "spicy_quick"
 name = "Hot and Fresh"
@@ -634,7 +657,6 @@ description = "A spicy entry, logged within a minute of it happening."
 tier = "common"
 icon = "spicy_quick"
 rule = { all = [{ spicy_count = { gte = 20 } }, { bm_count_total = { gte = 20 } }] }
-
 
 [[achievement]]
 key = "all_seven_streak"
@@ -644,7 +666,6 @@ tier = "legendary"
 icon = "all_seven_streak"
 rule = { all = [{ streak_longest = { gte = 7 } }, { bristol_types_seen = { gte = 7 } }] }
 
-
 [[achievement]]
 key = "empty_and_full"
 name = "Contrast"
@@ -653,7 +674,13 @@ tier = "uncommon"
 icon = "empty_and_full"
 rule = { all = [{ days_logged_total = { gte = 30 } }, { max_bms_in_day = { gte = 5 } }] }
 
-
+[[achievement]]
+key = "homesick"
+name = "Homesick"
+description = "A note about missing something, logged in the small hours."
+tier = "uncommon"
+icon = "homesick"
+rule = { all = [{ note_theme_family = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
 [[achievement]]
 key = "long_and_annotated"
 name = "The Annotated Century"
@@ -661,7 +688,6 @@ description = "A hundred entries, and notes on at least fifty of them."
 tier = "legendary"
 icon = "long_and_annotated"
 rule = { all = [{ bm_count_total = { gte = 100 } }, { note_count = { gte = 50 } }] }
-
 
 [[achievement]]
 key = "spicy_type_seven"
@@ -671,7 +697,6 @@ tier = "uncommon"
 icon = "spicy_type_seven"
 rule = { all = [{ spicy_count = { gte = 5 } }, { bristol_type = { gte = 7 } }] }
 
-
 [[achievement]]
 key = "dawn_spicy"
 name = "Early and Spicy"
@@ -679,7 +704,6 @@ description = "An entry before six in the morning that followed something spicy.
 tier = "rare"
 icon = "dawn_spicy"
 rule = { all = [{ time_of_day = { lte = 6 } }, { spicy_count = { gte = 20 } }] }
-
 
 [[achievement]]
 key = "noted_comeback_streak"
@@ -689,7 +713,6 @@ tier = "rare"
 icon = "noted_comeback_streak"
 rule = { all = [{ streak_longest = { gte = 10 } }, { gap_since_previous_days = { gte = 7 } }, { note_count = { gte = 10 } }] }
 
-
 [[achievement]]
 key = "triple_types"
 name = "Three Ways"
@@ -698,7 +721,13 @@ tier = "common"
 icon = "triple_types"
 rule = { all = [{ bm_count_day = { gte = 3 } }, { bristol_types_seen = { gte = 3 } }] }
 
-
+[[achievement]]
+key = "the_breakup_entry"
+name = "After"
+description = "A note about a breakup, and an entry that took real effort."
+tier = "rare"
+icon = "the_breakup_entry"
+rule = { all = [{ note_theme_breakup = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
 [[achievement]]
 key = "weekend_variety"
 name = "Weekend Sampler"
@@ -706,7 +735,6 @@ description = "A weekend on which every Bristol type made an appearance."
 tier = "rare"
 icon = "weekend_variety"
 rule = { all = [{ weekend_entry_count = { gte = 4 } }, { bristol_types_seen = { gte = 7 } }] }
-
 
 [[achievement]]
 key = "documented_streak"
@@ -716,7 +744,6 @@ tier = "legendary"
 icon = "documented_streak"
 rule = { all = [{ streak_longest = { gte = 40 } }, { note_count = { gte = 40 } }] }
 
-
 [[achievement]]
 key = "quick_streak"
 name = "Quick Streak"
@@ -725,7 +752,6 @@ tier = "legendary"
 icon = "quick_streak"
 rule = { all = [{ streak_longest = { gte = 20 } }, { bm_count_total = { gte = 20 } }] }
 
-
 [[achievement]]
 key = "backfilled_streak"
 name = "Borrowed Time"
@@ -733,7 +759,6 @@ description = "A streak of ten days where some of them were filled in afterwards
 tier = "uncommon"
 icon = "backfilled_streak"
 rule = { all = [{ streak_longest = { gte = 10 } }, { backfilled_days = { gte = 10 } }] }
-
 [[achievement]]
 key = "century"
 name = "The Century"
@@ -742,7 +767,13 @@ tier = "common"
 icon = "century"
 rule = { all = [{ bm_count_total = { gte = 100 } }] }
 
-
+[[achievement]]
+key = "thank_you_rain"
+name = "Thank You, Rain"
+description = "A grateful note, and an entry logged before six in the morning."
+tier = "uncommon"
+icon = "thank_you_rain"
+rule = { all = [{ note_theme_gratitude = { gte = 1 } }, { time_of_day = { lte = 6 } }] }
 [[achievement]]
 key = "two_hundred"
 name = "Double Century"
@@ -751,7 +782,6 @@ tier = "uncommon"
 icon = "two_hundred"
 rule = { all = [{ bm_count_total = { gte = 200 } }] }
 
-
 [[achievement]]
 key = "five_hundred"
 name = "Quincentenary"
@@ -759,7 +789,6 @@ description = "Five hundred entries. Two a day, every day, for a year."
 tier = "rare"
 icon = "five_hundred"
 rule = { all = [{ bm_count_total = { gte = 500 } }] }
-
 
 [[achievement]]
 key = "thousand"
@@ -770,7 +799,6 @@ icon = "thousand"
 rule = { all = [{ bm_count_total = { gte = 1000 } }] }
 
 
-
 [[achievement]]
 key = "fifty_days"
 name = "Fifty Straight"
@@ -778,7 +806,6 @@ description = "Fifty days in a row."
 tier = "rare"
 icon = "fifty_days"
 rule = { all = [{ streak_longest = { gte = 50 } }] }
-
 
 [[achievement]]
 key = "hundred_days"
@@ -788,7 +815,13 @@ tier = "legendary"
 icon = "hundred_days"
 rule = { all = [{ streak_longest = { gte = 100 } }] }
 
-
+[[achievement]]
+key = "three_am_garden"
+name = "Three in the Morning"
+description = "A note about a garden, logged after eleven at night."
+tier = "rare"
+icon = "three_am_garden"
+rule = { all = [{ note_theme_garden = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
 [[achievement]]
 key = "ten_notes"
 name = "Tenth Note"
@@ -796,7 +829,6 @@ description = "Ten notes written."
 tier = "common"
 icon = "ten_notes"
 rule = { all = [{ note_count = { gte = 10 } }] }
-
 
 [[achievement]]
 key = "twenty_five_notes"
@@ -807,7 +839,6 @@ icon = "twenty_five_notes"
 rule = { all = [{ note_count = { gte = 25 } }] }
 
 
-
 [[achievement]]
 key = "hundred_notes"
 name = "A Hundred Notes"
@@ -815,7 +846,6 @@ description = "A hundred notes. This is now a book, badly ordered."
 tier = "legendary"
 icon = "hundred_notes"
 rule = { all = [{ note_count = { gte = 100 } }] }
-
 
 [[achievement]]
 key = "spicy_ten"
@@ -825,7 +855,6 @@ tier = "common"
 icon = "spicy_ten"
 rule = { all = [{ spicy_count = { gte = 10 } }] }
 
-
 [[achievement]]
 key = "spicy_fifty"
 name = "The Spice Rack"
@@ -834,7 +863,13 @@ tier = "rare"
 icon = "spicy_fifty"
 rule = { all = [{ spicy_count = { gte = 50 } }] }
 
-
+[[achievement]]
+key = "dog_after_walk"
+name = "The Dog Is Fine"
+description = "A note about a pet, on an entry that took real effort."
+tier = "common"
+icon = "dog_after_walk"
+rule = { all = [{ note_theme_pet = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
 [[achievement]]
 key = "spicy_hundred"
 name = "Chef's Degree"
@@ -842,7 +877,6 @@ description = "A hundred spicy entries."
 tier = "legendary"
 icon = "spicy_hundred"
 rule = { all = [{ spicy_count = { gte = 100 } }] }
-
 
 [[achievement]]
 key = "strain_hard"
@@ -853,7 +887,6 @@ icon = "strain_hard"
 # Counted notes, not effort. "Real effort" is strain 2 or 3, which is what
 # this now means.
 rule = { all = [{ hard_strain_count = { gte = 20 } }] }
-
 
 [[achievement]]
 key = "type_one"
@@ -866,7 +899,6 @@ icon = "type_one"
 # always said type 1 and effort; the rule checked neither.
 rule.all = [{ bristol_type = 1 }, { hard_strain_count = { gte = 1 } }]
 
-
 [[achievement]]
 key = "night_ten"
 name = "Ten Nights"
@@ -874,7 +906,6 @@ description = "Ten entries between eleven at night and five in the morning."
 tier = "uncommon"
 icon = "night_ten"
 rule = { all = [{ time_of_day = { gte = 23 } }] }
-
 
 [[achievement]]
 key = "dawn_ten"
@@ -884,7 +915,13 @@ tier = "uncommon"
 icon = "dawn_ten"
 rule = { all = [{ time_of_day = { lte = 6 } }] }
 
-
+[[achievement]]
+key = "songs_at_2am"
+name = "Songs at Two"
+description = "A note about music, and an entry logged after eleven at night."
+tier = "common"
+icon = "songs_at_2am"
+rule = { all = [{ note_theme_music = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
 [[achievement]]
 key = "quick_fifty"
 name = "Fifty on the Spot"
@@ -892,7 +929,6 @@ description = "Fifty entries logged inside the quick-entry window."
 tier = "rare"
 icon = "quick_fifty"
 rule = { all = [{ fastest_entry_delay = { lte = 1 } }] }
-
 
 [[achievement]]
 key = "four_in_a_day"
@@ -902,7 +938,6 @@ tier = "uncommon"
 icon = "four_in_a_day"
 rule = { all = [{ max_bms_in_day = { gte = 4 } }] }
 
-
 [[achievement]]
 key = "seven_in_a_day"
 name = "Full House"
@@ -910,7 +945,6 @@ description = "Seven entries in a day."
 tier = "rare"
 icon = "seven_in_a_day"
 rule = { all = [{ max_bms_in_day = { gte = 7 } }] }
-
 
 [[achievement]]
 key = "a_year_of_days"
@@ -920,7 +954,6 @@ tier = "legendary"
 icon = "a_year_of_days"
 rule = { all = [{ days_logged_total = { gte = 365 } }] }
 
-
 [[achievement]]
 key = "spicy_and_urgent"
 name = "The Full Report"
@@ -929,7 +962,13 @@ tier = "common"
 icon = "spicy_and_urgent"
 rule = { all = [{ spicy_count = { gte = 20 } }] }
 
-
+[[achievement]]
+key = "book_and_bother"
+name = "Could Not Put It Down"
+description = "A note about reading, and another about not working."
+tier = "uncommon"
+icon = "book_and_bother"
+rule = { all = [{ note_theme_reading = { gte = 1 } }, { note_theme_work_rant = { gte = 1 } }] }
 [[achievement]]
 key = "first_week"
 name = "Week One"
@@ -937,7 +976,6 @@ description = "Seven days logged, in your first week of using this."
 tier = "common"
 icon = "first_week"
 rule = { all = [{ days_logged_total = { gte = 7 } }] }
-
 [[achievement]]
 key = "december_double"
 name = "The Twelve of Christmas"
@@ -945,7 +983,6 @@ description = "Logged in December, with a note on at least one of them."
 tier = "uncommon"
 icon = "december_double"
 rule = { all = [{ distinct_months_logged = { gte = 12 } }, { note_count = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "new_year_same_day"
@@ -955,7 +992,6 @@ tier = "uncommon"
 icon = "new_year_same_day"
 rule = { all = [{ logged_jan_1 = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
 
-
 [[achievement]]
 key = "christmas_quick"
 name = "Christmas Morning"
@@ -963,7 +999,6 @@ description = "A Christmas Day entry logged within the window of it happening."
 tier = "rare"
 icon = "christmas_quick"
 rule = { all = [{ logged_dec_25 = { gte = 1 } }, { bm_count_total = { gte = 25 } }] }
-
 
 [[achievement]]
 key = "halloween_night"
@@ -973,7 +1008,13 @@ tier = "rare"
 icon = "halloween_night"
 rule = { all = [{ logged_oct_31 = { gte = 1 } }, { streak_longest = { gte = 5 } }] }
 
-
+[[achievement]]
+key = "paid_over"
+name = "Paid Over"
+description = "A note about money, on an entry logged the same day it happened."
+tier = "rare"
+icon = "paid_over"
+rule = { all = [{ note_theme_money = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
 [[achievement]]
 key = "valentine_quick"
 name = "Same Day Service"
@@ -981,7 +1022,6 @@ description = "A Valentine's Day entry logged on the day."
 tier = "uncommon"
 icon = "valentine_quick"
 rule = { all = [{ logged_feb_14 = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
-
 
 [[achievement]]
 key = "unmarked"
@@ -991,7 +1031,6 @@ tier = "legendary"
 icon = "unmarked"
 rule = { all = [{ days_logged_total = { gte = 200 } }, { deleted_entries = { lte = 0 } }] }
 
-
 [[achievement]]
 key = "untouched"
 name = "Straight Through The Year"
@@ -999,7 +1038,6 @@ description = "No entry deleted and no day backfilled. Everything was written wh
 tier = "legendary"
 icon = "untouched"
 rule = { all = [{ days_logged_total = { gte = 100 } }, { deleted_entries = { lte = 0 } }, { backfilled_days = { lte = 0 } }] }
-
 
 [[achievement]]
 key = "half_and_half"
@@ -1009,7 +1047,6 @@ tier = "uncommon"
 icon = "half_and_half"
 rule = { all = [{ noted_entry_count = { gte = 25 } }, { bm_count_total = { gte = 50 } }] }
 
-
 [[achievement]]
 key = "two_thirds"
 name = "Two Thirds Noted"
@@ -1018,7 +1055,13 @@ tier = "uncommon"
 icon = "two_thirds"
 rule = { all = [{ noted_entry_count = { gte = 40 } }, { bm_count_total = { gte = 60 } }] }
 
-
+[[achievement]]
+key = "flight_on_no_sleep"
+name = "Somewhere Else"
+description = "A note about travelling, and an entry logged after eleven at night."
+tier = "rare"
+icon = "flight_on_no_sleep"
+rule = { all = [{ note_theme_travel = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
 [[achievement]]
 key = "every_third"
 name = "Every Third"
@@ -1027,6 +1070,13 @@ tier = "rare"
 icon = "every_third"
 rule = { all = [{ noted_entry_count = { gte = 30 } }, { bm_count_total = { gte = 90 } }] }
 
+[[achievement]]
+key = "night_bus"
+name = "Last Night's Bus"
+description = "A note about the night, on an entry that took real effort."
+tier = "rare"
+icon = "night_bus"
+rule = { all = [{ note_theme_night = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
 
 [[achievement]]
 key = "night_owl_streak"
@@ -1036,7 +1086,6 @@ tier = "legendary"
 icon = "night_owl_streak"
 rule = { all = [{ streak_longest = { gte = 7 } }, { time_of_day = { gte = 23 } }] }
 
-
 [[achievement]]
 key = "spicy_urgent_night"
 name = "The Full Night Out"
@@ -1044,7 +1093,6 @@ description = "A spicy, urgent entry logged after eleven at night."
 tier = "rare"
 icon = "spicy_urgent_night"
 rule = { all = [{ spicy_count = { gte = 10 } }, { time_of_day = { gte = 23 } }] }
-
 
 [[achievement]]
 key = "comeback_quick"
@@ -1054,7 +1102,6 @@ tier = "rare"
 icon = "comeback_quick"
 rule = { all = [{ gap_since_previous_days = { gte = 7 } }, { bm_count_total = { gte = 20 } }] }
 
-
 [[achievement]]
 key = "the_long_way_round"
 name = "All Seven"
@@ -1062,151 +1109,6 @@ description = "Every Bristol type, and a note on the day you finally got the one
 tier = "legendary"
 icon = "the_long_way_round"
 rule = { all = [{ bristol_types_seen = { gte = 7 } }, { note_count = { gte = 50 } }] }
-
-[[achievement]]
-key = "curry_regret"
-name = "Curry Regret"
-description = "A spicy entry with a note that blames the food."
-tier = "common"
-icon = "curry_regret"
-rule = { all = [{ spicy_count = { gte = 1 } }, { note_theme_anger = { gte = 1 } }] }
-
-[[achievement]]
-key = "two_am_rant"
-name = "Two in the Morning"
-description = "An entry logged after eleven at night, with a note about work."
-tier = "common"
-icon = "two_am_rant"
-rule = { all = [{ time_of_day = { gte = 23 } }, { note_theme_work_rant = { gte = 1 } }] }
-
-[[achievement]]
-key = "nightmare_shift"
-name = "Night Shift"
-description = "An entry logged after eleven at night, and the note is about dreaming badly."
-tier = "uncommon"
-icon = "nightmare_shift"
-rule = { all = [{ time_of_day = { gte = 23 } }, { note_theme_nightmare = { gte = 1 } }] }
-
-[[achievement]]
-key = "exam_nerves"
-name = "Exam Nerves"
-description = "A note about exams, on an entry that took real effort."
-tier = "uncommon"
-icon = "exam_nerves"
-rule = { all = [{ note_theme_exams = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
-
-[[achievement]]
-key = "manager_provoked"
-name = "Manager Provoked"
-description = "An angry note on an entry that took real effort."
-tier = "uncommon"
-icon = "manager_provoked"
-rule = { all = [{ note_theme_anger = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
-
-[[achievement]]
-key = "commute_grumble"
-name = "Commute"
-description = "A note about the journey, logged on a weekday."
-tier = "common"
-icon = "commute_grumble"
-rule = { all = [{ note_theme_commute = { gte = 1 } }, { time_of_day = { between = ["06:00", "10:00"] } }] }
-
-[[achievement]]
-key = "comfort_food"
-name = "Comfort Food"
-description = "A note about eating, on a spicy entry."
-tier = "common"
-icon = "comfort_food"
-rule = { all = [{ note_theme_food_review = { gte = 1 } }, { spicy_count = { gte = 1 } }] }
-
-[[achievement]]
-key = "drink_and_regret"
-name = "One Too Many"
-description = "A note about drinking, logged on the day it happened."
-tier = "uncommon"
-icon = "drink_and_regret"
-rule = { all = [{ note_theme_drink = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
-
-[[achievement]]
-key = "fever_dreams"
-name = "Fever Dreams"
-description = "A note about being ill, and another about dreaming."
-tier = "uncommon"
-icon = "fever_dreams"
-rule = { all = [{ note_theme_illness = { gte = 1 } }, { note_theme_dream = { gte = 1 } }] }
-
-[[achievement]]
-key = "homesick"
-name = "Homesick"
-description = "A note about missing something, logged in the small hours."
-tier = "uncommon"
-icon = "homesick"
-rule = { all = [{ note_theme_family = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
-
-[[achievement]]
-key = "the_breakup_entry"
-name = "After"
-description = "A note about a breakup, and an entry that took real effort."
-tier = "rare"
-icon = "the_breakup_entry"
-rule = { all = [{ note_theme_breakup = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
-
-[[achievement]]
-key = "thank_you_rain"
-name = "Thank You, Rain"
-description = "A grateful note, and an entry logged before six in the morning."
-tier = "uncommon"
-icon = "thank_you_rain"
-rule = { all = [{ note_theme_gratitude = { gte = 1 } }, { time_of_day = { lte = 6 } }] }
-
-[[achievement]]
-key = "three_am_garden"
-name = "Three in the Morning"
-description = "A note about a garden, logged after eleven at night."
-tier = "rare"
-icon = "three_am_garden"
-rule = { all = [{ note_theme_garden = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
-
-[[achievement]]
-key = "dog_after_walk"
-name = "The Dog Is Fine"
-description = "A note about a pet, on an entry that took real effort."
-tier = "common"
-icon = "dog_after_walk"
-rule = { all = [{ note_theme_pet = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
-
-[[achievement]]
-key = "songs_at_2am"
-name = "Songs at Two"
-description = "A note about music, and an entry logged after eleven at night."
-tier = "common"
-icon = "songs_at_2am"
-rule = { all = [{ note_theme_music = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
-
-[[achievement]]
-key = "book_and_bother"
-name = "Could Not Put It Down"
-description = "A note about reading, and another about not working."
-tier = "uncommon"
-icon = "book_and_bother"
-rule = { all = [{ note_theme_reading = { gte = 1 } }, { note_theme_work_rant = { gte = 1 } }] }
-
-[[achievement]]
-key = "paid_over"
-name = "Paid Over"
-description = "A note about money, on an entry logged the same day it happened."
-tier = "rare"
-icon = "paid_over"
-rule = { all = [{ note_theme_money = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
-
-[[achievement]]
-key = "flight_on_no_sleep"
-name = "Somewhere Else"
-description = "A note about travelling, and an entry logged after eleven at night."
-tier = "rare"
-icon = "flight_on_no_sleep"
-rule = { all = [{ note_theme_travel = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
-
 [[achievement]]
 key = "first_word_said"
 name = "What It Was For"
@@ -1214,27 +1116,3 @@ description = "A note long enough to be writing, on an entry that took real effo
 tier = "rare"
 icon = "first_word_said"
 rule = { all = [{ note_theme_first_word = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
-
-[[achievement]]
-key = "night_bus"
-name = "Last Night's Bus"
-description = "A note about missing someone, on an entry that took real effort."
-tier = "rare"
-icon = "night_bus"
-rule = { all = [{ note_theme_night = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
-
-# --- combinations ----------------------------------------------------------
-# Achievements that need a note and a fact together, so the note has to say
-# something *and* something about the entry has to be true at the same time.
-#
-# They are the answer to a catalogue that had run out of shapes. Almost every
-# other entry here is one threshold, and a person who has read the rules can
-# compute the whole set from a dozen numbers. These cannot: "a spicy entry that
-# came with a note blaming the curry" is two facts and one sentence, and there is
-# no way to reach it by logging more of anything.
-#
-# Each needs the note matcher, so without an embedding key these cannot be
-# earned and the fact reads zero. They are shown anyway, like every other
-# locked achievement, which is the honest state of a key nobody has configured.
-# They are deliberately NOT hidden behind a tier: the points are for the
-# combination, not for being in the room.

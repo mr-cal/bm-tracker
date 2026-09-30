@@ -325,7 +325,13 @@ ICONS: dict[str, str] = {
     "paid_over": "<circle cx=\"9\" cy=\"12\" r=\"5.5\"/><path d=\"M15.5 7 9 17\"/><path d=\"M18 18h3\"/>",
     "flight_on_no_sleep": "<path d=\"M2.5 13.5 21 8l-3 5 3 3-18.5 2.5Z\"/><path d=\"M17.5 3.5 15 6M20 6.5 18.5 9\"/>",
     "first_word_said": "<path d=\"M3 5.5h18v11H13l-4 4v-4H3Z\"/><path d=\"M8 11h8\"/><circle cx=\"12\" cy=\"11\" r=\"0.6\"/>",
-    "night_bus": "<path d=\"M3 6.5h18v9H3Z\"/><circle cx=\"7\" cy=\"11\" r=\"1\"/><circle cx=\"12\" cy=\"11\" r=\"1\"/><circle cx=\"17\" cy=\"11\" r=\"1\"/><path d=\"M12 6.5V3M9.5 5 12 2.5 14.5 5\"/>"
+    "night_bus": "<path d=\"M3 6.5h18v9H3Z\"/><circle cx=\"7\" cy=\"11\" r=\"1\"/><circle cx=\"12\" cy=\"11\" r=\"1\"/><circle cx=\"17\" cy=\"11\" r=\"1\"/><path d=\"M12 6.5V3M9.5 5 12 2.5 14.5 5\"/>",
+
+    "type_2": "<path d=\"M4 14c0-5 3.5-8 8-8s8 3 8 8Z\"/><path d=\"M3 14h18\"/><path d=\"M7 18v3M17 18v3\"/>",
+    "type_3": "<path d=\"M5 16c1-5 3.5-8 7-8s6 3 7 8Z\"/><path d=\"M8.5 13.5c1.5-2 5.5-2 7 0\"/>",
+    "type_5": "<path d=\"M6 13c0-3 2.7-5 6-5s6 2 6 5c0 4-2.7 6-6 6s-6-2-6-6Z\"/><path d=\"M2.5 19.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0\"/>",
+    "type_6": "<path d=\"M12 3.5a8.5 8.5 0 0 1 6 14.8A8.5 8.5 0 0 1 12 3.5Z\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\"/><circle cx=\"6\" cy=\"13\" r=\".9\"/><circle cx=\"7.5\" cy=\"17\" r=\"1\"/>",
+
 }
 
 #: Icons for the note achievements — the ones found by reading a note rather
