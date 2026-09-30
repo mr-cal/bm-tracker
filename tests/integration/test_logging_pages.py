@@ -780,43 +780,6 @@ async def test_protected_pages_redirect_when_signed_out(
 # --- the help page --------------------------------------------------------
 
 
-async def test_help_states_the_live_scoring_constants(
-    session: AsyncSession, client: AsyncClient
-) -> None:
-    """The explanation is generated from the constants, so it cannot go stale."""
-    from bm_tracker import scoring  # noqa: PLC0415
-
-    await _user(session)
-    await _sign_in(client)
-
-    page = await client.get("/help")
-
-    assert page.status_code == 200
-    body = page.text
-    assert f"{scoring.POINTS_PER_QUALIFYING_DAY} points" in body
-    assert f"+{scoring.POINTS_BACKFILLED_DAY}" in body
-    assert f"{scoring.POINTS_NOTE} each" in body
-    # The worked totals come from the same derivation, not from prose.
-    assert str(scoring.total_for_run(5)) in body
-    assert str(scoring.total_for_run(7)) in body
-
-
-async def test_the_cap_is_stated_as_a_cap(
-    session: AsyncSession, client: AsyncClient
-) -> None:
-    """A reader should not be left thinking the bonus climbs forever."""
-    from bm_tracker import scoring  # noqa: PLC0415
-
-    await _user(session)
-    await _sign_in(client)
-
-    body = (await client.get("/help")).text
-
-    cap = scoring.STREAK_BONUS_STEP * scoring.STREAK_BONUS_MAX_STEPS
-    assert f"then +{cap}" in body
-    assert "stops climbing" in body
-
-
 async def test_every_page_carries_the_navigation(
     session: AsyncSession, client: AsyncClient
 ) -> None:

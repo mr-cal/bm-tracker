@@ -52,9 +52,6 @@
         <label class="form-label" for="display_name">Name</label>
         <input class="form-control" type="text" id="display_name" name="display_name"
                value="{{ user.display_name }}" maxlength="60" required />
-        <p class="form-text">
-          What everyone else sees. Leave it blank to go back to your sign-in name.
-        </p>
       </div>
       <button type="submit" class="btn btn-primary settings-section__submit">Save name</button>
     </form>
@@ -89,10 +86,6 @@
           <option value="{{ zone }}"{% if zone == user.timezone %} selected{% endif %}>{{ zone }}</option>
           {% endfor %}
         </select>
-        <p class="form-text">
-          Used to decide which day is today, which day your streak counts, and
-          how far back you can fill in a day. Nothing already logged moves.
-        </p>
       </div>
       <button type="submit" class="btn btn-primary settings-section__submit">Save timezone</button>
     </form>

@@ -19,57 +19,6 @@
     happened" is a better diary entry than no entry at all.
   </p>
 
-  <h2>The points</h2>
-  <dl class="help__rules">
-    <dt>Logging a day</dt>
-    <dd>{{ constants.day_points }} points</dd>
-
-    <dt>Every day after the first, up to a week</dt>
-    <dd>
-      +1, +2, +3, +4, then +{{ constants.streak_max }}
-    </dd>
-
-    <dt>Writing a note</dt>
-    <dd>+{{ constants.note_points }} each, however many you write</dd>
-
-    <dt>Logging it on the day, within {{ constants.quick_window }} minutes of
-      it happening</dt>
-    <dd>+{{ constants.quick_points }} each</dd>
-
-    <dt>Filling in a day you missed</dt>
-    <dd>+{{ constants.backfill_points }}, but it does not join your streak</dd>
-
-    <dt>An achievement</dt>
-    <dd>{{ constants.tier_points }}, by how rare it is</dd>
-  </dl>
-  <p class="text-body-secondary">
-    The streak bonus stops climbing at day six, on purpose. A long run should be
-    worth something without one missed day becoming a debt you never clear.
-  </p>
-
-  <h2>A worked day</h2>
-  <ul class="help__worked">
-    <li><strong>Monday.</strong> Your first of a run: {{ constants.day_points }} points.</li>
-    <li><strong>Tuesday.</strong> Second day, so {{ constants.day_points }} + 1.</li>
-    <li>
-      <strong>Wednesday.</strong> Third day, {{ constants.day_points }} + 2, and you
-      wrote a note, so +{{ constants.note_points }} more.
-    </li>
-    <li>
-      <strong>Thursday.</strong> You ate a curry and the note says so. Fourth day,
-      {{ constants.day_points }} + 3.
-    </li>
-    <li>
-      <strong>Friday.</strong> Fifth day: {{ constants.day_points }} + 4. From here the
-      bonus stops moving.
-    </li>
-  </ul>
-  <p>
-    So five days in a row is {{ worked_total }} points, and a week is
-    {{ week_total }}. A whole year of perfect logging is about
-    {{ year_total }} points.
-  </p>
-
   <h2>A new year starts over</h2>
   <p>
     Streaks stop at 31 December and achievements re-earn every January, so
@@ -93,20 +42,6 @@
     {{ constants.tier_max }} points depending on how hard it is, and they count
     toward your leaderboard total like anything else you earn. Achievements
     reset every January, so last year's are last year's.
-  </p>
-  <h3>Some are found by reading your notes</h3>
-  <p>
-    {{ constants.note_achievement_count }} of them are not counts at all. They
-    are found by what a note <em>said</em> — a poem, a complaint about work, a
-    night you did not sleep through, a bereavement. Every note you write is
-    compared against them, so there is nothing to do about them and no progress
-    towards them: either a note says the thing, or it does not. Nothing happens
-    if you write nothing, and writing a lot is not the way to collect them
-    either.
-  </p>
-  <p>
-    They are worth the same points as the counted ones and they count the same
-    on the board, and they reset every January like everything else.
   </p>
 </main>
 {% endblock %}

@@ -831,6 +831,19 @@ body {
   margin-right: auto;
 }
 
+/* A subscript, so it hangs off the baseline of the wordmark rather than
+ * sitting beside it. Same size as a footnote, not a badge: this says the
+ * software is unfinished, and a pill would say it louder than that. */
+.app-topbar__beta {
+  color: var(--bs-secondary-color);
+  font-size: 0.55em;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin-left: 0.25em;
+  text-transform: lowercase;
+  vertical-align: sub;
+}
+
 .app-topbar__flame {
   color: var(--bm-flame);
   height: 1.3em;
@@ -1945,7 +1958,12 @@ body {
   filter: grayscale(1);
   height: 2.6rem;
   object-fit: contain;
-  opacity: 0.4;
+  /* 0.4 was invisible. The silhouette is meant to say "there is a shape worth
+   * having, in shadow" and at four tenths on a white card it said nothing at
+   * all — a heart, a speech bubble and a quill all came out as the same
+   * near-nothing. It has to be dim enough to read as not-yet and bright enough
+   * to read as a drawing. */
+  opacity: 0.62;
   width: 2.6rem;
 }
 

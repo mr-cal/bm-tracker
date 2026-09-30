@@ -572,18 +572,19 @@ def test_every_known_fact_is_actually_produced() -> None:
 
 
 def test_the_catalogue_is_the_size_we_intend() -> None:
-    """One hundred and seventeen, by agreement, and not three hundred by inertia.
+    """One hundred and sixteen, by agreement, and not three hundred by inertia.
 
     Variety by volume is the opposite of variety by idea: the first twenty-one
     were twenty-one ways of saying "your number is at least N", and the answer
     was a bigger vocabulary and a smaller catalogue, not a bigger catalogue.
 
-    It was 120 until three duplicates went, all of them found by the rule
-    test below rather than by anybody reading the catalogue:
+    It was 120 until four went, three of them found by the rule test below
+    rather than by anybody reading the catalogue:
 
       no_notes_no_streak / silent_streak   seven days, no note
       fifty_notes_b       / lore_master    fifty notes
       month_of_days       / unbroken       thirty consecutive days
+      twelvenotes         (alone)         only reachable beside Note to Self
 
     In each pair the survivor is the one inside a family, or the one carrying
     the better wording, or the one with the larger prize. Every pair handed
@@ -594,7 +595,7 @@ def test_the_catalogue_is_the_size_we_intend() -> None:
     duplicate slipping in changes it; that is the point.
     """
     loaded = registry.load()
-    assert len(loaded) == 117, f"the catalogue is {len(loaded)}, not 117"
+    assert len(loaded) == 116, f"the catalogue is {len(loaded)}, not 116"
 
 
 #: Rules that two achievements currently share, and are known to. Asserted
@@ -739,3 +740,75 @@ def test_note_achievements_are_intermixed_with_the_others() -> None:
 def test_a_tier_with_no_note_achievements_is_untouched() -> None:
     items = [(f"reg{i}", False) for i in range(4)]
     assert _interleave(items) == items
+
+
+def test_no_achievement_can_only_be_earned_alongside_another() -> None:
+    """A stricter rule on the same fact fires at the same instant as a looser one.
+
+    `twelvenotes` "One A Year" was `note_count >= 1` AND `note_count <= 1`,
+    which is `note_count == 1` written the long way round. `note_to_self` is
+    `note_count >= 1`. So the first note you ever wrote earned both, always,
+    and no state of the world existed in which the first was true and the
+    second was not.
+
+    That is worse than two achievements sharing a trigger. The stricter one is
+    *unreachable* except as a companion: it could never arrive at a moment of
+    its own, so it never told the reader anything the pair did not.
+
+    For a rule built on one fact, the moment it first becomes true is the
+    smallest value that satisfies every constraint at once. Two rules on the
+    same fact sharing that value can never be separated, whatever their rules
+    look like. That is the thing worth asserting, and the first version of this
+    test asserted it only for single-comparison rules — so it skipped the
+    `all` form entirely and passed on the very defect it was written for.
+    """
+
+    def first_true_value(spec: object) -> tuple[str, float] | None:  # noqa: PLR0911
+        """Return (fact, first value satisfying it) for a one-fact rule."""
+        if not isinstance(spec, dict):
+            return None
+        clauses = spec.get("all", [spec])
+        if not isinstance(clauses, list):
+            return None
+        # The fact *name* is each clause's single key. Stringifying the
+        # clause instead gives one unique string per clause, so every rule with
+        # two constraints looked like it was about two facts and was skipped —
+        # which is how the first version of this test passed on the exact
+        # defect it was written for.
+        facts = {next(iter(c)) for c in clauses if isinstance(c, dict) and len(c) == 1}
+        if len(facts) != 1:
+            return None
+        fact = facts.pop()
+        low, high = 0.0, float("inf")
+        for clause in clauses:
+            if not isinstance(clause, dict) or len(clause) != 1:
+                return None
+            ((name, comparison),) = clause.items()
+            if not isinstance(comparison, dict) or len(comparison) != 1:
+                return None
+            ((op, target),) = comparison.items()
+            if not isinstance(target, int):
+                return None
+            if op in ("gte", "gt"):
+                low = max(low, float(target + 1 if op == "gt" else target))
+            elif op in ("lte", "lt"):
+                high = min(high, float(target - 1 if op == "lt" else target))
+            else:
+                return None
+        if low > high:
+            return None  # unsatisfiable; a different problem
+        return fact, low
+
+    firsts: dict[tuple[str, float], list[str]] = {}
+    for achievement in registry.load().achievements:
+        if achievement.rule is None or achievement.custom is not None:
+            continue
+        moment = first_true_value(achievement.rule.spec)
+        if moment is not None:
+            firsts.setdefault(moment, []).append(achievement.key)
+
+    for (fact, value), keys in firsts.items():
+        assert len(keys) == 1, (
+            f"{fact} first reaches {value:g} for {keys}, all on the same step, "
+            f"so none of them can ever be earned without the others"
+        )

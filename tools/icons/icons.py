@@ -60,12 +60,6 @@ ICONS: dict[str, str] = {
     "ghost_writer": '<path d="M6 20.5V10a6 6 0 0 1 12 0v10.5l-2-1.6-2 1.6-2-1.6-2 1.6-2-1.6Z"/>'
     '<circle cx="9.8" cy="10.4" r=".95"/><circle cx="14.2" cy="10.4" r=".95"/>'
     '<path d="M10.4 14.6a2.2 2.2 0 0 0 3.2 0"/>',
-    "twelvenotes": '<rect x="3" y="4.5" width="18" height="15" rx="2.5"/>'
-    '<circle cx="7.2" cy="8.6" r=".9"/><circle cx="12" cy="8.6" r=".9"/>'
-    '<circle cx="16.8" cy="8.6" r=".9"/><circle cx="7.2" cy="12" r=".9"/>'
-    '<circle cx="12" cy="12" r=".9"/><circle cx="16.8" cy="12" r=".9"/>'
-    '<circle cx="7.2" cy="15.4" r=".9"/><circle cx="12" cy="15.4" r=".9"/>'
-    '<circle cx="16.8" cy="15.4" r="1.4"/>',
     "ten_notes": '<path d="M7 3.5h10v17l-5-2.6-5 2.6Z"/><path d="M9.5 8h5M9.5 11.5h5"/>',
     "twenty_five_notes": '<path d="M6 3.5h9v17l-4.5-2.4-4.5 2.4Z"/>'
     '<path d="M14 8h4.5v12.5L16 19l-2 1.5"/>'

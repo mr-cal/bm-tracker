@@ -123,6 +123,7 @@ tier = "rare"
 icon = "blatherer"
 rule.all = [{ bm_count_day = { gte = 10 } }]
 
+
 [[achievement]]
 key = "note_to_self"
 name = "Note to Self"
@@ -409,14 +410,6 @@ tier = "legendary"
 icon = "regrets"
 rule = { all = [{ deleted_entries = { gte = 20 } }] }
 
-
-[[achievement]]
-key = "twelvenotes"
-name = "One A Year"
-description = "Exactly one note in the whole of the year, on the most memorable day available."
-tier = "rare"
-icon = "twelvenotes"
-rule = { all = [{ note_count = { gte = 1 } }, { note_count = { lte = 1 } }] }
 
 
 [[achievement]]
