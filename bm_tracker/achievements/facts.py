@@ -25,6 +25,8 @@ from bm_tracker.models import DailyLog, User, UserFact
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from bm_tracker.models import BmEntry
+
 #: Facts every evaluation reads. A missing one is zero, not an error, so a new
 #: achievement can use a fact before any user has earned it.
 #: Saturday. `date.weekday()` is Monday-0, so the weekend is the last two.
@@ -94,6 +96,27 @@ class FactSet(Facts):
 
         """
         return self.get(key)
+
+
+def _note_theme_counts(entries: list[BmEntry]) -> dict[str, float]:
+    """Count, per note theme, the entries whose note matched it.
+
+    Args:
+        entries: The year's entries.
+
+    Returns:
+        One `note_theme_<key>` count per theme present on any entry.
+
+    """
+    from bm_tracker.notes.achievements import load  # noqa: PLC0415
+
+    counts: dict[str, int] = {f"note_theme_{a.key}": 0 for a in load()}
+    for entry in entries:
+        for raw in (entry.note_themes or "").split(","):
+            key = raw.strip()
+            if key:
+                counts[f"note_theme_{key}"] = counts.get(f"note_theme_{key}", 0) + 1
+    return {name: float(n) for name, n in counts.items()}
 
 
 async def build(
@@ -231,6 +254,11 @@ async def build(
         "hard_strain_count": float(
             sum(1 for e in entries if (e.strain or 0) >= HARD_STRAIN_LEVEL)
         ),
+        # How many entries carry a note that matched each theme. This is what
+        # lets a rule ask about what was written *and* what was logged in one
+        # breath: a spicy entry that came with a note about the curry is two
+        # facts and one line of TOML.
+        **_note_theme_counts(entries),
         "strain_count": float(
             sum(1 for e in entries if (e.strain or 0) >= RECORDED_STRAIN_LEVEL)
         ),

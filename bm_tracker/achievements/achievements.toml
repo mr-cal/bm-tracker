@@ -1062,3 +1062,179 @@ description = "Every Bristol type, and a note on the day you finally got the one
 tier = "legendary"
 icon = "the_long_way_round"
 rule = { all = [{ bristol_types_seen = { gte = 7 } }, { note_count = { gte = 50 } }] }
+
+[[achievement]]
+key = "curry_regret"
+name = "Curry Regret"
+description = "A spicy entry with a note that blames the food."
+tier = "common"
+icon = "curry_regret"
+rule = { all = [{ spicy_count = { gte = 1 } }, { note_theme_anger = { gte = 1 } }] }
+
+[[achievement]]
+key = "two_am_rant"
+name = "Two in the Morning"
+description = "An entry logged after eleven at night, with a note about work."
+tier = "common"
+icon = "two_am_rant"
+rule = { all = [{ time_of_day = { gte = 23 } }, { note_theme_work_rant = { gte = 1 } }] }
+
+[[achievement]]
+key = "nightmare_shift"
+name = "Night Shift"
+description = "An entry logged after eleven at night, and the note is about dreaming badly."
+tier = "uncommon"
+icon = "nightmare_shift"
+rule = { all = [{ time_of_day = { gte = 23 } }, { note_theme_nightmare = { gte = 1 } }] }
+
+[[achievement]]
+key = "exam_nerves"
+name = "Exam Nerves"
+description = "A note about exams, on an entry that took real effort."
+tier = "uncommon"
+icon = "exam_nerves"
+rule = { all = [{ note_theme_exams = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
+
+[[achievement]]
+key = "manager_provoked"
+name = "Manager Provoked"
+description = "An angry note on an entry that took real effort."
+tier = "uncommon"
+icon = "manager_provoked"
+rule = { all = [{ note_theme_anger = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
+
+[[achievement]]
+key = "commute_grumble"
+name = "Commute"
+description = "A note about the journey, logged on a weekday."
+tier = "common"
+icon = "commute_grumble"
+rule = { all = [{ note_theme_commute = { gte = 1 } }, { time_of_day = { between = ["06:00", "10:00"] } }] }
+
+[[achievement]]
+key = "comfort_food"
+name = "Comfort Food"
+description = "A note about eating, on a spicy entry."
+tier = "common"
+icon = "comfort_food"
+rule = { all = [{ note_theme_food_review = { gte = 1 } }, { spicy_count = { gte = 1 } }] }
+
+[[achievement]]
+key = "drink_and_regret"
+name = "One Too Many"
+description = "A note about drinking, logged on the day it happened."
+tier = "uncommon"
+icon = "drink_and_regret"
+rule = { all = [{ note_theme_drink = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
+
+[[achievement]]
+key = "fever_dreams"
+name = "Fever Dreams"
+description = "A note about being ill, and another about dreaming."
+tier = "uncommon"
+icon = "fever_dreams"
+rule = { all = [{ note_theme_illness = { gte = 1 } }, { note_theme_dream = { gte = 1 } }] }
+
+[[achievement]]
+key = "homesick"
+name = "Homesick"
+description = "A note about missing something, logged in the small hours."
+tier = "uncommon"
+icon = "homesick"
+rule = { all = [{ note_theme_family = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
+
+[[achievement]]
+key = "the_breakup_entry"
+name = "After"
+description = "A note about a breakup, and an entry that took real effort."
+tier = "rare"
+icon = "the_breakup_entry"
+rule = { all = [{ note_theme_breakup = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
+
+[[achievement]]
+key = "thank_you_rain"
+name = "Thank You, Rain"
+description = "A grateful note, and an entry logged before six in the morning."
+tier = "uncommon"
+icon = "thank_you_rain"
+rule = { all = [{ note_theme_gratitude = { gte = 1 } }, { time_of_day = { lte = 6 } }] }
+
+[[achievement]]
+key = "three_am_garden"
+name = "Three in the Morning"
+description = "A note about a garden, logged after eleven at night."
+tier = "rare"
+icon = "three_am_garden"
+rule = { all = [{ note_theme_garden = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
+
+[[achievement]]
+key = "dog_after_walk"
+name = "The Dog Is Fine"
+description = "A note about a pet, on an entry that took real effort."
+tier = "common"
+icon = "dog_after_walk"
+rule = { all = [{ note_theme_pet = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
+
+[[achievement]]
+key = "songs_at_2am"
+name = "Songs at Two"
+description = "A note about music, and an entry logged after eleven at night."
+tier = "common"
+icon = "songs_at_2am"
+rule = { all = [{ note_theme_music = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
+
+[[achievement]]
+key = "book_and_bother"
+name = "Could Not Put It Down"
+description = "A note about reading, and another about not working."
+tier = "uncommon"
+icon = "book_and_bother"
+rule = { all = [{ note_theme_reading = { gte = 1 } }, { note_theme_work_rant = { gte = 1 } }] }
+
+[[achievement]]
+key = "paid_over"
+name = "Paid Over"
+description = "A note about money, on an entry logged the same day it happened."
+tier = "rare"
+icon = "paid_over"
+rule = { all = [{ note_theme_money = { gte = 1 } }, { logged_same_day = { gte = 1 } }] }
+
+[[achievement]]
+key = "flight_on_no_sleep"
+name = "Somewhere Else"
+description = "A note about travelling, and an entry logged after eleven at night."
+tier = "rare"
+icon = "flight_on_no_sleep"
+rule = { all = [{ note_theme_travel = { gte = 1 } }, { time_of_day = { gte = 23 } }] }
+
+[[achievement]]
+key = "first_word_said"
+name = "What It Was For"
+description = "A note long enough to be writing, on an entry that took real effort."
+tier = "rare"
+icon = "first_word_said"
+rule = { all = [{ note_theme_first_word = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
+
+[[achievement]]
+key = "night_bus"
+name = "Last Night's Bus"
+description = "A note about missing someone, on an entry that took real effort."
+tier = "rare"
+icon = "night_bus"
+rule = { all = [{ note_theme_night = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
+
+# --- combinations ----------------------------------------------------------
+# Achievements that need a note and a fact together, so the note has to say
+# something *and* something about the entry has to be true at the same time.
+#
+# They are the answer to a catalogue that had run out of shapes. Almost every
+# other entry here is one threshold, and a person who has read the rules can
+# compute the whole set from a dozen numbers. These cannot: "a spicy entry that
+# came with a note blaming the curry" is two facts and one sentence, and there is
+# no way to reach it by logging more of anything.
+#
+# Each needs the note matcher, so without an embedding key these cannot be
+# earned and the fact reads zero. They are shown anyway, like every other
+# locked achievement, which is the honest state of a key nobody has configured.
+# They are deliberately NOT hidden behind a tier: the points are for the
+# combination, not for being in the room.

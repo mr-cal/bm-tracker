@@ -65,14 +65,31 @@ CUMULATIVE_FACTS: Final = frozenset(
     }
 )
 
+
 #: Every fact a rule may reference. Validated at import, so an achievement using
 #: a fact nothing computes is a startup error rather than a silent never.
+def _theme_facts() -> set[str]:
+    """Return a fact name for every note theme in the catalogue.
+
+    Imported rather than listed, so adding a note achievement gives it a fact
+    and the list cannot drift from the catalogue.
+
+    Returns:
+        One `note_theme_<key>` name per theme.
+
+    """
+    from bm_tracker.notes.achievements import load  # noqa: PLC0415
+
+    return {f"note_theme_{a.key}" for a in load()}
+
+
 KNOWN_FACTS: Final[frozenset[str]] = frozenset(
     {
         "bm_count_total",
         "bm_count_day",
         "hard_strain_count",
         "strain_count",
+        *_theme_facts(),
         "max_bms_in_day",
         "days_logged_total",
         "note_count",

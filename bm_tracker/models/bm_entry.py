@@ -12,6 +12,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    String,
     Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -76,6 +77,11 @@ class BmEntry(Base):
 
     # A note attached to this specific BM. Always live, unlike a day-note.
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    #: Which note themes this entry's text matched, comma separated. Lets a rule
+    #: combine what was written with what was logged. Null for an entry with no
+    #: note, or one written while no embedding key was configured.
+    note_themes: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=utcnow

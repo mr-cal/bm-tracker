@@ -27,7 +27,7 @@ from bm_tracker.timezones import now_in
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from bm_tracker.models import User
+    from bm_tracker.models import BmEntry, User
     from bm_tracker.notes.achievements import NoteAchievement
     from bm_tracker.settings import Settings
 
@@ -132,6 +132,7 @@ async def try_match(
     text: str | None,
     *,
     cache_path: Path | None = None,
+    entry: BmEntry | None = None,
 ) -> list[Match]:
     """Match a note and record anything new it earns.
 
@@ -144,6 +145,9 @@ async def try_match(
         user: Who wrote the note.
         text: The note, or None.
         cache_path: Where to cache prototype vectors.
+        entry: The entry the note is on, so the themes it matched are kept
+            against it. Combined achievements ask "what was written and what
+            was logged together", and without this the answer is discarded.
 
     Returns:
         What the note earned, which is usually nothing.
@@ -164,6 +168,9 @@ async def try_match(
     except EmbeddingError as exc:
         logger.warning("Note achievement matching failed: %s", exc)
         return []
+
+    if entry is not None:
+        entry.note_themes = ",".join(sorted({m.key for m in found})) or None
 
     for match in found:
         if match.key in already:

@@ -305,6 +305,27 @@ ICONS: dict[str, str] = {
     "spicy_hundred": '<path d="M6 20.5h12"/><path d="M7.5 20.5v-5.2c-2.1 0-3.6-1.6-3.6-3.7 0-2.2 1.8-3.7 4-3.7.4-1.6 1.9-2.8 4.1-2.8s3.7 1.2 4.1 2.8c2.2 0 4 1.5 4 3.7 0 2.1-1.5 3.7-3.6 3.7v5.2"/>',
     "quick_fifty": '<path d="M3 17.5a9 9 0 0 1 18 0"/><path d="M12 17.5 16.5 8h-3.2l2.2-4.8-5.4 6.4h3.2Z"/>',
     "empty_and_full": '<path d="M6 4.5h12l-1.6 16h-8.8Z"/><path d="M6.7 12.5h10.6"/><circle cx="9" cy="8.5" r="1.15"/><circle cx="15" cy="15.5" r="1.15"/><circle cx="12" cy="17" r="1.15"/>',
+
+    "curry_regret": "<circle cx=\"12\" cy=\"13\" r=\"5\"/><path d=\"M12 8c0-2 1.5-3.5 3.5-3.5\"/><path d=\"M15 18.5 19.5 22M4 3l3 3\"/>",
+    "two_am_rant": "<circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M12 7v5l3.5 2\"/><path d=\"M7 4 5 2M17 4l2-2\"/>",
+    "nightmare_shift": "<path d=\"M16.5 19A7.5 7.5 0 0 1 8 6.6 7.6 7.6 0 1 0 16.5 19Z\"/><path d=\"M6 12.5 4.5 11M6 8.5 4.5 7M9 7 8 5\"/>",
+    "exam_nerves": "<path d=\"M6 3.5h9l5 5v12H6Z\"/><path d=\"M15 3.5v5h5\"/><path d=\"M9 13h6M9 16h4\"/><path d=\"M3 9v3\"/>",
+    "manager_provoked": "<path d=\"M12 3.5 13.8 9l5.7-.3-4.4 3.6 1.6 5.5L12 15l-4.7 2.8 1.6-5.5L4.5 8.7 10.2 9Z\"/><path d=\"M4 19.5h16\"/>",
+    "commute_grumble": "<rect x=\"4\" y=\"4\" width=\"16\" height=\"14\" rx=\"3\"/><path d=\"M4 10h16\"/><path d=\"M8 21l2-3M16 21l-2-3\"/>",
+    "comfort_food": "<path d=\"M6 3v7a2.5 2.5 0 0 0 5 0V3\"/><path d=\"M8.5 10v11\"/><circle cx=\"17\" cy=\"17\" r=\"4\"/>",
+    "drink_and_regret": "<path d=\"M6 6h12l-1.4 13.5a1.5 1.5 0 0 1-1.5 1.4H8.9a1.5 1.5 0 0 1-1.5-1.4Z\"/><path d=\"M6.8 11h10.4\"/>",
+    "fever_dreams": "<circle cx=\"12\" cy=\"12\" r=\"4.5\"/><path d=\"M12 7.5V5M12 16.5V19M7.5 12H5M19 12h-2.5\"/><path d=\"M2 20c1.5-2 2.5-2 4 0s2.5 2 4 0\"/>",
+    "homesick": "<path d=\"M3 11 12 4l9 7\"/><path d=\"M6 10v10h12V10\"/><circle cx=\"12\" cy=\"15\" r=\"1.6\"/>",
+    "the_breakup_entry": "<circle cx=\"9\" cy=\"12\" r=\"5.5\"/><path d=\"M15.5 7 9 17\"/><path d=\"M19 4.5 21 6.5M21 4.5 19 6.5\"/>",
+    "thank_you_rain": "<path d=\"M6 15a4 4 0 0 1 .6-8 5 5 0 0 1 9.4 1.4 3.4 3.4 0 0 1-.5 6.6Z\"/><path d=\"M8 18v2.5M12 18.5v3M16 18v2.5\"/>",
+    "three_am_garden": "<path d=\"M12 21v-8\"/><path d=\"M12 13c-3 0-4.5-1.8-4.5-4 2.8 0 4.5 1.5 4.5 4Z\"/><path d=\"M12 13c3 0 4.5-1.8 4.5-4-2.8 0-4.5 1.5-4.5 4Z\"/><path d=\"M2 21h20\"/>",
+    "dog_after_walk": "<ellipse cx=\"6\" cy=\"9\" rx=\"2\" ry=\"2.6\"/><ellipse cx=\"10.5\" cy=\"6.5\" rx=\"2\" ry=\"2.8\"/><ellipse cx=\"15.5\" cy=\"6.5\" rx=\"2\" ry=\"2.8\"/><ellipse cx=\"19.5\" cy=\"9.5\" rx=\"2\" ry=\"2.6\"/><path d=\"M12.5 12.5c3 0 5 2.2 5 4.5 0 2-1.6 3.5-3.5 3.5\"/>",
+    "songs_at_2am": "<circle cx=\"9\" cy=\"17\" r=\"2.6\"/><path d=\"M11.6 17V9l7-1.6v7.6\"/><path d=\"M18.6 7.4V4.5M6 3.5 5 2.5M4 7 3 6\"/>",
+    "book_and_bother": "<path d=\"M3 5.5h6.5a2 2 0 0 1 2 2v12a2 2 0 0 0-2-1.5H3Z\"/><path d=\"M21 5.5h-6.5a2 2 0 0 0-2 2v12a2 2 0 0 1 2-1.5H21Z\"/>",
+    "paid_over": "<circle cx=\"9\" cy=\"12\" r=\"5.5\"/><path d=\"M15.5 7 9 17\"/><path d=\"M18 18h3\"/>",
+    "flight_on_no_sleep": "<path d=\"M2.5 13.5 21 8l-3 5 3 3-18.5 2.5Z\"/><path d=\"M17.5 3.5 15 6M20 6.5 18.5 9\"/>",
+    "first_word_said": "<path d=\"M3 5.5h18v11H13l-4 4v-4H3Z\"/><path d=\"M8 11h8\"/><circle cx=\"12\" cy=\"11\" r=\"0.6\"/>",
+    "night_bus": "<path d=\"M3 6.5h18v9H3Z\"/><circle cx=\"7\" cy=\"11\" r=\"1\"/><circle cx=\"12\" cy=\"11\" r=\"1\"/><circle cx=\"17\" cy=\"11\" r=\"1\"/><path d=\"M12 6.5V3M9.5 5 12 2.5 14.5 5\"/>"
 }
 
 #: Icons for the note achievements — the ones found by reading a note rather
@@ -399,5 +420,5 @@ NOTE_ICONS: dict[str, str] = {
     "question": '<path d="M3 5.5h18v11H13l-4 4v-4H3Z"/>'
     '<path d="M10 9.5a2 2 0 0 1 3.9.6c0 1.3-2 1.4-2 2.9"/><path d="M11.9 14.6h.01"/>',
     "exclamation": '<path d="M3 5.5h18v11H13l-4 4v-4H3Z"/><path d="M12 8v3.4"/>'
-    '<path d="M12 13.2h.01"/>',
+    '<path d="M12 13.2h.01"/>'
 }

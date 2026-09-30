@@ -572,7 +572,7 @@ def test_every_known_fact_is_actually_produced() -> None:
 
 
 def test_the_catalogue_is_the_size_we_intend() -> None:
-    """One hundred and sixteen, by agreement, and not three hundred by inertia.
+    """One hundred and thirty-six, by agreement, and not three hundred by inertia.
 
     Variety by volume is the opposite of variety by idea: the first twenty-one
     were twenty-one ways of saying "your number is at least N", and the answer
@@ -595,7 +595,7 @@ def test_the_catalogue_is_the_size_we_intend() -> None:
     duplicate slipping in changes it; that is the point.
     """
     loaded = registry.load()
-    assert len(loaded) == 116, f"the catalogue is {len(loaded)}, not 116"
+    assert len(loaded) == 136, f"the catalogue is {len(loaded)}, not 136"
 
 
 #: Rules that two achievements currently share, and are known to. Asserted
