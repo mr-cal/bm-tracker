@@ -72,25 +72,28 @@
       <p class="feed__verb">unlocked an achievement</p>
       <p class="feed__award">
         {% if item.achievement %}
-        <span class="badge-icon badge-icon--{{ item.achievement.tier }}" tabindex="0"
+        {#
+          One target for the picture and the name, with the description in the
+          tooltip they share. It used to be laid out in full on every card, which
+          made a run of unlocks read as a wall of sentences and buried the one
+          thing that mattered — that something was earned. The name and the
+          picture are the event; the description is the explanation, and it is a
+          tap or a hover away.
+
+          Focusable rather than clickable-on purpose: the same affordance works
+          for a mouse, a finger and a keyboard, and `badges.js` already
+          repositions the tooltip on focus so it cannot run off the edge.
+        #}
+        <span class="feed__award-link badge-icon badge-icon--{{ item.achievement.tier }}"
+              tabindex="0"
               aria-label="{{ item.achievement.name }}. {{ item.achievement.description }}">
           <img src="/static/img/badges/{{ item.achievement.icon }}.svg" alt=""
                width="30" height="30" loading="lazy" />
+          <span class="feed__award-name">{{ item.achievement.name }}</span>
           <span class="badge-icon__tip" role="tooltip">
             <strong>{{ item.achievement.name }}</strong>
             <span>{{ item.achievement.description }}</span>
           </span>
-        </span>
-        {#
-          The name on one line and the description on the next. A tooltip holds
-          the description, but a tooltip is a thing you have to find, and what
-          an unlock actually was is the interesting half — so it is set out
-          rather than tucked away. This is the one card in the timeline that
-          says something about the person rather than the day.
-        #}
-        <span class="feed__award-text">
-          <span class="feed__award-name">{{ item.achievement.name }}</span>
-          <span class="feed__award-desc">{{ item.achievement.description }}</span>
         </span>
         {% else %}
         <span>{{ item.achievement_key | replace('_', ' ') | title }}</span>

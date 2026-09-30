@@ -529,7 +529,6 @@ body {
 .bm-note,
 .feed__quote,
 .entries__note,
-.feed__award-desc,
 .achievement-tile__desc,
 .achievement-icon__tip {
   overflow-wrap: anywhere;
@@ -556,11 +555,18 @@ body {
  * near each other, and the description needs the full card width because it is
  * a sentence.
  */
-.feed__award-text {
-  display: flex;
+/* The picture and the name are one target now, not two things that happen to
+ * be near each other. The tooltip hangs off the wrapper, so hovering either the
+ * icon or the name opens it — which is what the description being a tap away
+ * actually requires. */
+.feed__award-link {
+  align-items: center;
+  cursor: help;
+  display: inline-flex;
   flex: 1 1 12rem;
-  flex-direction: column;
+  gap: 0.45rem;
   min-width: 0;
+  position: relative;
 }
 
 .feed__award-name {
@@ -1340,6 +1346,21 @@ body {
 
 .board__year .form-control {
   width: 6rem;
+}
+
+/* The admin people table. It carried the leaderboard's `board` class, which is
+ * `display: grid` — a grid on a <table> throws away the table box model
+ * entirely, so the columns collapsed and the whole thing sat in the left third
+ * of the page. Its own class, and a plain full-width table. */
+.admin-people {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.admin-people th:last-child,
+.admin-people td:last-child {
+  text-align: right;
+  width: 22rem;
 }
 
 .board {
