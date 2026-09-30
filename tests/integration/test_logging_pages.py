@@ -21,7 +21,7 @@ from bm_tracker.notes import achievements as note_defs
 from bm_tracker.services import bm_service
 from bm_tracker.timezones import now_in
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 if TYPE_CHECKING:
@@ -1842,3 +1842,109 @@ async def test_the_collection_total_does_not_shrink_with_your_points(
         f"the collection should be {total}: {text[:120]}"
     )
     assert "still to reveal" in text, "the hidden tiers should be counted, not hidden"
+
+
+async def test_resetting_a_person_leaves_them_an_account_and_no_history(
+    session: AsyncSession, client: AsyncClient
+) -> None:
+    """Wipe the logging, keep the login.
+
+    For testing and for a beta tester who wants a clean start: the account, its
+    password, its name and whether it is an administrator all survive, and the
+    entries, days, notes, unlocks and streak facts all go. What is left is an
+    account that has signed in and done nothing.
+    """
+
+    admin = await _user(session, "bee", admin=True)
+    person = await _user(session, "sam")
+    day = _yesterday()
+    for hour in (8, 9):
+        await bm_service.log_bm(
+            session,
+            person,
+            day,
+            occurred_local=datetime(day.year, day.month, day.day, hour),
+            bristol_type=4,
+            notes="a note that should not survive",
+        )
+    await session.commit()
+
+    entries_before = await session.scalar(
+        select(func.count())
+        .select_from(BmEntry)
+        .where(
+            BmEntry.daily_log_id.in_(
+                select(DailyLog.id).where(DailyLog.user_id == person.id)
+            )
+        )
+    )
+    assert entries_before, "the fixture should have logged something"
+    unlocks_before = await session.scalar(
+        select(func.count())
+        .select_from(AchievementUnlock)
+        .where(AchievementUnlock.user_id == person.id)
+    )
+
+    await _sign_in(client, "bee")
+    token = (await client.get("/admin")).text
+    csrf = re.search(r'name="csrf_token" value="([^"]+)"', token).group(1)
+
+    wrong = await client.post(
+        "/admin/users/sam/reset",
+        data={"confirm": "not-sam"},
+        headers={"X-CSRF-Token": csrf},
+        follow_redirects=False,
+    )
+    assert wrong.status_code in (303, 422, 403), wrong.status_code
+    still = await session.scalar(
+        select(func.count())
+        .select_from(AchievementUnlock)
+        .where(AchievementUnlock.user_id == person.id)
+    )
+    assert still == unlocks_before, "a wrong confirmation must not delete anything"
+
+    ok = await client.post(
+        "/admin/users/sam/reset",
+        data={"confirm": "sam"},
+        headers={"X-CSRF-Token": csrf},
+        follow_redirects=False,
+    )
+    assert ok.status_code == 303, ok.status_code
+
+    left = await session.scalar(
+        select(func.count())
+        .select_from(BmEntry)
+        .where(
+            BmEntry.daily_log_id.in_(
+                select(DailyLog.id).where(DailyLog.user_id == person.id)
+            )
+        )
+    )
+    assert left == 0, f"{left} entries survived"
+    for model in (DailyLog, AchievementUnlock):
+        assert (
+            await session.scalar(
+                select(func.count())
+                .select_from(model)
+                .where(model.user_id == person.id)
+            )
+            == 0
+        ), f"{model.__tablename__} survived"
+
+    survivor = await session.scalar(select(User).where(User.id == person.id))
+    assert survivor is not None, "the account itself must survive"
+    assert survivor.username == "sam"
+    assert admin.id != person.id
+
+
+async def test_a_person_cannot_reset_themselves_or_others(
+    session: AsyncSession, client: AsyncClient
+) -> None:
+    """The reset is an admin action, and an ordinary person has no route to it."""
+    await _user(session, "sam")
+    await _sign_in(client, "sam")
+
+    page = await client.get("/admin")
+
+    assert page.status_code in (403, 404), page.status_code
+    assert "/reset" not in page.text

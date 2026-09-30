@@ -5,10 +5,18 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 
 from bm_tracker.dependencies import AdminUser, DbSession, csrf_token, verify_csrf
-from bm_tracker.models import DailyLog, Invite, User
+from bm_tracker.models import (
+    AchievementUnlock,
+    BmEntry,
+    CelebrationSeen,
+    DailyLog,
+    Invite,
+    User,
+    UserFact,
+)
 from bm_tracker.services import audit_service, auth_service, invite_service
 from bm_tracker.timezones import DEFAULT_TIMEZONE
 
@@ -312,5 +320,83 @@ async def delete_user(
         detail={"username": user.username, "row_count": day_count},
     )
     await session.delete(user)
+    await session.commit()
+    return RedirectResponse("/admin", status_code=303)
+
+
+@router.post(
+    "/users/{username}/reset", response_class=HTMLResponse, response_model=None
+)
+async def reset_user(
+    request: Request,
+    username: str,
+    session: DbSession,
+    admin: AdminUser,
+) -> RedirectResponse:
+    """Wipe everything a person has done, and leave them able to log in.
+
+    Not deletion — the account, its password, its name, its timezone, its theme
+    and whether it is an administrator all survive. What goes is the year of
+    logging: entries, days, notes, streak records, unlocked achievements, which
+    celebration lines they have seen, their derived facts and any outstanding
+    setup link. The result is an account that has logged in and done nothing.
+
+    The audit log is deliberately *not* cleared. It is the record that this
+    happened and who did it, and a reset that erased its own evidence would be
+    the one operation nobody could investigate afterwards.
+
+    The session version is bumped, so a browser holding an old cookie is signed
+    out rather than showing a stale page next to an empty dashboard.
+
+    Irreversible for the logging history. The form asks for the username to be
+    typed back, because this is the one button on the page that cannot be undone
+    by clicking it again.
+    """
+    verify_csrf(request, request.headers.get("X-CSRF-Token"))
+    user = await _find_user(session, username)
+    if user is None:
+        return RedirectResponse("/admin", status_code=303)
+
+    form = await request.form()
+    if str(form.get("confirm", "")).strip() != user.username:
+        return RedirectResponse("/admin", status_code=303)
+
+    # Entries are the exception: they belong to a person through their day, not
+    # through a user_id of their own, so they are reached by a join. Everything
+    # else is keyed straight off the user.
+    rows = int(
+        await session.scalar(
+            select(func.count())
+            .select_from(BmEntry)
+            .join(DailyLog, DailyLog.id == BmEntry.daily_log_id)
+            .where(DailyLog.user_id == user.id)
+        )
+        or 0
+    )
+    await session.execute(
+        delete(BmEntry).where(
+            BmEntry.daily_log_id.in_(
+                select(DailyLog.id).where(DailyLog.user_id == user.id)
+            )
+        )
+    )
+    for model in (DailyLog, AchievementUnlock, CelebrationSeen, UserFact, Invite):
+        rows += int(
+            await session.scalar(
+                select(func.count()).select_from(model).where(model.user_id == user.id)
+            )
+            or 0
+        )
+        await session.execute(delete(model).where(model.user_id == user.id))
+
+    user.session_version += 1
+    await audit_service.record(
+        session,
+        action="user.reset",
+        user_id=admin.id,
+        entity_type="user",
+        entity_id=str(user.id),
+        detail={"username": user.username, "rows_removed": rows},
+    )
     await session.commit()
     return RedirectResponse("/admin", status_code=303)

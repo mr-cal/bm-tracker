@@ -99,6 +99,22 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
           </form>
+          {#
+            Wipes the logging and keeps the account, so the person can sign in
+            again and start from nothing. Deliberately harder to hit than the
+            buttons around it: the username has to be typed back, and it only
+            ever clears that person's own history — never the account itself,
+            and never the audit log.
+          #}
+          <form method="post" action="/admin/users/{{ user.username }}/reset"
+                class="d-flex flex-wrap align-items-end gap-2 mt-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <input class="form-control form-control-sm" type="text" name="confirm"
+                   style="max-width: 11rem"
+                   placeholder="type {{ user.username }}"
+                   aria-label="Type {{ user.username }} to confirm the reset" />
+            <button type="submit" class="btn btn-warning btn-sm">Reset data</button>
+          </form>
           {% else %}
           <span class="text-body-secondary">that is you</span>
           {% endif %}
