@@ -66,12 +66,26 @@
   <ul class="bm-entries">
     {% for entry in recent %}
     <li>
-      <strong>{{ stamp(entry.occurred_local) }}</strong>
-      — type
-      <span class="bristol-dot bristol-{{ bristol_by_value[entry.bristol_type].band }}">{{ entry.bristol_type }}</span>
-      {% if entry.spicy %}<span class="badge text-bg-warning">spicy</span>{% endif %}
-      {% if entry.urgent %}<span class="badge text-bg-danger">urgent</span>{% endif %}
-      {% if entry.has_note %}<p class="bm-note">“{{ entry.notes }}”</p>{% endif %}
+      <div class="bm-entries__body">
+        <strong>{{ stamp(entry.occurred_local) }}</strong>
+        — type
+        <span class="bristol-dot bristol-{{ bristol_by_value[entry.bristol_type].band }}">{{ entry.bristol_type }}</span>
+        {% if entry.spicy %}<span class="badge text-bg-warning">spicy</span>{% endif %}
+        {% if entry.urgent %}<span class="badge text-bg-danger">urgent</span>{% endif %}
+        {% if entry.has_note %}<p class="bm-note">“{{ entry.notes }}”</p>{% endif %}
+      </div>
+      {#
+        The same Remove control the entries list has, on the same handler, so
+        a wrong time or a wrong type can be taken back from the page that shows
+        it rather than only from the year it happens to live in.
+      #}
+      <form class="bm-entries__remove" method="post"
+            action="/log/entry/{{ entry.id }}/delete"
+            onsubmit="return confirm('Remove this entry? It cannot be undone.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+        <input type="hidden" name="return_to" value="/dashboard?year={{ year }}" />
+        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+      </form>
     </li>
     {% else %}
     <li class="text-body-secondary">Nothing yet.</li>

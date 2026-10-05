@@ -59,6 +59,25 @@
       {% if item.entry.has_note %}
       <p class="feed__quote">“{{ item.entry.notes }}”</p>
       {% endif %}
+      {#
+        Correction, on your own entries only. `item.entry` is populated by the
+        service for the viewer's own items and for nobody else's, so this
+        control cannot appear on a card about somebody else's BM — the test is
+        the same one that decides whether the Bristol type is rendered at all.
+
+        The entries list was the only place to take something back, which made
+        a mistake you could see here something you had to go hunting for.
+      #}
+      {% if item.entry %}
+      <form class="feed__remove" method="post"
+            action="/log/entry/{{ item.entry.id }}/delete"
+            onsubmit="return confirm('Remove this entry? It cannot be undone.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+        <input type="hidden" name="return_to"
+               value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}" />
+        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+      </form>
+      {% endif %}
 
     {% elif item.kind == kinds.day %}
       <p class="feed__verb">logged nothing today</p>

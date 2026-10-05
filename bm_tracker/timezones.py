@@ -80,22 +80,44 @@ def today_for(timezone_name: str, *, now: datetime | None = None) -> date:
     return moment.astimezone(resolve_timezone(timezone_name)).date()
 
 
-def now_in(timezone_name: str) -> tuple[date, datetime]:
-    """Return the current naive UTC instant alongside the user's local date.
+def local_now(timezone_name: str) -> datetime:
+    """Return the current wall clock in the user's own timezone.
 
-    The local date is what decides qualification, so the two travel together
-    and a caller cannot accidentally use the server's date.
+    Naive, because `occurred_local` is naive: a time is stored exactly as it was
+    typed and never converted. So this is the value the log form has to
+    pre-fill with, and returning UTC here put the server's clock in the box —
+    a Central user's 8 pm entry was offered to them as 2 am.
 
     Args:
         timezone_name: An IANA timezone name.
 
     Returns:
-        A tuple of the user's local date and the current instant.
+        The current local time, with no zone attached.
 
     """
     zone = resolve_timezone(timezone_name)
-    now = datetime.now(ZoneInfo(FALLBACK_TIMEZONE))
-    return now.astimezone(zone).date(), now
+    return (
+        datetime.now(ZoneInfo(FALLBACK_TIMEZONE)).astimezone(zone).replace(tzinfo=None)
+    )
+
+
+def now_in(timezone_name: str) -> tuple[date, datetime]:
+    """Return the user's local date and local time of day.
+
+    Both halves are local, and they travel together: a caller cannot pair
+    yesterday's date with this morning's clock. The date is what decides
+    qualification and the time is what the log form offers, and both are
+    answers about the user's day rather than the server's.
+
+    Args:
+        timezone_name: An IANA timezone name.
+
+    Returns:
+        A tuple of the user's local date and their local time of day.
+
+    """
+    now = local_now(timezone_name)
+    return now.date(), now
 
 
 def year_bounds(year: int) -> tuple[date, date]:

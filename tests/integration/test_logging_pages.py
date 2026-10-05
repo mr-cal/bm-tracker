@@ -11,6 +11,7 @@ import re
 from collections.abc import AsyncIterator
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
+from zoneinfo import ZoneInfo
 
 import pytest
 from bm_tracker import auth, theme
@@ -19,7 +20,7 @@ from bm_tracker.dependencies import CSRF_FIELD_NAME, CSRF_HEADER_NAME
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
 from bm_tracker.notes import achievements as note_defs
 from bm_tracker.services import bm_service
-from bm_tracker.timezones import now_in
+from bm_tracker.timezones import local_now, now_in
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
 
 PASSWORD = "an excellent long passphrase"
 CSRF_RE = re.compile(r'name="csrf_token" value="([^"]+)"')
+TIME_INPUT_RE = re.compile(r'type="time"[^>]*value="(\d{2}:\d{2})"')
 
 
 def csrf_of(html: str) -> str:
@@ -42,6 +44,20 @@ def csrf_of(html: str) -> str:
     """
     match = CSRF_RE.search(html)
     assert match, "no csrf_token in the rendered page"
+    return match.group(1)
+
+
+def offered_time(html: str) -> str:
+    """Return the time the log form arrived pre-filled with.
+
+    Args:
+        html: The rendered log page.
+
+    Returns:
+        The `HH:MM` in the time input's `value`.
+    """
+    match = TIME_INPUT_RE.search(html)
+    assert match, "no pre-filled time input"
     return match.group(1)
 
 
@@ -124,6 +140,37 @@ async def test_log_page_defaults_to_today(
     assert page.status_code == 200
     assert "What happened?" in page.text
     assert now_in("Europe/London")[0].isoformat() in page.text
+
+
+async def test_the_log_form_offers_the_users_own_clock(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The time in the box is the user's clock, not the server's.
+
+    `occurred_local` is stored exactly as it was typed and never converted
+    afterwards, so whatever is in the box is what gets saved. It used to be
+    filled with the server's UTC clock: someone six hours behind it was offered
+    8 pm as 2 am, and 2 am is what they got, because a pre-filled value looks
+    exactly like any other one you did not type yourself.
+    """
+    user = await _user(session)
+    # UTC+14 all year, so the two clocks cannot happen to agree.
+    user.timezone = "Pacific/Kiritimati"
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get("/log")
+
+    assert page.status_code == 200
+    offered = offered_time(page.text)
+    now = local_now(user.timezone).replace(second=0, microsecond=0)
+    # The minute can tick over between reading the clock and rendering the
+    # page, so the minute just gone counts as an answer too.
+    assert offered in {
+        now.strftime("%H:%M"),
+        (now - timedelta(minutes=1)).strftime("%H:%M"),
+    }
+    assert offered != datetime.now(ZoneInfo("UTC")).strftime("%H:%M")
 
 
 async def test_log_page_shows_the_bristol_scale(
@@ -1052,6 +1099,86 @@ async def test_a_delete_cannot_redirect_off_site(
 
     assert response.status_code == 303
     assert response.headers["location"] == "/dashboard/entries"
+
+
+async def test_an_entry_can_be_removed_from_your_own_history(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Remove lives on the history, not only on the year it happens to sit in.
+
+    The entries list has always had the control, and it is a page you have to
+    go and find. The mistake you can see in your own history is the one you
+    just made, and a wrong time is the mistake people make most.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    entry = await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+        bristol_type=4,
+        notes="logged at the wrong hour",
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get(f"/people/{user.username}")
+
+    assert page.status_code == 200
+    assert f'action="/log/entry/{entry.id}/delete"' in page.text
+
+    response = await client.post(
+        f"/log/entry/{entry.id}/delete",
+        data={
+            CSRF_FIELD_NAME: csrf_of(page.text),
+            "return_to": f"/people/{user.username}",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303, response.text
+    assert response.headers["location"] == f"/people/{user.username}"
+    assert (await session.scalars(select(BmEntry))).all() == []
+
+
+async def test_an_entry_can_be_removed_from_the_recent_list(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The same control on the page the recent list is actually on.
+
+    Two lists of the same rows with the same actions, rather than one of them
+    offering a way to take something back and the other not.
+    """
+    user = await _user(session)
+    day = _yesterday()
+    entry = await bm_service.log_bm(
+        session,
+        user,
+        day,
+        occurred_local=datetime(day.year, day.month, day.day, 9, 0),
+        bristol_type=4,
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get(f"/dashboard?year={day.year}")
+
+    assert page.status_code == 200
+    assert f'action="/log/entry/{entry.id}/delete"' in page.text
+
+    response = await client.post(
+        f"/log/entry/{entry.id}/delete",
+        data={
+            CSRF_FIELD_NAME: csrf_of(page.text),
+            "return_to": f"/dashboard?year={day.year}",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303, response.text
+    assert response.headers["location"] == f"/dashboard?year={day.year}"
+    assert (await session.scalars(select(BmEntry))).all() == []
 
 
 async def test_the_leaderboard_names_its_columns_in_full(

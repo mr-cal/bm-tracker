@@ -42,8 +42,25 @@
 }
 
 .bm-entries > li {
+  align-items: flex-start;
   border-bottom: 1px solid var(--bs-border-color);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
   padding: 0.75rem 0;
+}
+
+.bm-entries__body {
+  min-width: 0;
+}
+
+.bm-entries__remove {
+  flex: 0 0 auto;
+}
+
+.feed__remove {
+  margin-top: 0.5rem;
+  text-align: right;
 }
 
 .bm-note {
