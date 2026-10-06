@@ -29,13 +29,20 @@ CSRF_RE = re.compile(r'name="csrf_token" value="([^"]+)"')
 TIME_RE = re.compile(r"\b([01]\d|2[0-3]):[0-5]\d\b")
 
 
-async def _user(session: AsyncSession, username: str, *, admin: bool = False) -> User:
+async def _user(
+    session: AsyncSession,
+    username: str,
+    *,
+    admin: bool = False,
+    timezone: str = "UTC",
+) -> User:
     """Create a signed-in-able user.
 
     Args:
         session: The session to write through.
         username: The account name.
         admin: Whether the account is an administrator.
+        timezone: The account's IANA timezone.
 
     Returns:
         The created `User`.
@@ -45,7 +52,7 @@ async def _user(session: AsyncSession, username: str, *, admin: bool = False) ->
         display_name=username.title(),
         password_hash=auth.hash_password(PASSWORD),
         is_admin=admin,
-        timezone="UTC",
+        timezone=timezone,
     )
     session.add(user)
     await session.commit()
@@ -497,6 +504,29 @@ async def test_feed_pages_are_strictly_newest_first(
 
     assert len(seen) == 80, "every seeded BM should be reachable across four pages"
     assert seen == sorted(seen, reverse=True), "paging back moved forwards in time"
+
+
+async def test_feed_times_are_the_viewers_own_wall_clock(
+    session: AsyncSession,
+) -> None:
+    """A stored UTC instant is shown as the viewer's local time.
+
+    The card prints `at` as the feed hands it to the template, so
+    whatever frame the feed builds it in is the frame the reader
+    sees. Handing over the stored naive UTC put a reader five hours
+    behind the meridian looking at a card that said 6 pm for a noon
+    log — the same wrong hours, every time, for a whole timezone.
+    """
+    user = await _user(session, "cal", timezone="America/Chicago")
+    await bm_service.log_nothing_today(
+        session, user, date(2026, 1, 9), logged_at=datetime(2026, 1, 9, 18, 0)
+    )
+    await session.commit()
+
+    items = await feed_service.feed_items(session, viewer=user)
+
+    # 18:00 UTC is noon in Chicago in January — CST, six hours behind.
+    assert [item.at for item in items] == [datetime(2026, 1, 9, 12, 0)]
 
 
 async def test_a_note_on_your_own_bm_is_not_printed_twice(

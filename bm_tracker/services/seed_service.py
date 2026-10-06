@@ -254,6 +254,12 @@ async def seed(
     total_backfills = 0
     total_quick = 0
 
+    # The instant the seed treats as the present, as naive UTC — the
+    # frame every stored timestamp is written in. Nothing is ever
+    # written down in the future, so rows for the current day are
+    # clamped to it.
+    ceiling = now.astimezone(ZoneInfo("UTC")).replace(tzinfo=None) if now else utcnow()
+
     for position, user in enumerate(accounts):
         # Only the first account is staged for a demo unlock. A demo that fires
         # for one person is a demo; one that fires for all eight is noise.
@@ -265,13 +271,6 @@ async def seed(
         # group means someone in a western timezone is handed a day they have
         # not reached yet, and `log_nothing_today` rightly refuses it.
         today = today_for(user.timezone, now=now)
-        # The wall clock in the user's own timezone, because `logged_at` is
-        # written as naive local time throughout.
-        ceiling = (
-            now.astimezone(ZoneInfo(user.timezone)).replace(tzinfo=None)
-            if now
-            else utcnow()
-        )
         for offset in range(user_days, -1, -1):
             day = today - timedelta(days=offset)
             # The demo day is never a missed day: the whole point is that the
@@ -311,13 +310,25 @@ async def seed(
                 hour = rng.randint(6, 22)
                 minute = rng.choice([0, 15, 30, 45])
                 occurred = datetime(day.year, day.month, day.day, hour, minute)
-                # A quick entry is written minutes after it happened; otherwise
-                # the day is logged in the evening.
-                created = (
-                    occurred + timedelta(minutes=rng.randint(1, 9))
-                    if quick
-                    else logged_at
-                )
+                # A quick entry is written minutes after it
+                # happened; otherwise the day is logged in the
+                # evening. `occurred` is wall clock in the owner's
+                # timezone, and `created_at` is stored as naive UTC
+                # like every other timestamp, so the moment of
+                # writing is the same instant expressed in UTC —
+                # and never after the present.
+                if quick:
+                    created = (
+                        (
+                            occurred.replace(tzinfo=ZoneInfo(user.timezone))
+                            + timedelta(minutes=rng.randint(1, 9))
+                        )
+                        .astimezone(ZoneInfo("UTC"))
+                        .replace(tzinfo=None)
+                    )
+                else:
+                    created = logged_at
+                created = min(created, ceiling)
                 chosen = _weighted_type(rng)
                 await bm_service.log_bm(
                     session,

@@ -11,7 +11,7 @@ number the leaderboard counted rather than a second implementation of it.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
@@ -28,7 +28,7 @@ from bm_tracker.achievements.engine import REGISTRY
 from bm_tracker.achievements.registry import RegistryError
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
 from bm_tracker.services import visibility
-from bm_tracker.timezones import year_bounds
+from bm_tracker.timezones import to_wall_clock, year_bounds
 
 PAGE_SIZE = 30
 
@@ -229,9 +229,15 @@ async def feed_items(
     if subject is None or subject.id == viewer.id:
         items.extend(await _own_entries(session, viewer, limit=depth))
         items.extend(await _own_days(session, viewer, limit=depth))
-
     items.sort(key=lambda item: item.at, reverse=True)
-    return items[offset : offset + limit]
+    page = items[offset : offset + limit]
+    # `at` is a stored instant — naive UTC, the model convention — and
+    # the card renders it as a wall clock. Converting it to the viewer's
+    # own zone here, in the one place a feed is built, is what keeps a
+    # reader in a western timezone from being handed a time hours before
+    # the thing happened.
+    zone = viewer.timezone
+    return [replace(item, at=to_wall_clock(item.at, zone)) for item in page]
 
 
 def _badge(key: str) -> dict[str, str] | None:

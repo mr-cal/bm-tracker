@@ -120,6 +120,30 @@ def now_in(timezone_name: str) -> tuple[date, datetime]:
     return now.date(), now
 
 
+def to_wall_clock(moment: datetime, timezone_name: str) -> datetime:
+    """Return a stored naive-UTC instant as a wall clock in a timezone.
+
+    The database convention is naive UTC and the display convention is
+    the reader's own clock; this is the edge between the two. Rendering
+    a stored instant without passing through here shows a reader a time
+    as many hours off as their offset is — a feed card saying 6 pm for
+    a noon log in a zone six hours behind the meridian.
+
+    Args:
+        moment: A naive UTC datetime, as stored.
+        timezone_name: The IANA zone to express it in.
+
+    Returns:
+        A naive datetime: the wall clock in that zone.
+
+    """
+    return (
+        moment.replace(tzinfo=ZoneInfo("UTC"))
+        .astimezone(resolve_timezone(timezone_name))
+        .replace(tzinfo=None)
+    )
+
+
 def year_bounds(year: int) -> tuple[date, date]:
     """Return the first and last day of a calendar year, inclusive.
 

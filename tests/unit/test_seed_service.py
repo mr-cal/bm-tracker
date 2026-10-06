@@ -9,7 +9,6 @@ the worst bug this module could have.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from zoneinfo import ZoneInfo
 
 import pytest
 from bm_tracker import auth
@@ -271,34 +270,25 @@ async def test_seeding_never_writes_a_row_in_the_future(
         AchievementUnlock,
         BmEntry,
         DailyLog,
-        User,
     )
 
     moment = datetime(2026, 9, 28, 14, 0, tzinfo=UTC)
     await seed_service.seed(session, users=4, days=40, seed_value=11, now=moment)
-
+    # Every timestamp the seeder writes is naive UTC — the
+    # database convention — so "in the future" is one
+    # comparison against the injected instant, not one per
+    # owner.
+    cutoff = moment.replace(tzinfo=None)
     future_bms = (
-        await session.scalars(
-            select(BmEntry).where(BmEntry.created_at > moment.replace(tzinfo=None))
-        )
+        await session.scalars(select(BmEntry).where(BmEntry.created_at > cutoff))
     ).all()
-    # `logged_at` is naive *local* wall clock, the owner's own, so it has to be
-    # compared against that owner's local now rather than against UTC.
-    zones = {u.id: u.timezone for u in await session.scalars(select(User))}
     future_days = [
-        row
-        for row in await session.scalars(select(DailyLog))
-        if row.logged_at
-        > moment.astimezone(ZoneInfo(zones[row.user_id])).replace(tzinfo=None)
+        row for row in await session.scalars(select(DailyLog)) if row.logged_at > cutoff
     ]
-    # Compared in the owner's own frame, like the days above it. `unlocked_at`
-    # is naive local time, so eight in the evening in Honolulu is six the next
-    # morning in UTC — which is correct, and not something to assert against.
     future_unlocks = [
         row
         for row in await session.scalars(select(AchievementUnlock))
-        if row.unlocked_at
-        > moment.astimezone(ZoneInfo(zones[row.user_id])).replace(tzinfo=None)
+        if row.unlocked_at > cutoff
     ]
 
     assert not future_bms, f"{len(future_bms)} BMs are dated in the future"

@@ -7,7 +7,7 @@ constraint nobody has checked actually fires.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from bm_tracker.models import BmEntry, DailyLog, User
@@ -466,5 +466,5 @@ async def test_timestamps_default_to_naive_utc(
 
     assert day.created_at.tzinfo is None
     assert day.logged_at.tzinfo is None
-    now = datetime.now().replace(tzinfo=None)
+    now = datetime.now(UTC).replace(tzinfo=None)
     assert abs(day.created_at - now) < timedelta(minutes=5)
