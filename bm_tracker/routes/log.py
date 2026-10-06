@@ -258,7 +258,7 @@ def _return_to(form: FormData) -> str:
     return raw
 
 
-def _event_flags(entry: BmEntry, day: DailyLog) -> dict[str, bool]:
+def _event_flags(entry: BmEntry, day: DailyLog, timezone_name: str) -> dict[str, bool]:
     """Return which celebration events this entry triggers.
 
     The rarer event wins, so an entry recorded within ten minutes *and* carrying
@@ -267,6 +267,7 @@ def _event_flags(entry: BmEntry, day: DailyLog) -> dict[str, bool]:
     Args:
         entry: The entry just written.
         day: The day it belongs to.
+        timezone_name: The zone the entry's time was typed in.
 
     Returns:
         A mapping of event name to whether it applies.
@@ -276,7 +277,10 @@ def _event_flags(entry: BmEntry, day: DailyLog) -> dict[str, bool]:
 
     return {
         "quick_entry": scoring.is_quick(
-            entry.created_at, entry.occurred_local, QUICK_WINDOW_MINUTES
+            entry.created_at,
+            entry.occurred_local,
+            QUICK_WINDOW_MINUTES,
+            timezone_name,
         ),
         "note_added": entry.has_note or (day.notes is not None and day.n_bms == 0),
         "streak": entry.daily_log_id is not None and day.n_bms == 1,
@@ -472,7 +476,7 @@ async def submit_log(
                 detail={"day": day.isoformat(), "bristol_type": entry.bristol_type},
             )
             celebration = await _celebrate_after(
-                session, user, "log_any", extra=_event_flags(entry, row)
+                session, user, "log_any", extra=_event_flags(entry, row, user.timezone)
             )
             lines = await rewards.for_entry(
                 session, entry, row, user, window_minutes=window

@@ -154,7 +154,9 @@ async def for_entry(
     if entry.has_note:
         lines.append(RewardLine(label="Wrote a note", points=scoring.POINTS_NOTE))
 
-    if scoring.is_quick(entry.created_at, entry.occurred_local, window_minutes):
+    if scoring.is_quick(
+        entry.created_at, entry.occurred_local, window_minutes, user.timezone
+    ):
         lines.append(
             RewardLine(
                 label="Logged it on the spot",

@@ -10,7 +10,7 @@ everyone's history instantly, with no migration.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING, Final
 
 from sqlalchemy import select
@@ -288,9 +288,20 @@ def entry_points(*, quick_ids: set[int], entry_ids: set[int]) -> int:
 
 
 def is_quick(
-    created_at: datetime, occurred_local: datetime, window_minutes: int
+    created_at: datetime,
+    occurred_local: datetime,
+    window_minutes: int,
+    timezone_name: str,
 ) -> bool:
     """Return whether an entry was recorded close enough to when it happened.
+
+    The two stamps live in different frames: `created_at` is
+    naive UTC, `occurred_local` is the wall clock the user typed.
+    The wall clock is expressed as the instant it names in the
+    user's zone before the two are compared — subtracting one
+    from the other unconverted measured the user's UTC offset as
+    if it were the writing time, which put the bonus permanently
+    out of reach for everybody not on the meridian.
 
     The comparison is absolute, so a user who types "07:00" and submits at 06:57
     still qualifies: they were close, and penalising a rounding slip is not the
@@ -298,14 +309,20 @@ def is_quick(
 
     Args:
         created_at: When the entry was written, as naive UTC.
-        occurred_local: The wall-clock time the user typed, unconverted.
+        occurred_local: The wall-clock time the user typed, in `timezone_name`.
         window_minutes: The window size, in minutes.
+        timezone_name: The zone the wall clock was typed in.
 
     Returns:
         Whether the bonus applies.
 
     """
-    delta = abs((created_at - occurred_local).total_seconds())
+    occurred_at = (
+        occurred_local.replace(tzinfo=resolve_timezone(timezone_name))
+        .astimezone(UTC)
+        .replace(tzinfo=None)
+    )
+    delta = abs((created_at - occurred_at).total_seconds())
     return delta <= window_minutes * 60
 
 
@@ -426,7 +443,12 @@ def _derive(
         quick_by_day[row.day] = {
             entry.id
             for entry in entries
-            if is_quick(entry.created_at, entry.occurred_local, window_minutes)
+            if is_quick(
+                entry.created_at,
+                entry.occurred_local,
+                window_minutes,
+                user.timezone,
+            )
         }
 
     positions = position_in_run(rows, user.timezone)

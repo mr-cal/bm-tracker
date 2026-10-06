@@ -160,7 +160,23 @@ def test_the_quick_bonus_is_absolute(delta_minutes: float, expected: bool) -> No
     """
     occurred = datetime(YEAR, 1, 9, 7, 0)
     created = occurred + timedelta(minutes=delta_minutes)
-    assert scoring.is_quick(created, occurred, 10) is expected
+    assert scoring.is_quick(created, occurred, 10, "UTC") is expected
+
+
+def test_the_quick_bonus_reads_the_typed_zone() -> None:
+    """A wall clock off the meridian still counts as quick.
+
+    `created_at` is stored as UTC and `occurred_local` as the
+    wall clock the user typed, so the two can only be compared
+    through the zone the wall clock names. Subtracting one from
+    the other directly measured the user's offset as if it were
+    the writing time, which made the bonus unreachable for
+    everybody not on the meridian.
+    """
+    # January: Chicago is CST, six hours behind UTC.
+    occurred = datetime(YEAR, 1, 9, 7, 0)
+    created = datetime(YEAR, 1, 9, 13, 5)  # 07:05 CST
+    assert scoring.is_quick(created, occurred, 10, "America/Chicago")
 
 
 def test_a_note_pays_once_per_note() -> None:
