@@ -39,11 +39,6 @@ class RewardLine:
     # the line rather than an afterthought in the template.
     detail: str | None = None
 
-    @property
-    def signed(self) -> str:
-        """Return the points with an explicit plus, for the animation."""
-        return f"+{self.points}"
-
 
 async def _rows_of(session: AsyncSession, user: User, day: date) -> list[DailyLog]:
     """Return the owner's days for that year, for the streak walk.

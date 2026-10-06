@@ -359,6 +359,9 @@ async def test_a_note_achievement_unlock_survives_the_new_order(
 
     shown = await client.get("/log")
     assert "A Note About Spring" in shown.text
+    # The points a badge earned are named as points, the way
+    # a reader would say them.
+    assert "+5 points" in shown.text
 
 
 async def test_a_bad_bristol_type_re_renders_the_form(
