@@ -391,6 +391,9 @@ async def submit_log(
     interface greys them out, but that is a convenience: a request that carries
     `spicy=on` alongside `choice=nothing` is not going to be allowed to record a
     spicy bowel movement on a day with no bowel movements in it.
+
+    The write commits before the note is matched, so the one network
+    call a log makes cannot hold a recorded day hostage.
     """
     form = await request.form()
     forms.guard_csrf(request, form)
@@ -426,6 +429,13 @@ async def submit_log(
                 "log_none",
                 extra={"note_added": bool(row and row.is_note_live)},
             )
+            lines = await rewards.for_empty_day(session, row, user)
+            # The day commits before the one network call a log
+            # makes: an embedding provider that is slow or down
+            # must not hold a recorded day hostage, and
+            # `try_match` never raises, so nothing after this
+            # point can lose it.
+            await session.commit()
             # An empty day carries its note, and the note is what a note
             # achievement reads, so this branch matches too.
             note_matches = await note_achievements.try_match(
@@ -435,7 +445,6 @@ async def submit_log(
                 row.notes,
             )
             celebration = _with_note_matches(celebration, note_matches)
-            lines = await rewards.for_empty_day(session, row, user)
         else:
             entry = await bm_service.log_bm(
                 session,
@@ -465,6 +474,10 @@ async def submit_log(
             celebration = await _celebrate_after(
                 session, user, "log_any", extra=_event_flags(entry, row)
             )
+            lines = await rewards.for_entry(
+                session, entry, row, user, window_minutes=window
+            )
+            await session.commit()
             # The only API call the log makes, and it can fail harmlessly: a
             # note is saved whether or not this returns anything.
             note_matches = await note_achievements.try_match(
@@ -472,11 +485,12 @@ async def submit_log(
                 request.app.state.settings,
                 user,
                 entry.notes,
+                entry=entry,
             )
             celebration = _with_note_matches(celebration, note_matches)
-            lines = await rewards.for_entry(
-                session, entry, row, user, window_minutes=window
-            )
+        # What the match recorded — note achievement unlocks, and
+        # the themes an entry matched — is its own transaction,
+        # after the log itself is already durable.
         await session.commit()
         if lines:
             celebration = replace(

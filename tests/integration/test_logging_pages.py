@@ -19,6 +19,8 @@ from bm_tracker.achievements import engine, registry
 from bm_tracker.dependencies import CSRF_FIELD_NAME, CSRF_HEADER_NAME
 from bm_tracker.models import AchievementUnlock, BmEntry, DailyLog, User
 from bm_tracker.notes import achievements as note_defs
+from bm_tracker.notes import service as note_service
+from bm_tracker.notes.match import Match
 from bm_tracker.services import bm_service
 from bm_tracker.timezones import local_now, now_in
 from httpx import ASGITransport, AsyncClient
@@ -255,6 +257,108 @@ async def test_submitting_nothing_today_creates_an_empty_day(
     assert row is not None
     assert row.n_bms == 0
     assert row.is_note_live
+
+
+async def test_the_log_is_durable_before_the_note_is_matched(
+    client: AsyncClient,
+    session: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A matcher that blows up cannot cost the log its durability.
+
+    The embedding call is the one network hop in a submission, and
+    it runs after the write has committed: a provider that dies
+    mid-request leaves the day recorded, not half-written.
+    """
+
+    async def explode(*args: object, **kwargs: object) -> list[Match]:
+        raise RuntimeError("embedding provider exploded")
+
+    monkeypatch.setattr(note_service, "try_match", explode)
+    user = await _user(session)
+    await _sign_in(client)
+    day = _yesterday()
+
+    page = await client.get(f"/log?date={day.isoformat()}")
+    token = csrf_of(page.text)
+    with pytest.raises(RuntimeError, match="embedding provider exploded"):
+        await client.post(
+            "/log",
+            data={
+                "choice": "bm:4",
+                CSRF_FIELD_NAME: token,
+                "date": day.isoformat(),
+                "time": "07:30",
+                "notes": "first of the day",
+            },
+            headers={CSRF_HEADER_NAME: token},
+        )
+
+    row = await bm_service.get_day(session, user, day)
+    assert row is not None, "the log must survive the matcher dying"
+    assert row.n_bms == 1
+
+
+async def test_a_note_achievement_unlock_survives_the_new_order(
+    client: AsyncClient,
+    session: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A note achievement earned after the commit still lands.
+
+    Matching runs after the log commits, so the unlock and the
+    matched themes need their own commit — and the celebration on
+    the way back from the form still names what the note earned.
+    """
+
+    class FakeMatcher:
+        async def match(self, text: str) -> list[Match]:
+            return [
+                Match(
+                    key="note-about-spring",
+                    name="A Note About Spring",
+                    description="Wrote about spring",
+                    tier="bronze",
+                    points=5,
+                    score=0.9,
+                )
+            ]
+
+    def fake_matcher_from(
+        settings: object, *, cache_path: object = None
+    ) -> FakeMatcher:
+        return FakeMatcher()
+
+    monkeypatch.setattr(note_service, "matcher_from", fake_matcher_from)
+    await _user(session)
+    await _sign_in(client)
+    day = _yesterday()
+
+    page = await client.get(f"/log?date={day.isoformat()}")
+    token = csrf_of(page.text)
+    response = await client.post(
+        "/log",
+        data={
+            "choice": "bm:4",
+            CSRF_FIELD_NAME: token,
+            "date": day.isoformat(),
+            "time": "07:30",
+            "notes": "the first warm rain of spring",
+        },
+        headers={CSRF_HEADER_NAME: token},
+    )
+    assert response.status_code == 303
+
+    unlocked = await session.scalars(select(AchievementUnlock))
+    assert "note:note-about-spring" in [u.achievement_key for u in unlocked]
+
+    # The matched themes are kept against the entry, which
+    # is what a counted rule on a theme reads.
+    entries = (await session.scalars(select(BmEntry))).all()
+    assert [e.note_themes for e in entries] == ["note-about-spring"]
+
+    shown = await client.get("/log")
+    assert "A Note About Spring" in shown.text
 
 
 async def test_a_bad_bristol_type_re_renders_the_form(

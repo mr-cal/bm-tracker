@@ -13,6 +13,11 @@
  * when the choice is "nothing", so the form is correct with this script
  * blocked, and a stale tab that posts spicy food alongside an empty day records
  * an empty day.
+ *
+ * The submit button is disabled as the form goes out, with a
+ * spinner, because a second press would start the same POST
+ * again and the server cannot tell the two apart. Every outcome
+ * replaces the page, so the button is never left disabled.
  */
 (function () {
   "use strict";
@@ -43,6 +48,26 @@
     form.dataset.choice = nothing ? "nothing" : bm ? "bm" : "unanswered";
   }
 
+  // One press, one log. A second press while the first is still
+  // in flight would start the same POST again, and the server
+  // cannot tell the two apart — there is no id to dedupe on.
+  // Disabling on submit is safe because every outcome replaces
+  // the page: a success redirects, and a rejection re-renders
+  // the form, so a fresh render always brings a fresh button.
+  function guard(form) {
+    var submit = form.querySelector(".log-form__submit");
+    if (submit) {
+      submit.disabled = true;
+      var spinner = document.createElement("span");
+      spinner.className = "spinner-border spinner-border-sm";
+      spinner.setAttribute("role", "status");
+      spinner.setAttribute("aria-hidden", "true");
+      submit.textContent = " Logging…";
+      submit.prepend(spinner);
+    }
+    form.setAttribute("aria-busy", "true");
+  }
+
   function init() {
     var forms = document.querySelectorAll("[data-log-form]");
     for (var i = 0; i < forms.length; i++) {
@@ -50,6 +75,9 @@
       sync(form);
       form.addEventListener("change", function (event) {
         sync(event.currentTarget);
+      });
+      form.addEventListener("submit", function () {
+        guard(form);
       });
     }
   }
