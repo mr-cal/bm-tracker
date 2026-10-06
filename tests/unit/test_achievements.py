@@ -572,7 +572,7 @@ def test_every_known_fact_is_actually_produced() -> None:
 
 
 def test_the_catalogue_is_the_size_we_intend() -> None:
-    """One hundred and forty, by agreement, and not three hundred by inertia.
+    """One hundred and fifty, by agreement, and not three hundred by inertia.
 
     Variety by volume is the opposite of variety by idea: the first twenty-one
     were twenty-one ways of saying "your number is at least N", and the answer
@@ -586,6 +586,9 @@ def test_the_catalogue_is_the_size_we_intend() -> None:
       month_of_days       / unbroken       thirty consecutive days
       twelvenotes         (alone)         only reachable beside Note to Self
 
+    It was 140 until ten theme-counted achievements arrived, each
+    counting the entries whose notes matched a note theme.
+
     In each pair the survivor is the one inside a family, or the one carrying
     the better wording, or the one with the larger prize. Every pair handed
     out two achievements for a single moment, which makes a collection meant
@@ -595,7 +598,7 @@ def test_the_catalogue_is_the_size_we_intend() -> None:
     duplicate slipping in changes it; that is the point.
     """
     loaded = registry.load()
-    assert len(loaded) == 140, f"the catalogue is {len(loaded)}, not 140"
+    assert len(loaded) == 150, f"the catalogue is {len(loaded)}, not 150"
 
 
 #: Rules that two achievements currently share, and are known to. Asserted

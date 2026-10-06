@@ -1116,3 +1116,79 @@ description = "A note long enough to be writing, on an entry that took real effo
 tier = "rare"
 icon = "first_word_said"
 rule = { all = [{ note_theme_first_word = { gte = 1 } }, { hard_strain_count = { gte = 1 } }] }
+
+# --- counted by note theme ---------------------------------------------
+# Each counts the entries whose note matched a note-achievement theme.
+# The themes are found by reading a note, so these are the fuzzy ones:
+# a count of a similarity score, not of a fact.
+
+[[achievement]]
+key = "weather_watcher"
+name = "Weather Watcher"
+description = "Logged three BMs whose notes were about the weather."
+tier = "uncommon"
+icon = "weather_watcher"
+rule = { all = [{ note_theme_weather = { gte = 3 } }] }
+[[achievement]]
+key = "dreamer"
+name = "Dreamer"
+description = "Logged three BMs whose notes were about dreams, good or bad."
+tier = "uncommon"
+icon = "dreamer"
+rule = { any = [{ note_theme_dream = { gte = 3 } }, { note_theme_nightmare = { gte = 3 } }] }
+[[achievement]]
+key = "thankful"
+name = "Thankful"
+description = "Logged five BMs whose notes were about being thankful."
+tier = "rare"
+icon = "thankful"
+rule = { all = [{ note_theme_gratitude = { gte = 5 } }] }
+[[achievement]]
+key = "ground_down"
+name = "Ground Down"
+description = "Logged three BMs whose notes were a work rant."
+tier = "uncommon"
+icon = "ground_down"
+rule = { all = [{ note_theme_work_rant = { gte = 3 } }] }
+[[achievement]]
+key = "home_cook"
+name = "Home Cook"
+description = "Logged three BMs whose notes were about cooking or a meal."
+tier = "uncommon"
+icon = "home_cook"
+rule = { any = [{ note_theme_cooking = { gte = 3 } }, { note_theme_food_review = { gte = 3 } }] }
+[[achievement]]
+key = "animal_friend"
+name = "Animal Friend"
+description = "Logged three BMs whose notes were about a pet."
+tier = "common"
+icon = "animal_friend"
+rule = { all = [{ note_theme_pet = { gte = 3 } }] }
+[[achievement]]
+key = "the_regular"
+name = "The Regular"
+description = "Logged five BMs whose notes were about the commute."
+tier = "uncommon"
+icon = "the_regular"
+rule = { all = [{ note_theme_commute = { gte = 5 } }] }
+[[achievement]]
+key = "night_person"
+name = "Night Person"
+description = "Logged four BMs whose notes were about the night or sleeplessness."
+tier = "uncommon"
+icon = "night_person"
+rule = { all = [{ note_theme_night = { gte = 4 } }] }
+[[achievement]]
+key = "loud_thoughts"
+name = "Loud Thoughts"
+description = "Logged two BMs whose notes were written entirely in capitals."
+tier = "rare"
+icon = "loud_thoughts"
+rule = { all = [{ note_theme_all_caps = { gte = 2 } }] }
+[[achievement]]
+key = "renaissance"
+name = "Renaissance"
+description = "Logged two BMs each with notes about the weather, sport and music."
+tier = "legendary"
+icon = "renaissance"
+rule = { all = [{ note_theme_weather = { gte = 2 } }, { note_theme_sport = { gte = 2 } }, { note_theme_music = { gte = 2 } }] }
