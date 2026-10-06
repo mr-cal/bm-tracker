@@ -84,7 +84,15 @@
       <p class="feed__nothing">streak continues</p>
 
     {% elif item.kind == kinds.note %}
-      <p class="feed__verb">noted</p>
+      {#
+        A live note earned its author a point, and the card
+        that carries the note says so, the way an achievement
+        card says what it earned.
+      #}
+      <p class="feed__verb">
+        noted
+        {% if item.points is not none %}<span class="badge text-bg-warning">+{{ item.points }}</span>{% endif %}
+      </p>
       <p class="feed__quote">{{ item.text }}</p>
 
     {% elif item.kind == kinds.achievement %}

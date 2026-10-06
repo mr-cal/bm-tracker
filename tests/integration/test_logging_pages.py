@@ -848,31 +848,36 @@ async def test_the_feed_shows_your_own_empty_days(
     assert "logged nothing today" in page.text
 
 
-async def test_the_feed_does_not_show_per_note_points(
+async def test_the_feed_shows_the_points_a_note_earned(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    """A note card carries no points badge.
+    """A note card names the point it earned.
 
-    "+1 point for the note" on every card was noise: the note is the thing
-    worth reading, and the point is in the badge bar and the leaderboard.
+    The note is the thing worth reading, and the point it
+    earned is the score; a score that is invisible on the
+    page where the thing that earned it appears is a number
+    that means nothing yet.
     """
-    user = await _user(session)
+    author = await _user(session, "bee")
+    await _user(session, "cal")
     day = _yesterday()
     await bm_service.log_bm(
         session,
-        user,
+        author,
         day,
         occurred_local=datetime(day.year, day.month, day.day, 8, 0),
         bristol_type=4,
         notes="a note worth reading",
     )
     await session.commit()
-    await _sign_in(client)
+    await _sign_in(client, "cal")
 
     page = await client.get("/")
 
     assert "a note worth reading" in page.text
-    assert "point for the note" not in page.text
+    # The note earned its author a point, and the card that
+    # carries the note says so.
+    assert 'badge text-bg-warning">+1' in page.text
 
 
 # --- leaderboard ----------------------------------------------------------
