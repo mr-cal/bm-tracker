@@ -525,7 +525,6 @@ async def leaderboard(
                     "rank": index + 1,
                     "person": person,
                     "score": score,
-                    "achievement_points": earned.get(person.id, 0),
                     "achievements_earned": int(earned_counts.get(person.id, 0)),
                     "total": score.logging_points + earned.get(person.id, 0),
                     "is_you": person.id == user.id,

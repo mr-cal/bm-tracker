@@ -10,12 +10,12 @@ import pytest
 from bm_tracker import theme
 
 
-def test_light_is_the_default() -> None:
-    """Nobody is put in a dark theme they did not ask for."""
-    assert theme.DEFAULT_THEME == theme.LIGHT
-    assert theme.parse_theme(None) == theme.LIGHT
-    assert theme.parse_theme("") == theme.LIGHT
-    assert theme.parse_theme("   ") == theme.LIGHT
+def test_auto_is_the_default() -> None:
+    """The app opens in the scheme the system is already using."""
+    assert theme.DEFAULT_THEME == theme.AUTO
+    assert theme.parse_theme(None) == theme.AUTO
+    assert theme.parse_theme("") == theme.AUTO
+    assert theme.parse_theme("   ") == theme.AUTO
 
 
 def test_there_are_exactly_three_choices() -> None:
@@ -37,7 +37,7 @@ def test_case_and_whitespace_are_forgiven(value: str) -> None:
 @pytest.mark.parametrize("value", ["sepia", "true", "0", "light dark", "<script>"])
 def test_anything_else_is_the_default(value: str) -> None:
     """Nonsense falls back rather than reaching the database."""
-    assert theme.parse_theme(value) == theme.LIGHT
+    assert theme.parse_theme(value) == theme.DEFAULT_THEME
     assert not theme.is_valid_theme(value)
 
 

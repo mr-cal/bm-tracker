@@ -97,13 +97,20 @@ P_DAY_HAS_NOTE = 0.35
 P_QUICK_ENTRY = 0.08
 P_SPICY = 0.18
 
-# The first seeded account gets exactly this many entries today, so that the
-# next one logged lands on The Marathon and the reward screen shows an unlock.
-# A seeded history has usually earned the reachable achievements already, which
-# means nobody ever sees the one moment the reward screen exists for.
-DEMO_TODAY_BMS = 4
-DEMO_UNLOCK_KEY = "marathon"
-DEMO_UNLOCK_NAME = "The Marathon"
+# The first seeded account's today is a five-BM day, and its last
+# entry is logged late at night. Five in a day is The Marathon and
+# a 23:30 entry is Late Night Larry, so one day satisfies both
+# rules at once — the moment the feed renders as a single card:
+# "unlocked 2 achievements".
+#
+# A seeded history has usually earned the reachable achievements
+# already, so a day that earns two together is staged on purpose
+# rather than left to chance.
+DEMO_TODAY_BMS = 5
+DEMO_UNLOCKS: tuple[tuple[str, str], ...] = (
+    ("marathon", "The Marathon"),
+    ("night_owl", "Late Night Larry"),
+)
 # How often a BM is recorded as urgent. Rare on purpose.
 P_URGENT = 0.12
 # Strain is optional, so most entries do not have it. The plan says ~60%.
@@ -309,6 +316,11 @@ async def seed(
             for index in range(count):
                 hour = rng.randint(6, 22)
                 minute = rng.choice([0, 15, 30, 45])
+                if is_demo and offset == 0 and index == count - 1:
+                    # The demo day's last BM is the one after dark:
+                    # it is what earns Late Night Larry alongside
+                    # The Marathon.
+                    hour, minute = 23, 30
                 occurred = datetime(day.year, day.month, day.day, hour, minute)
                 # A quick entry is written minutes after it
                 # happened; otherwise the day is logged in the
@@ -359,11 +371,12 @@ async def seed(
 
     unlocks = await achievements.rebuild(session, today.year)
     await _backdate_unlocks(session, accounts, now=now)
+    # The demo day is the one moment the seeder stages on purpose:
+    # two achievements earned by the same day, stamped at the
+    # moment that day was logged so the feed shows them as one
+    # card rather than two, months apart.
+    await _stage_demo_unlocks(session, accounts[0], now=now)
 
-    # Leave the first account exactly one entry short of an achievement, so that
-    # logging a BM after seeding *shows* the unlock. The reward screen is the
-    # whole point of the streak and the collection, and a seeded history that
-    # has already earned everything means nobody ever sees one.
     await session.commit()
 
     return SeedResult(
@@ -412,12 +425,14 @@ async def _backdate_unlocks(
         # already clamped to the present, so reusing it cannot put an unlock in
         # the future. Recomputing 20:00 here did exactly that for today, and
         # only started doing it often once there were enough unlocks to land on
-        # the last day.
+        # the last day. The spread stops at yesterday: today is the demo day,
+        # staged at its own moment, and the highest unlock landing beside the
+        # staged pair would claim it earned them company.
         days = list(
             (
                 await session.execute(
                     select(DailyLog.day, DailyLog.logged_at)
-                    .where(DailyLog.user_id == user.id, DailyLog.day <= today)
+                    .where(DailyLog.user_id == user.id, DailyLog.day < today)
                     .order_by(DailyLog.day)
                 )
             ).all()
@@ -429,6 +444,52 @@ async def _backdate_unlocks(
             position = int((index + 0.5) * len(days) / len(rows))
             _, logged_at = days[min(position, len(days) - 1)]
             row.unlocked_at = logged_at
+
+
+async def _stage_demo_unlocks(
+    session: AsyncSession,
+    demo: User,
+    now: datetime | None = None,
+) -> None:
+    """Stamp the demo day's two unlocks at the moment that day was logged.
+
+    The demo account's today is a five-BM day whose last entry is
+    late at night, so the engine earns The Marathon and Late Night
+    Larry on the same day. `_backdate_unlocks` cannot know that: it
+    spreads every unlock evenly across the history, which would put
+    the pair in different months and the feed would never show them
+    together.
+
+    Both were first satisfied today — the rest of the history holds
+    at most three BMs a day, and no other entry is ever logged
+    after 22:00 — so the day's own `logged_at` is the plausible
+    moment, not just a staged one.
+
+    Args:
+        session: The session to write through.
+        demo: The first seeded account.
+        now: The instant the seed treats as the present.
+
+    """
+    today = today_for(demo.timezone, now=now)
+    logged_at = await session.scalar(
+        select(DailyLog.logged_at).where(
+            DailyLog.user_id == demo.id, DailyLog.day == today
+        )
+    )
+    if logged_at is None:
+        return
+    keys = [key for key, _ in DEMO_UNLOCKS]
+    rows = (
+        await session.scalars(
+            select(AchievementUnlock).where(
+                AchievementUnlock.user_id == demo.id,
+                AchievementUnlock.achievement_key.in_(keys),
+            )
+        )
+    ).all()
+    for row in rows:
+        row.unlocked_at = logged_at
 
 
 def _resolved_path(database_url: str) -> Path | None:

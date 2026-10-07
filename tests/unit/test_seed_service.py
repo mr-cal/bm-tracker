@@ -296,22 +296,28 @@ async def test_seeding_never_writes_a_row_in_the_future(
     assert not future_unlocks, f"{len(future_unlocks)} unlocks are dated in the future"
 
 
-async def test_seeding_leaves_the_next_log_one_achievement_away(
+async def test_seeding_earns_two_achievements_at_once(
     session: AsyncSession,
 ) -> None:
-    """After `make dev-seed`, logging one BM earns something.
+    """The demo day earns two achievements, together.
 
-    A seeded history has usually earned the reachable achievements already, so
-    the person using it never sees an unlock happen — and the reward screen
-    exists for that one moment. The first account gets exactly four entries
-    today, which puts The Marathon (five in a day) one entry out.
+    The first account's today is a five-BM day whose last entry is
+    late at night: five in a day is The Marathon and a 23:30 entry
+    is Late Night Larry, so one day satisfies both rules at once.
+    The feed renders unlocks that share a moment as a single card —
+    "unlocked 2 achievements" — which is the moment the seeder
+    stages on purpose.
 
-    This is also the test that the *engine* agrees, rather than the seeder
-    merely intending to: it evaluates the rules against the seeded facts.
+    This is also the test that the *engine* agrees, rather than the
+    seeder merely intending to: it evaluates the rules against the
+    seeded facts.
     """
     from bm_tracker.achievements import engine  # noqa: PLC0415
-    from bm_tracker.models import User  # noqa: PLC0415
-    from bm_tracker.services import bm_service  # noqa: PLC0415
+    from bm_tracker.models import (  # noqa: PLC0415
+        AchievementUnlock,
+        DailyLog,
+        User,
+    )
     from bm_tracker.timezones import today_for  # noqa: PLC0415
 
     result = await seed_service.seed(
@@ -326,29 +332,31 @@ async def test_seeding_leaves_the_next_log_one_achievement_away(
     ).one()
     today = today_for(first.timezone)
 
-    before = await engine.status_for(session, first, today.year)
-    assert not any(
-        s.unlocked and s.achievement.key == seed_service.DEMO_UNLOCK_KEY for s in before
-    ), "the demo achievement should still be unearned after seeding"
+    status = await engine.status_for(session, first, today.year)
+    for key, _ in seed_service.DEMO_UNLOCKS:
+        assert any(s.unlocked and s.achievement.key == key for s in status), (
+            f"the demo day should have earned {key}"
+        )
 
-    await bm_service.log_bm(
-        session,
-        first,
-        today,
-        occurred_local=datetime(today.year, today.month, today.day, 12, 0),
-        bristol_type=3,
+    # Both unlocks sit at the moment the day was logged, so the
+    # feed groups them into one card.
+    logged_at = await session.scalar(
+        select(DailyLog.logged_at).where(
+            DailyLog.user_id == first.id, DailyLog.day == today
+        )
     )
-    # The same two calls the log route makes, so this checks the path a real
-    # log takes rather than the rules in isolation.
-    await engine.record(
-        session, await engine.evaluate(session, first, today.year), first.id, today.year
-    )
-    await session.commit()
-
-    after = await engine.status_for(session, first, today.year)
-    assert any(
-        s.unlocked and s.achievement.key == seed_service.DEMO_UNLOCK_KEY for s in after
-    ), f"logging one BM did not earn {seed_service.DEMO_UNLOCK_NAME}"
+    rows = (
+        await session.scalars(
+            select(AchievementUnlock).where(
+                AchievementUnlock.user_id == first.id,
+                AchievementUnlock.achievement_key.in_(
+                    [key for key, _ in seed_service.DEMO_UNLOCKS]
+                ),
+            )
+        )
+    ).all()
+    assert len(rows) == 2
+    assert {row.unlocked_at for row in rows} == {logged_at}
 
 
 async def test_the_admin_is_left_short_of_the_top_tier(session: AsyncSession) -> None:

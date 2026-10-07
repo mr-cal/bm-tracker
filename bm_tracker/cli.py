@@ -220,9 +220,9 @@ def seed(
 
     result = asyncio.run(_run())
 
+    names = " and ".join(name for _, name in seed_service.DEMO_UNLOCKS)
     click.echo(
-        f"  log one BM as the first account and you will earn "
-        f"{seed_service.DEMO_UNLOCK_NAME}"
+        f"  the first account's today earned {names} together, as one card on the feed"
     )
 
     click.echo(

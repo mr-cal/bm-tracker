@@ -880,6 +880,45 @@ async def test_the_feed_shows_the_points_a_note_earned(
     assert 'badge text-bg-warning">+1 points' in page.text
 
 
+async def test_the_feed_shows_the_points_a_bm_earned(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """A BM card names the points its entry earned.
+
+    An entry earns a point for the note it carries and a point
+    for being written inside the ten-minute window — the same
+    two rules the board derives with — and a plain entry earns
+    nothing of its own, so it carries no badge at all.
+    """
+    author = await _user(session, "bee")
+    today = now_in("UTC")[0]
+    await bm_service.log_bm(
+        session,
+        author,
+        today,
+        occurred_local=local_now(author.timezone),
+        bristol_type=4,
+        notes="a note worth reading",
+    )
+    await bm_service.log_bm(
+        session,
+        author,
+        today,
+        occurred_local=local_now(author.timezone) - timedelta(hours=2),
+        bristol_type=3,
+    )
+    await session.commit()
+    await _sign_in(client, "bee")
+
+    page = await client.get("/")
+
+    assert page.text.count("logged a BM") == 2
+    # The first entry carries a note and was written inside the
+    # window, so its card says two; the plain one says nothing.
+    assert 'badge text-bg-warning">+2 points' in page.text
+    assert "+0 points" not in page.text
+
+
 async def test_the_feed_groups_achievements_from_one_bowel_movement(
     client: AsyncClient, session: AsyncSession
 ) -> None:
@@ -917,9 +956,11 @@ async def test_the_feed_groups_achievements_from_one_bowel_movement(
     assert "unlocked 2 achievements" in page.text
     assert "First Blood" in page.text
     assert "The Marathon" in page.text
-    # One card, two icons, and the run's points summed.
+    # One card, two icons, and each prize's own points.
     assert page.text.count('class="achievement-icon achievement-icon--') == 2
-    assert "+25 points" in page.text
+    assert "+10 points" in page.text
+    assert "+15 points" in page.text
+    assert "+25 points" not in page.text
 
 
 # --- leaderboard ----------------------------------------------------------
@@ -1397,8 +1438,8 @@ async def test_settings_offers_light_dark_and_auto(
     for value in ("light", "dark", "auto"):
         assert f'value="{value}"' in page.text
     # Jinja puts the attributes on their own line, so match across whitespace.
-    assert re.search(r'value="light"\s+checked', page.text), (
-        "light is the default and should be preselected"
+    assert re.search(r'value="auto"\s+checked', page.text), (
+        "auto is the default and should be preselected"
     )
 
 
@@ -1881,8 +1922,8 @@ async def test_achievement_points_reach_the_leaderboard(
     everything — logging every day and filling the collection — still lost to
     somebody who only logged. The plan argued that a growing catalogue must not
     silently rebalance the board; the cost was that the board lied about who had
-    done more, which is worse. One number now, with the split shown per row so
-    you can still see where it came from.
+    done more, which is worse. One number now — the row shows the
+    count of badges, not the points behind it.
     """
     grinder = await _user(session, "cal")
     collector = await _user(session, "bee")
@@ -1910,10 +1951,6 @@ async def test_achievement_points_reach_the_leaderboard(
     assert "bee" in first.lower(), (
         "the achievement points should have lifted Bee above Cal"
     )
-    # Named as points, because it is points. "Of which achievements" sat among a
-    # row of counts, so 348 read as three hundred and forty-eight achievements
-    # out of a hundred and fifty-eight available.
-    assert "Achievement points" in first, "the row should say where it came from"
     assert "Achievements earned" in first, "and how many that was"
 
 
@@ -2266,11 +2303,12 @@ async def test_a_feed_card_names_the_achievement_it_announces(
 ) -> None:
     """A card says which achievement it is announcing.
 
-    It used to say only "unlocked an achievement" and leave the thirty-pixel
-    picture to identify it, which is the same problem the tooltip was meant to
-    solve: in a run of unlocks every card looks alike and the reader learns
-    nothing. The description can wait for a hover. The name cannot — it is the
-    event.
+    It used to say only "unlocked an achievement" and leave the
+    thirty-pixel picture to identify it, which is the same problem
+    the tooltip was meant to solve: in a run of unlocks every card
+    looks alike and the reader learns nothing. The description can
+    wait for a hover. The name cannot — it is the event, and it now
+    sits on the prize's own line beside its picture and its points.
     """
     cal = await _user(session, "cal")
     session.add(
@@ -2285,11 +2323,10 @@ async def test_a_feed_card_names_the_achievement_it_announces(
     await _sign_in(client)
 
     page = await client.get("/")
-    named = re.search(
-        r"unlocked an achievement: <strong[^>]*>(\w[^<]+)</strong>", page.text
-    )
+    assert "unlocked an achievement" in page.text
+    named = re.search(r"feed__award-name[^>]*>(\w[^<]+)</strong>", page.text)
     assert named, (
-        "a card should read 'unlocked an achievement: <name>': "
+        "a card should name the achievement it announces: "
         f"{re.findall(r'feed__verb.>(.{0,80})', page.text)[:3]}"
     )
     # The tooltip keeps the explanation, so the description stays off the card.

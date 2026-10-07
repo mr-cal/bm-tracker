@@ -1,23 +1,13 @@
 """The colour theme a person sees the app in.
 
-Three choices: light, dark, and auto — auto following the operating system.
+Three choices: light, dark, and auto — auto following the operating
+system, and the default. The app opens in the scheme the person is
+already using, so it fits the room it was opened in; light and dark
+are for the person who wants one of them, always.
 
-Light is the default, and that is a deliberate decision rather than a default
-that happened. Two reasons:
-
-* Nobody has to be in a dark theme they did not ask for. A site that opens in
-  dark mode because the phone is in dark mode is making a choice on the user's
-  behalf, and a light site in a dark room is a legitimate preference.
-* A reader-mode extension that darkens pages — Dark Reader and its relatives —
-  works by inverting whatever the page serves. Served light, this app inverts
-  cleanly. Served dark, the extension usually detects the site is already dark
-  and declines to touch it, so the person gets a half-darkened page or none at
-  all.
-
-`auto` exists for the case where following the system is genuinely what someone
-wants, and it is the one setting that has to keep listening: the preference
-media query changes while the tab is open, and `light` and `dark` deliberately
-do not.
+`auto` is also the one setting that has to keep listening: the
+preference media query changes while the tab is open, and `light`
+and `dark` deliberately do not.
 """
 
 from __future__ import annotations
@@ -53,7 +43,7 @@ THEME_OPTIONS: Final[tuple[ThemeOption, ...]] = (
 )
 
 THEMES: Final[frozenset[str]] = frozenset({LIGHT, DARK, AUTO})
-DEFAULT_THEME: Final = LIGHT
+DEFAULT_THEME: Final = AUTO
 
 
 def parse_theme(raw: str | None) -> str:

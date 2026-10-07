@@ -42,17 +42,6 @@
         <div><dt>Longest streak</dt><dd>{{ row.score.longest_streak }}</dd></div>
         <div><dt>Days logged</dt><dd>{{ row.score.days_logged }}</dd></div>
         <div><dt>BMs</dt><dd>{{ row.score.bms }}</dd></div>
-        {#
-          Both numbers, and the points one named as points. It said "Of which
-          achievements" and showed 348 beside a total of 3082, in a row of
-          counts — so it read as three hundred and forty-eight achievements out
-          of a hundred and fifty-eight available, which is not a number anybody
-          can have. It was points. The count is the interesting half anyway.
-        #}
-        <div>
-          <dt>Achievement points</dt>
-          <dd>{{ row.achievement_points }} pts</dd>
-        </div>
         <div>
           <dt>Achievements earned</dt>
           <dd>{{ row.achievements_earned }}</dd>

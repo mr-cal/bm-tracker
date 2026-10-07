@@ -98,6 +98,7 @@ async def feed(
         viewer=user,
         limit=per_page,
         offset=(page - 1) * per_page,
+        window_minutes=_window(request),
     )
     # Asking for one item past this page is how we know whether to offer a
     # "newer" link, without a second count query that could disagree with the
@@ -310,7 +311,11 @@ async def person_page(
             "badges": badges,
             "by_tier": _by_tier(badges),
             "history": await feed_service.feed_items(
-                session, viewer=user, subject=subject, limit=feed_service.PAGE_SIZE
+                session,
+                viewer=user,
+                subject=subject,
+                limit=feed_service.PAGE_SIZE,
+                window_minutes=_window(request),
             ),
             "kinds": feed_service.KINDS,
             "bristol_by_value": {t.value: t for t in bristol.BRISTOL_SCALE},

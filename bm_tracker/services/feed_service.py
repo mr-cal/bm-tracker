@@ -110,7 +110,7 @@ class FeedItem:
     # One bowel movement can earn several at once, and those share
     # a card, so the field is a tuple rather than the single
     # achievement the card used to carry.
-    achievements: tuple[dict[str, str], ...] = ()
+    achievements: tuple[dict[str, object], ...] = ()
 
     # The viewer's own entry, for the one item kind that carries BM detail.
     # Populated *only* when `user` is the viewer, so a serialised item can never
@@ -171,6 +171,7 @@ async def feed_items(
     limit: int = PAGE_SIZE,
     offset: int = 0,
     subject: User | None = None,
+    window_minutes: int = 10,
 ) -> list[FeedItem]:
     """Return a page of activity, newest first, shaped by who is looking.
 
@@ -200,6 +201,7 @@ async def feed_items(
         limit: How many items to return.
         offset: How many items to skip, for the page being asked for.
         subject: Whose history to return, or None for the whole group.
+        window_minutes: The ten-minute bonus window.
 
     Returns:
         The `FeedItem`s, newest first.
@@ -227,7 +229,11 @@ async def feed_items(
     # days of another person are not public, and `feed_items` is the only place
     # that knows it.
     if subject is None or subject.id == viewer.id:
-        items.extend(await _own_entries(session, viewer, limit=depth))
+        items.extend(
+            await _own_entries(
+                session, viewer, limit=depth, window_minutes=window_minutes
+            )
+        )
         items.extend(await _own_days(session, viewer, limit=depth))
     items.sort(key=lambda item: item.at, reverse=True)
     page = items[offset : offset + limit]
@@ -240,16 +246,18 @@ async def feed_items(
     return [replace(item, at=to_wall_clock(item.at, zone)) for item in page]
 
 
-def _badge(key: str) -> dict[str, str] | None:
+def _badge(key: str, points: int) -> dict[str, object] | None:
     """Return the registry's wording for an achievement.
 
     Args:
         key: The achievement key.
+        points: The points the unlock awarded.
 
     Returns:
-        Its name, description, icon and tier, or None if the registry has no
-        such key — which it should not, but a feed that 500s because a
-        definition was retired is worse than one missing a badge.
+        Its name, description, icon, tier and points, or None if the
+        registry has no such key — which it should not, but a feed
+        that 500s because a definition was retired is worse than one
+        missing a badge.
 
     """
     try:
@@ -261,6 +269,7 @@ def _badge(key: str) -> dict[str, str] | None:
         "description": definition.description,
         "icon": definition.icon,
         "tier": definition.tier,
+        "points": points,
     }
 
 
@@ -268,21 +277,29 @@ async def _own_entries(
     session: AsyncSession,
     viewer: User,
     limit: int,
+    window_minutes: int,
 ) -> list[FeedItem]:
     """Return the viewer's own BMs, newest first.
 
-    No points figure: a BM does not earn points, the day it belongs to does, and
-    putting a number here would be a second derivation of it that could drift
-    from the leaderboard. The badge bar already shows the day's real total.
+    Each card names the points its entry earned: one for the
+    note it carries and one for being written inside the
+    ten-minute window. Those are the same two rules the
+    leaderboard's derivation applies, computed by the same
+    functions, so the number here cannot drift from the board.
+    A plain entry earns nothing of its own — the day's points
+    belong to the day, and the dashboard's badge bar shows that
+    total — so it carries no badge.
 
-    This is the only place in the feed that carries BM detail, and it is only
-    ever called with the viewer as the owner. Everything else about the feed is
-    shaped by what other people are allowed to see.
+    This is the only place in the feed that carries BM detail,
+    and it is only ever called with the viewer as the owner.
+    Everything else about the feed is shaped by what other
+    people are allowed to see.
 
     Args:
         session: The session to read through.
         viewer: Whose entries to return.
         limit: The most to return.
+        window_minutes: The ten-minute bonus window.
 
     Returns:
         The viewer's own `FeedItem`s, newest first.
@@ -305,9 +322,35 @@ async def _own_entries(
             year=day.day.year,
             entry=entry,
             day=day.day,
+            points=_entry_points(entry, viewer, window_minutes) or None,
         )
         for entry, day in rows
     ]
+
+
+def _entry_points(entry: BmEntry, viewer: User, window_minutes: int) -> int:
+    """Return the points an entry earned by itself.
+
+    Args:
+        entry: The entry to score.
+        viewer: The entry's owner, whose clock the bonus is
+            measured on.
+        window_minutes: The ten-minute bonus window.
+
+    Returns:
+        A point for the entry's note, a point for the window,
+        or both.
+
+    """
+    points = scoring.POINTS_NOTE if entry.has_note else 0
+    if scoring.is_quick(
+        entry.created_at,
+        entry.occurred_local,
+        window_minutes,
+        viewer.timezone,
+    ):
+        points += scoring.POINTS_QUICK_ENTRY
+    return points
 
 
 async def _own_days(
@@ -520,7 +563,7 @@ def _achievement_item(
         rows: Unlock rows that share a user and a moment.
 
     Returns:
-        The card, with the run's points summed.
+        The card, with each prize's own points.
 
     """
     first = rows[0]
@@ -530,18 +573,20 @@ def _achievement_item(
         user=users[first.user_id],
         year=first.year,
         achievements=tuple(
-            _badge(row.achievement_key) or _unknown_badge(row.achievement_key)
+            _badge(row.achievement_key, row.points)
+            or _unknown_badge(row.achievement_key, row.points)
             for row in rows
         ),
         points=sum(row.points for row in rows),
     )
 
 
-def _unknown_badge(key: str) -> dict[str, str]:
+def _unknown_badge(key: str, points: int) -> dict[str, object]:
     """Describe an achievement the registry no longer knows.
 
     Args:
         key: The unlock's achievement key.
+        points: The points the unlock awarded.
 
     Returns:
         Enough of the shape for a card, with the key as the name.
@@ -552,6 +597,7 @@ def _unknown_badge(key: str) -> dict[str, str]:
         "description": "",
         "icon": "",
         "tier": "common",
+        "points": points,
     }
 
 

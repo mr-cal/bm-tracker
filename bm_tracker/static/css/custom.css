@@ -562,11 +562,21 @@ body {
 }
 
 .feed__award {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+/* One prize per line: its picture, its name and the points
+ * that prize alone earned. Sharing a line would push the
+ * names apart, and one badge summing the run would say how
+ * much the event was worth rather than what each prize was. */
+.feed__award-one {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin: 0;
 }
 
 /* The verb is a small grey aside and the name is the point of the card, so the
@@ -1569,7 +1579,18 @@ body {
 .board__stats > div {
   display: flex;
   gap: 0.35rem;
-  justify-content: space-between;
+  justify-content: start;
+}
+
+/* A column wide enough to stretch its label away from its
+ * number: the pair read as two things, and the number sat
+ * against the next column's label. Narrow columns are too
+ * small for the gap to matter, and the numbers at their
+ * right edge are the look there. */
+@media (max-width: 767.98px) {
+  .board__stats > div {
+    justify-content: space-between;
+  }
 }
 
 .board__stats dt {

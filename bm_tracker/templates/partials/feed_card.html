@@ -42,7 +42,10 @@
     </header>
 
     {% if item.kind == kinds.bm %}
-      <p class="feed__verb">logged a BM</p>
+      <p class="feed__verb">
+        logged a BM
+        {% if item.points %}<span class="badge text-bg-warning">+{{ item.points }} points</span>{% endif %}
+      </p>
       <p class="feed__bm">
         <strong>{{ clock(item.entry.occurred_local) }}</strong>
         <span class="bristol-dot bristol-{{ bristol_by_value[item.entry.bristol_type].band }}">
@@ -97,40 +100,53 @@
 
     {% elif item.kind == kinds.achievement %}
       {#
-        The name is in the sentence, not only in the tooltip. A card that says
-        "unlocked an achievement" and leaves the picture to say which one was
-        useless on its own: the icons are thirty pixels, and a feed where every
-        unlock looks alike tells the reader nothing they came to read. The
-        description is the part that can wait for a hover; the name cannot.
+        The name is on the prize itself, not only in the
+        tooltip. A card that says "unlocked an achievement"
+        and leaves the picture to say which one was useless
+        on its own: the icons are thirty pixels, and a feed
+        where every unlock looks alike tells the reader
+        nothing they came to read. The description is the
+        part that can wait for a hover; the name cannot.
 
-        One bowel movement can earn several achievements at once, and those
-        share this card: the engine stamps them as one event, and a card per
-        prize would count the event once per prize.
+        One bowel movement can earn several achievements at
+        once, and those share this card: the engine stamps
+        them as one event, and a card per prize would count
+        the event once per prize. Each prize keeps its own
+        line and its own points — a badge summing the run
+        would say how much the event was worth, which is a
+        number nobody can act on.
       #}
-      <p class="feed__verb">unlocked {% if item.achievements|length == 1 %}an achievement{% else %}{{ item.achievements|length }} achievements{% endif %}: {% for award in item.achievements %}<strong class="feed__award-name">{{ award.name }}</strong>{% if not loop.last %}, {% endif %}{% endfor %}</p>
+      <p class="feed__verb">
+        unlocked {% if item.achievements|length == 1 %}an achievement{% else %}{{ item.achievements|length }} achievements{% endif %}
+      </p>
       <p class="feed__award">
         {% for award in item.achievements %}
-        {#
-          The picture and its explanation, kept as the one component a person's
-          page already uses. The feed had its own `badge-icon` copy that nothing
-          ever styled, so the tooltip rendered permanently inline and, on
-          focus, straight over the picture.
+        <span class="feed__award-one">
+          {#
+            The picture and its explanation, kept as the one
+            component a person's page already uses. The feed
+            had its own `badge-icon` copy that nothing ever
+            styled, so the tooltip rendered permanently inline
+            and, on focus, straight over the picture.
 
-          Focusable rather than clickable-on purpose: the same affordance works
-          for a mouse, a finger and a keyboard, and `badges.js` already
-          repositions the tooltip on focus so it cannot run off the edge.
-        #}
-        <span class="achievement-icon achievement-icon--{{ award.tier }}"
-              tabindex="0"
-              aria-label="{{ award.name }}. {{ award.description }}">
-          {% if award.icon %}{{ badge_icon(award.icon) }}{% endif %}
-          <span class="achievement-icon__tip" role="tooltip">
-            <strong>{{ award.name }}</strong>
-            <span>{{ award.description }}</span>
+            Focusable rather than clickable-on purpose: the
+            same affordance works for a mouse, a finger and a
+            keyboard, and `badges.js` already repositions the
+            tooltip on focus so it cannot run off the edge.
+          #}
+          <span class="achievement-icon achievement-icon--{{ award.tier }}"
+                tabindex="0"
+                aria-label="{{ award.name }}. {{ award.description }}">
+            {% if award.icon %}{{ badge_icon(award.icon) }}{% endif %}
+            <span class="achievement-icon__tip" role="tooltip">
+              <strong>{{ award.name }}</strong>
+              <span>{{ award.description }}</span>
+            </span>
           </span>
+          <strong class="feed__award-name">{{ award.name }}</strong>
+          <span class="badge text-bg-warning">+{{ award.points }} points</span>
         </span>
         {% endfor %}
-        <span class="badge text-bg-warning">+{{ item.points }} points</span>
       </p>
 
     {% endif %}

@@ -29,7 +29,7 @@
           (document.cookie.match(new RegExp("(?:^|; )" + COOKIE + "=([^;]*)")) || [])[1] ||
           {{ (user.theme if user is defined else theme.DEFAULT_THEME) | tojson }};
         if (wanted !== "light" && wanted !== "dark" && wanted !== "auto") {
-          wanted = "light";
+          wanted = "auto";
         }
         var dark = window.matchMedia("(prefers-color-scheme: dark)");
         var apply = function () {
