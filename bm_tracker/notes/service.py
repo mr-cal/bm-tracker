@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Final
 
 from sqlalchemy import select
 
-from bm_tracker.models import AchievementUnlock
+from bm_tracker.models import AchievementUnlock, utcnow
 from bm_tracker.notes.embeddings import EmbeddingError, OpenRouterEmbedder
 from bm_tracker.notes.match import Match, Matcher
 from bm_tracker.timezones import now_in
@@ -172,6 +172,9 @@ async def try_match(
     if entry is not None:
         entry.note_themes = ",".join(sorted({m.key for m in found})) or None
 
+    # One stamp for the whole match: themes one note earns share a
+    # moment, the way the achievements one log earns do.
+    unlocked_at = utcnow()
     for match in found:
         if match.key in already:
             continue
@@ -183,6 +186,7 @@ async def try_match(
                 year=year,
                 points=match.points,
                 score=match.score,
+                unlocked_at=unlocked_at,
             )
         )
     return found

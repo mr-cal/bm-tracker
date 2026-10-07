@@ -167,7 +167,7 @@ def _with_note_matches(
                     "key": m.key,
                     "name": m.name,
                     "description": m.description,
-                    "icon": "default",
+                    "icon": m.key,
                     "points": m.points,
                     "score": m.score,
                 }

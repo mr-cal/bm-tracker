@@ -199,6 +199,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Icons are inlined rather than referenced, so they inherit `currentColor`
     # and an active tab can be a different colour from an inactive one.
     cast(dict[str, object], templates.env.globals)["icon"] = icons.icon
+    # Badges are inlined for the same reason: a referenced SVG's
+    # `currentColor` resolves to black, invisible on a dark card.
+    cast(dict[str, object], templates.env.globals)["badge_icon"] = icons.badge_icon
     # The theme module, so the page can apply the colour scheme before the
     # stylesheet loads. The cookie name has to be in the document for that, and
     # duplicating the literal in a template is how the two drift apart.

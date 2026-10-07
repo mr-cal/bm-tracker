@@ -91,7 +91,7 @@
       #}
       <p class="feed__verb">
         noted
-        {% if item.points is not none %}<span class="badge text-bg-warning">+{{ item.points }}</span>{% endif %}
+        {% if item.points is not none %}<span class="badge text-bg-warning">+{{ item.points }} points</span>{% endif %}
       </p>
       <p class="feed__quote">{{ item.text }}</p>
 
@@ -102,14 +102,14 @@
         useless on its own: the icons are thirty pixels, and a feed where every
         unlock looks alike tells the reader nothing they came to read. The
         description is the part that can wait for a hover; the name cannot.
+
+        One bowel movement can earn several achievements at once, and those
+        share this card: the engine stamps them as one event, and a card per
+        prize would count the event once per prize.
       #}
-      {% set award_name = item.achievement.name if item.achievement
-                          else item.achievement_key | replace('_', ' ') | title %}
-      <p class="feed__verb">
-        unlocked an achievement: <strong class="feed__award-name">{{ award_name }}</strong>
-      </p>
+      <p class="feed__verb">unlocked {% if item.achievements|length == 1 %}an achievement{% else %}{{ item.achievements|length }} achievements{% endif %}: {% for award in item.achievements %}<strong class="feed__award-name">{{ award.name }}</strong>{% if not loop.last %}, {% endif %}{% endfor %}</p>
       <p class="feed__award">
-        {% if item.achievement %}
+        {% for award in item.achievements %}
         {#
           The picture and its explanation, kept as the one component a person's
           page already uses. The feed had its own `badge-icon` copy that nothing
@@ -120,18 +120,17 @@
           for a mouse, a finger and a keyboard, and `badges.js` already
           repositions the tooltip on focus so it cannot run off the edge.
         #}
-        <span class="achievement-icon achievement-icon--{{ item.achievement.tier }}"
+        <span class="achievement-icon achievement-icon--{{ award.tier }}"
               tabindex="0"
-              aria-label="{{ item.achievement.name }}. {{ item.achievement.description }}">
-          <img src="/static/img/badges/{{ item.achievement.icon }}.svg" alt=""
-               width="30" height="30" loading="lazy" />
+              aria-label="{{ award.name }}. {{ award.description }}">
+          {% if award.icon %}{{ badge_icon(award.icon) }}{% endif %}
           <span class="achievement-icon__tip" role="tooltip">
-            <strong>{{ item.achievement.name }}</strong>
-            <span>{{ item.achievement.description }}</span>
+            <strong>{{ award.name }}</strong>
+            <span>{{ award.description }}</span>
           </span>
         </span>
-        {% endif %}
-        <span class="badge text-bg-warning">+{{ item.points }}</span>
+        {% endfor %}
+        <span class="badge text-bg-warning">+{{ item.points }} points</span>
       </p>
 
     {% endif %}

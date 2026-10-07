@@ -49,8 +49,7 @@
     <ul class="reward__unlocked">
       {% for item in flash.unlocked %}
       <li class="reward__award">
-        <img class="reward__award-icon" src="/static/img/badges/{{ item.icon }}.svg"
-             alt="" width="34" height="34" />
+        {{ badge_icon(item.icon, "reward__award-icon") }}
         <span class="reward__award-body">
           <strong class="reward__award-name">{{ item.name }}</strong>
           <span class="reward__award-desc">{{ item.description }}</span>

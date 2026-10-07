@@ -47,9 +47,7 @@
     #}
     {% if status.unlocked %}
     <li class="achievement-tile achievement-tile--on achievement-tile--{{ status.achievement.tier }}">
-      <img class="achievement-tile__glyph"
-           src="/static/img/badges/{{ status.achievement.icon }}.svg"
-           alt="" width="40" height="40" loading="lazy" />
+      {{ badge_icon(status.achievement.icon, "achievement-tile__glyph") }}
       <span class="achievement-tile__name">{{ status.achievement.name }}</span>
       <span class="achievement-tile__desc">{{ status.achievement.description }}</span>
       <span class="badge text-bg-success">+{{ status.points }} · {{ status.year }}</span>
@@ -64,9 +62,7 @@
       the names are the reward and there is nothing to collect yet.
     #}
     <li class="achievement-tile achievement-tile--hidden achievement-tile--{{ status.achievement.tier }}">
-      <img class="achievement-tile__glyph achievement-tile__glyph--hidden"
-           src="/static/img/badges/{{ status.achievement.icon }}.svg"
-           alt="" width="40" height="40" loading="lazy" aria-hidden="true" />
+      {{ badge_icon(status.achievement.icon, "achievement-tile__glyph achievement-tile__glyph--hidden") }}
       <span class="achievement-tile__name">???</span>
     </li>
     {% endif %}
@@ -77,10 +73,8 @@
     {% for status in group %}
     <li class="achievement-tile achievement-tile--{{ status.achievement.tier }}
                {{ 'achievement-tile--on' if status.unlocked else '' }}">
-      <img class="achievement-tile__glyph"
-           src="/static/img/badges/{{ status.achievement.icon }}.svg"
-           alt="" width="40" height="40" loading="lazy"
-           {% if not status.unlocked %}style="opacity:.45"{% endif %} />
+      {% set locked = " achievement-tile__glyph--locked" if not status.unlocked else "" %}
+      {{ badge_icon(status.achievement.icon, "achievement-tile__glyph" + locked) }}
       <span class="achievement-tile__name">{{ status.achievement.name }}</span>
       <span class="achievement-tile__desc">{{ status.achievement.description }}</span>
       {% if status.unlocked %}

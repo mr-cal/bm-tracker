@@ -315,11 +315,11 @@ async def test_a_note_achievement_unlock_survives_the_new_order(
         async def match(self, text: str) -> list[Match]:
             return [
                 Match(
-                    key="note-about-spring",
-                    name="A Note About Spring",
-                    description="Wrote about spring",
-                    tier="bronze",
-                    points=5,
+                    key="weather",
+                    name="Weather",
+                    description="Wrote about the weather.",
+                    tier="common",
+                    points=2,
                     score=0.9,
                 )
             ]
@@ -350,18 +350,18 @@ async def test_a_note_achievement_unlock_survives_the_new_order(
     assert response.status_code == 303
 
     unlocked = await session.scalars(select(AchievementUnlock))
-    assert "note:note-about-spring" in [u.achievement_key for u in unlocked]
+    assert "note:weather" in [u.achievement_key for u in unlocked]
 
     # The matched themes are kept against the entry, which
     # is what a counted rule on a theme reads.
     entries = (await session.scalars(select(BmEntry))).all()
-    assert [e.note_themes for e in entries] == ["note-about-spring"]
+    assert [e.note_themes for e in entries] == ["weather"]
 
     shown = await client.get("/log")
-    assert "A Note About Spring" in shown.text
+    assert "Weather" in shown.text
     # The points a badge earned are named as points, the way
     # a reader would say them.
-    assert "+5 points" in shown.text
+    assert "+2 points" in shown.text
 
 
 async def test_a_bad_bristol_type_re_renders_the_form(
@@ -877,7 +877,49 @@ async def test_the_feed_shows_the_points_a_note_earned(
     assert "a note worth reading" in page.text
     # The note earned its author a point, and the card that
     # carries the note says so.
-    assert 'badge text-bg-warning">+1' in page.text
+    assert 'badge text-bg-warning">+1 points' in page.text
+
+
+async def test_the_feed_groups_achievements_from_one_bowel_movement(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """Achievements earned together share one card.
+
+    The engine stamps every achievement one log earns with the same
+    moment, so the feed can tell two prizes from one event from two
+    events: a card per prize would count the event once per prize.
+    """
+    cal = await _user(session, "cal")
+    moment = now_in("UTC")[1]
+    session.add_all(
+        [
+            AchievementUnlock(
+                user_id=cal.id,
+                achievement_key="first_blood",
+                year=now_in("UTC")[0].year,
+                points=10,
+                unlocked_at=moment,
+            ),
+            AchievementUnlock(
+                user_id=cal.id,
+                achievement_key="marathon",
+                year=now_in("UTC")[0].year,
+                points=15,
+                unlocked_at=moment,
+            ),
+        ]
+    )
+    await session.commit()
+    await _sign_in(client)
+
+    page = await client.get("/")
+
+    assert "unlocked 2 achievements" in page.text
+    assert "First Blood" in page.text
+    assert "The Marathon" in page.text
+    # One card, two icons, and the run's points summed.
+    assert page.text.count('class="achievement-icon achievement-icon--') == 2
+    assert "+25 points" in page.text
 
 
 # --- leaderboard ----------------------------------------------------------
@@ -908,7 +950,6 @@ async def test_leaderboard_ranks_by_logging_plus_achievements(
     assert page.status_code == 200
     body = page.text
     assert body.index("Cal") < body.index("Bee"), "higher score should rank first"
-    assert "Ranked on everything you earned" in body
 
 
 async def test_leaderboard_excludes_suspended_users(

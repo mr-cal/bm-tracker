@@ -122,6 +122,10 @@ async def evaluate(
     )
 
     fresh: list[Unlock] = []
+    # One stamp for the whole run: the achievements one log earns share
+    # a moment, which is how the feed tells several prizes from one
+    # event from several events.
+    unlocked_at = utcnow()
     for achievement in REGISTRY.achievements:
         if achievement.key in have:
             continue
@@ -131,7 +135,7 @@ async def evaluate(
                 Unlock(
                     achievement=achievement,
                     points=achievement.points,
-                    unlocked_at=utcnow(),
+                    unlocked_at=unlocked_at,
                 )
             )
     return fresh

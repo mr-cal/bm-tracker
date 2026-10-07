@@ -105,8 +105,12 @@ class FeedItem:
     year: int
     points: int | None = None
     text: str | None = None
-    achievement_key: str | None = None
-    name: str | None = None
+
+    # The registry's own wording for every achievement on the card.
+    # One bowel movement can earn several at once, and those share
+    # a card, so the field is a tuple rather than the single
+    # achievement the card used to carry.
+    achievements: tuple[dict[str, str], ...] = ()
 
     # The viewer's own entry, for the one item kind that carries BM detail.
     # Populated *only* when `user` is the viewer, so a serialised item can never
@@ -114,10 +118,6 @@ class FeedItem:
     # item is built rather than trusted to the template.
     entry: BmEntry | None = None
     day: date | None = None
-
-    # The registry's own wording for an achievement item, so the feed and the
-    # badges page cannot describe the same unlock differently.
-    achievement: dict[str, str] | None = None
 
     @property
     def display_name(self) -> str:
@@ -461,7 +461,11 @@ async def _achievements(
     *,
     only_user: int | None = None,
 ) -> list[FeedItem]:
-    """Return achievement unlocks for the year.
+    """Return achievement items, newest first.
+
+    The engine stamps every achievement one bowel movement earns with
+    the same moment, so those rows share one card: the unlock was a
+    single event, and a card per prize would count it once per prize.
 
     Args:
         session: The session to read through.
@@ -483,27 +487,72 @@ async def _achievements(
                     else []
                 )
             )
-            .order_by(AchievementUnlock.unlocked_at.desc())
+            .order_by(
+                AchievementUnlock.unlocked_at.desc(),
+                AchievementUnlock.user_id,
+            )
             .limit(limit)
         )
     ).all()
     items: list[FeedItem] = []
+    group: list[AchievementUnlock] = []
     for row in rows:
-        user = users.get(row.user_id)
-        if user is None:
+        if row.user_id not in users:
             continue
-        items.append(
-            FeedItem(
-                kind=KIND_ACHIEVEMENT,
-                at=row.unlocked_at,
-                user=user,
-                year=row.year,
-                achievement_key=row.achievement_key,
-                achievement=_badge(row.achievement_key),
-                points=row.points,
-            )
-        )
+        if group and (
+            row.user_id != group[0].user_id or row.unlocked_at != group[0].unlocked_at
+        ):
+            items.append(_achievement_item(users, group))
+            group = []
+        group.append(row)
+    if group:
+        items.append(_achievement_item(users, group))
     return items
+
+
+def _achievement_item(
+    users: dict[int, User], rows: list[AchievementUnlock]
+) -> FeedItem:
+    """Return one card for the achievements earned together.
+
+    Args:
+        users: Users keyed by id.
+        rows: Unlock rows that share a user and a moment.
+
+    Returns:
+        The card, with the run's points summed.
+
+    """
+    first = rows[0]
+    return FeedItem(
+        kind=KIND_ACHIEVEMENT,
+        at=first.unlocked_at,
+        user=users[first.user_id],
+        year=first.year,
+        achievements=tuple(
+            _badge(row.achievement_key) or _unknown_badge(row.achievement_key)
+            for row in rows
+        ),
+        points=sum(row.points for row in rows),
+    )
+
+
+def _unknown_badge(key: str) -> dict[str, str]:
+    """Describe an achievement the registry no longer knows.
+
+    Args:
+        key: The unlock's achievement key.
+
+    Returns:
+        Enough of the shape for a card, with the key as the name.
+
+    """
+    return {
+        "name": key.replace("_", " ").title(),
+        "description": "",
+        "icon": "",
+        "tier": "common",
+    }
 
 
 async def points_for_year(
@@ -551,10 +600,8 @@ def to_public_dict(item: FeedItem) -> dict[str, object]:
         payload["text"] = item.text
     if item.points is not None:
         payload["points"] = item.points
-    if item.achievement_key is not None:
-        payload["achievement_key"] = item.achievement_key
-    if item.name is not None:
-        payload["name"] = item.name
+    if item.achievements:
+        payload["achievements"] = [dict(a) for a in item.achievements]
     visibility.assert_public(payload)
     return payload
 

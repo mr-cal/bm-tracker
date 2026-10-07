@@ -394,7 +394,7 @@ body {
   position: relative;
 }
 
-.achievement-icon img {
+.achievement-icon svg {
   display: block;
   height: 30px;
   width: 30px;
@@ -466,6 +466,10 @@ body {
   height: 40px;
   margin-bottom: 0.25rem;
   width: 40px;
+}
+
+.achievement-tile__glyph--locked {
+  opacity: 0.45;
 }
 
 .achievement-tile--on {
@@ -1583,11 +1587,6 @@ body {
 
 .board__empty {
   padding: 1rem 0;
-}
-
-.board__footnote {
-  font-size: 0.82rem;
-  margin-top: 1rem;
 }
 
 /* --- appearance ----------------------------------------------------------- */

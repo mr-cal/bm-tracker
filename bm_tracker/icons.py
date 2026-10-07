@@ -86,3 +86,73 @@ def icon(name: str, extra_class: str = "") -> str:
     # text. Without this the whole SVG renders as a string of angle brackets:
     # unbreakable, and about 4800px wide on a 390px screen.
     return Markup(body)
+
+
+BADGE_ICON_DIR = Path(__file__).parent / "static" / "img" / "badges"
+
+# The class list a badge may be given. Same rule as `icon`: checked at
+# call time so a typo fails loudly rather than rendering an unsized icon.
+_BADGE_EXTRA_CLASSES = frozenset(
+    {
+        "achievement-tile__glyph",
+        "achievement-tile__glyph--hidden",
+        "achievement-tile__glyph--locked",
+        "reward__award-icon",
+    }
+)
+
+
+@cache
+def badge_markup(name: str) -> str:
+    """Return the inline SVG for a badge icon.
+
+    Args:
+        name: The badge name, without the `.svg` suffix.
+
+    Returns:
+        The file's contents, whitespace-collapsed.
+
+    Raises:
+        UnknownIconError: If there is no such badge.
+
+    """
+    path = BADGE_ICON_DIR / f"{name}.svg"
+    if not path.is_file():
+        raise UnknownIconError(f"no badge named {name!r} in {BADGE_ICON_DIR}")
+    return " ".join(path.read_text().split())
+
+
+def badge_icon(name: str, extra_class: str = "") -> str:
+    """Return a badge as inline SVG with a class on it.
+
+    The badge files, unlike the UI icons, carry no class of their own,
+    so the class is injected into the `<svg>` tag rather than replacing
+    one that is already there. Inlined rather than referenced for the
+    same reason the UI icons are: a referenced SVG's `currentColor`
+    resolves to black, which is a badge that says nothing on a dark
+    card.
+
+    Args:
+        name: The badge name, without the `.svg` suffix.
+        extra_class: Extra classes for the element. Checked against an
+            allowlist so a template cannot smuggle markup in through
+            this argument.
+
+    Returns:
+        The `<svg>` element, as safe markup.
+
+    Raises:
+        UnknownIconError: If the name is not a badge, or the class is
+            not allowed.
+
+    """
+    for candidate in extra_class.split():
+        if candidate not in _BADGE_EXTRA_CLASSES:
+            msg = f"{candidate!r} is not an allowed badge class"
+            raise UnknownIconError(msg)
+    body = badge_markup(name)
+    if extra_class:
+        body = body.replace("<svg ", f'<svg class="{extra_class}" ', 1)
+    # Markup, for the same reason as `icon`: autoescaping would turn
+    # the element into a line of visible angle brackets.
+    return Markup(body)

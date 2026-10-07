@@ -35,7 +35,7 @@
     {% for badge in group %}
     <span class="achievement-icon achievement-icon--{{ badge.tier }}" tabindex="0"
           aria-label="{{ badge.name }}. {{ badge.description }}">
-      <img src="/static/img/badges/{{ badge.icon }}.svg" alt="" width="30" height="30" loading="lazy" />
+      {{ badge_icon(badge.icon) }}
       <span class="achievement-icon__tip" role="tooltip">
         <strong>{{ badge.name }}</strong>
         <span>{{ badge.description }}</span>

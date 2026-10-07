@@ -147,8 +147,7 @@ PUBLIC_ITEM_KEYS = frozenset(
         "user",
         "display_name",
         "text",
-        "achievement_key",
-        "name",
+        "achievements",
         "points",
         "year",
     }
