@@ -383,6 +383,29 @@ async def test_achievements_re_earn_each_year(session: AsyncSession) -> None:
     assert {r.year for r in rows} == {2025, 2026}
 
 
+async def test_a_day_of_three_bms_counts_as_one_day(
+    session: AsyncSession,
+) -> None:
+    """The join is per entry; a day must still count once.
+
+    `days_logged_total`, the note-less run and the spicy run all
+    walked the joined rows, so a three-BM day paid three times — a
+    year of threes unlocked `a_year_of_days` at a third of the
+    history.
+    """
+    user = await _user(session)
+    await _log(session, user, 3, when=date(2026, 6, 1))
+    await _log(session, user, 1, when=date(2026, 6, 2))
+    await session.commit()
+
+    built = await facts.build(session, user, 2026)
+
+    assert built.values["days_logged_total"] == 2.0
+    assert built.values["longest_run_without_note"] == 2.0
+    assert built.values["max_bms_in_day"] == 3.0
+    assert built.values["bm_count_total"] == 4.0
+
+
 async def test_the_points_figure_matches_the_leaderboard(
     session: AsyncSession,
 ) -> None:

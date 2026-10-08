@@ -156,7 +156,11 @@ async def build(
         )
     ).all()
 
-    days = [day for day, _ in rows]
+    # The outerjoin above is one row per entry, so a day with three
+    # BMs arrives three times. Everything below walks `days` as one
+    # row per calendar day — counts, runs, streaks — so the
+    # duplicates are collapsed here, keeping the first of each day.
+    days = list({day.day: day for day, _ in rows}.values())
     entries = [entry for _, entry in rows if entry is not None]
 
     score = await scoring.score_year(session, user, year, window_minutes=window_minutes)
