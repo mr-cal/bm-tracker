@@ -1171,12 +1171,14 @@ async def test_the_form_script_is_loaded(
     client: AsyncClient, session: AsyncSession
 ) -> None:
     """Without the script the cards still work; it only does the greying."""
-    await _user(session)
+    user = await _user(session)
     await _sign_in(client)
 
     page = await client.get("/log")
 
     assert "/static/js/logform.js" in page.text
+    # The stale-tab refresh reads the account's zone off the form.
+    assert f'data-timezone="{user.timezone}"' in page.text
     script = await client.get("/static/js/logform.js")
     assert script.status_code == 200
     assert "data-bm-only" in script.text

@@ -24,7 +24,8 @@
     operable and announced properly; the card is the styling of the control, not
     a div pretending to be one.
   #}
-  <form method="post" action="/log" class="log-form" data-log-form>
+  <form method="post" action="/log" class="log-form" data-log-form
+        data-timezone="{{ user.timezone }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
     <div class="log-form__when">
