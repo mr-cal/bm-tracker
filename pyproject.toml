@@ -49,6 +49,13 @@ dev = [
     "setuptools-scm>=7.1",
 ]
 
+[tool.uv]
+# The Makefile runs `uv run ty`, and `uv run` syncs the
+# default groups alone. Without lint here, a plain
+# `uv sync` prunes ty and `make lint` fails for
+# whoever set the project up.
+default-groups = ["dev", "lint"]
+
 [build-system]
 requires = ["setuptools>=69.0", "setuptools_scm[toml]>=7.1"]
 build-backend = "setuptools.build_meta"
