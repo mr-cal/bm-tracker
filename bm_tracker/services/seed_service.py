@@ -252,9 +252,7 @@ async def seed(
             # The first account is the demo and the one you
             # sign into, so it lives in the developer's own
             # zone rather than a draw from the group's spread.
-            timezone=DEFAULT_TIMEZONE if index == 0 else rng.choice(
-                TIMEZONES
-            ),
+            timezone=DEFAULT_TIMEZONE if index == 0 else rng.choice(TIMEZONES),
         )
         session.add(user)
         accounts.append(user)
