@@ -59,6 +59,14 @@ When you push to `mr-cal/bm-tracker`, the vps-infra will pick up the newly made 
 Don't change the configured git url for origin when pushing and pulling changes.
 Instead, just push to a custom url with the token.
 
+To push without stored credentials, mint a token with
+scripts/mint_bot_token.py from mr-cal/vps-infra (see its
+docs/github-app-auth.md) and the GitHub App creds in .env.llm;
+the script caches tokens in .local/ two levels above itself, so
+keep it somewhere writable:
+
+git push "$(uv run mint_bot_token.py --print-remote-url)" main
+
 The production site is **https://3142468.xyz**. It must not be exposed or
 referenced until the local testing handover is signed off.
 
