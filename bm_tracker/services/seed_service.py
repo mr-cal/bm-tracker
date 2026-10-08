@@ -34,7 +34,7 @@ from bm_tracker.models import (
 )
 from bm_tracker.services import bm_service
 from bm_tracker.settings import Settings
-from bm_tracker.timezones import today_for
+from bm_tracker.timezones import DEFAULT_TIMEZONE, today_for
 
 DEFAULT_USERS = 8
 
@@ -249,7 +249,12 @@ async def seed(
             display_name=name.title(),
             password_hash=auth.hash_password(password),
             is_admin=(index == 0),
-            timezone=rng.choice(TIMEZONES),
+            # The first account is the demo and the one you
+            # sign into, so it lives in the developer's own
+            # zone rather than a draw from the group's spread.
+            timezone=DEFAULT_TIMEZONE if index == 0 else rng.choice(
+                TIMEZONES
+            ),
         )
         session.add(user)
         accounts.append(user)
