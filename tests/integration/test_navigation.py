@@ -87,6 +87,23 @@ async def test_icons_render_as_elements_not_escaped_text(
     assert not ESCAPED_SVG.search(page.text), "an icon was HTML-escaped into text"
 
 
+async def test_the_favicon_is_the_flame(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    """The tab icon is the filled flame, self-hosted."""
+    await _sign_in(client, session)
+
+    page = await client.get("/")
+
+    assert (
+        '<link rel="icon" type="image/svg+xml"'
+        ' href="/static/favicon.svg?v=' in page.text
+    )
+    icon = await client.get("/static/favicon.svg")
+    assert icon.status_code == 200
+    assert "M12 1.5" in icon.text, "not the flame artwork"
+
+
 async def test_the_date_and_time_fields_are_the_platform_s_own(
     client: AsyncClient, session: AsyncSession
 ) -> None:
